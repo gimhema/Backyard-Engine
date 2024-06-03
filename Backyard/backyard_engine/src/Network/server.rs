@@ -11,9 +11,12 @@ use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
 
-
 const SERVER: Token = Token(0);
 const SERVER_TICK: u64 = 1000;
+
+lazy_static! {
+    static ref G_SERVER_INSTANCE: Arc<RwLock<server>> = Arc::new(RwLock::new(server));
+}
 
 pub struct server {
     connectionHandler: connection_handler,
@@ -24,6 +27,11 @@ pub struct server {
 }
 
 impl server {
+
+    pub fn get_server_instance() -> &'static Arc<RwLock<server>> {
+        &G_SERVER_INSTANCE
+    }
+
     pub fn new() -> Self {
         let mut _connectionHandler = connection_handler::new();
 
