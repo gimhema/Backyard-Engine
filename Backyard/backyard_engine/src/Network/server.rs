@@ -102,7 +102,7 @@ impl server {
                         println!("SendGamePacket End");
                     },
                     token => {
-                       let done = if let Some(connection)  = GetGameLogic().write().unwrap().GetUserConnectionsByToken(token) 
+                       let done = if let Some(connection)  = self.GetUserConnectionsByToken(token) // GetGameLogic().write().unwrap().GetUserConnectionsByToken(token) 
                         {
                             println!("Handle Connection Event");
                             handle_connection_event(poll.registry(), connection, event)?
@@ -162,6 +162,11 @@ impl server {
             // }
         }
 
+    }
+
+    pub fn GetUserConnectionsByToken(&mut self, token: Token) -> Option<&mut TcpStream>
+    {
+        self.connectionHandler.GetConnetionByToken(token)
     }
 }
 

@@ -24,4 +24,13 @@ impl connection_handler {
             tokenIdMap : _tokenID
         }
     }
+
+    pub fn GetConnetionByToken(&mut self, token: Token) -> Option<&mut TcpStream>
+    {
+        if let Some(connection) = self.connections.get_mut(&token) {
+            Some(&mut connection.tcpStream)
+        } else {
+            None
+        }
+    }
 }
