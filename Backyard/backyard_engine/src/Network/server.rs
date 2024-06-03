@@ -1,6 +1,6 @@
 use super::Network;
-
-
+use std::str::from_utf8;
+use mio::event::Event;
 use std::sync::Mutex;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -102,17 +102,17 @@ impl server {
                         println!("SendGamePacket End");
                     },
                     token => {
-                       // let done = if let Some(connection)  = GetGameLogic().write().unwrap().GetUserConnectionsByToken(token) 
-                       //  {
-                       //      println!("Handle Connection Event");
-                       //      // handle_connection_event(poll.registry(), connection, event)?
-                       //  } 
-                       //  else 
-                       //  {
-                       //      // println!("User Disconnected . . 2 2");
-                       //      // Sporadic events happen, we can safely ignore them.
-                       //      false
-                       //  };
+                       let done = if let Some(connection)  = GetGameLogic().write().unwrap().GetUserConnectionsByToken(token) 
+                        {
+                            println!("Handle Connection Event");
+                            handle_connection_event(poll.registry(), connection, event)?
+                        } 
+                        else 
+                        {
+                            // println!("User Disconnected . . 2 2");
+                            // Sporadic events happen, we can safely ignore them.
+                            false
+                        };
     // 
                        // if done {
                        //      //  GetGameLogic().write().unwrap()
@@ -163,4 +163,82 @@ impl server {
         }
 
     }
+}
+
+fn handle_connection_event(
+    registry: &Registry,
+    connection: &mut TcpStream,
+    event: &Event,
+) -> io::Result<bool> {
+    println!("Handle Connection Event Start . . ");
+
+    if event.is_readable() {
+        let mut connection_closed = false;
+        let mut received_data = vec![0; 4096];
+        let mut bytes_read = 0;
+        // We can (maybe) read from the connection.
+        loop {
+            match connection.read(&mut received_data[bytes_read..]) {
+                Ok(0) => {
+                    // Reading 0 bytes means the other side has closed the
+                    // connection or is done writing, then so are we.
+                    connection_closed = true;
+                    break;
+                }
+                Ok(n) => {
+                    bytes_read += n;
+                    if bytes_read == received_data.len() {
+                        received_data.resize(received_data.len() + 1024, 0);
+                    }
+                }
+                // Would block "errors" are the OS's way of saying that the
+                // connection is not actually ready to perform this I/O operation.
+                Err(ref err) if would_block(err) => break,
+                Err(ref err) if interrupted(err) => continue,
+                // Other errors we'll consider fatal.
+                Err(err) => return Err(err),
+            }
+        }
+
+        if bytes_read != 0 {
+
+            let received_data = &received_data[..bytes_read];
+            if let Ok(str_buf) = from_utf8(received_data) {
+
+                // let bytes_slice: &[u8] = &[65, 66, 67, 68, 69];
+                let vec_of_bytes: Vec<u8> = received_data.to_vec();
+                // Json -> Message Pack
+                // MsgPackEventProcess(vec_of_bytes);
+
+                
+
+                // println!("Received data: {}", str_buf.trim_end());
+                // // 받은 데이터 처리
+                // // 데이터를 수신전용 버퍼에 추가한다.
+                // let recvMsg = String::from(from_utf8(received_data).unwrap());
+                // CallServerActionByFunctionHeader(Some(recvMsg));
+
+                
+            } else {
+                println!("Received (none UTF-8) data: {:?}", received_data);
+            }
+        }
+
+        if connection_closed {
+            println!("Connection closed");
+            return Ok(true);
+        }
+    }
+    println!("Handle Connection Event End . . ");
+    Ok(false)
+}
+
+
+
+fn would_block(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::WouldBlock
+}
+
+fn interrupted(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::Interrupted
 }
