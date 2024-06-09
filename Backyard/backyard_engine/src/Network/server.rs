@@ -95,16 +95,16 @@ impl server {
                         };
                         println!("Accepted connection from: {}", address);
     
-                        // let token = next(&mut unique_token);
-                        // poll.registry().register(
-                        //     &mut connection,
-                        //     token,
-                        //     Interest::READABLE.add(Interest::WRITABLE),
-                        // )?;
-                        // println!("Add New Player");
-                        // let mut sendConnect = connection;
+                        let token = next(&mut unique_token);
+                        poll.registry().register(
+                            &mut connection,
+                            token,
+                            Interest::READABLE.add(Interest::WRITABLE),
+                        )?;
+                        println!("Add New Player");
+                        let mut sendConnect = connection;
                         
-                        // self.AddNewPlayer(sendConnect, token);                        
+                        self.add_new_connect(sendConnect, token);                        
                     
 
                         println!("SendGamePacket End");
@@ -227,7 +227,11 @@ fn handle_connection_event(
     Ok(false)
 }
 
-
+fn next(current: &mut Token) -> Token {
+    let next = current.0;
+    current.0 += 1;
+    Token(next)
+}
 
 fn would_block(err: &io::Error) -> bool {
     err.kind() == io::ErrorKind::WouldBlock
