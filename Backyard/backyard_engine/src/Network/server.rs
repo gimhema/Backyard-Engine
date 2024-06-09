@@ -148,6 +148,11 @@ impl server {
 
     }
 
+    pub fn add_new_connect(&mut self, _tcpStream : TcpStream, _token: Token) 
+    {
+        self.connectionHandler.new_connection(_tcpStream, _token);
+    }
+
     pub fn get_user_connetions_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
     {
         self.connectionHandler.get_connetion_by_token(token)

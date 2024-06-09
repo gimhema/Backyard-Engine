@@ -22,6 +22,7 @@ impl connection {
 }
 
 pub struct connection_handler {
+    id_sum : i64,
     connections: HashMap<Token, connection>,
     tokenIdMap: HashMap<i64, Token>
 }
@@ -31,9 +32,18 @@ impl connection_handler {
         let mut _connetions = HashMap::new();
         let mut _tokenID = HashMap::new();
         connection_handler{
+            id_sum : 0,
             connections : _connetions,
             tokenIdMap : _tokenID
         }
+    }
+
+    pub fn get_current_id_sum(&mut self) -> i64 {
+        self.id_sum.clone()
+    }
+
+    pub fn update_id_sum(&mut self) {
+        self.id_sum += 1;
     }
 
     pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
@@ -48,9 +58,12 @@ impl connection_handler {
     pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
     {
         // Id 처리 로직 필요함
-        let _new_connection = connection::new(_token, 0, _tcpStream);
+        let _id_top = self.get_current_id_sum();
+        let _new_connection = connection::new(_token, _id_top, _tcpStream);
 
         self.connections.insert(_token, _new_connection);
-        self.tokenIdMap.insert(0, _token);
+        self.tokenIdMap.insert(_id_top, _token);
+
+        self.update_id_sum();
     }
 }
