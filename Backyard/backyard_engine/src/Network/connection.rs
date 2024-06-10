@@ -53,6 +53,17 @@ impl connection_handler {
         self.id_sum += 1;
     }
 
+    pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
+    {
+        let mut _token = self.tokenIdMap.get(&id);
+
+        if let Some(connection) = self.connections.get_mut(_token.unwrap()) {
+            Some(&mut connection.tcpStream)
+        } else {
+            None
+        }   
+    }
+
     pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
     {
         if let Some(connection) = self.connections.get_mut(&token) {
