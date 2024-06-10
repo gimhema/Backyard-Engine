@@ -122,22 +122,23 @@ impl server {
                             false
                         };
     // 
-                       // if done {
-                       //      //  GetGameLogic().write().unwrap()
-                       //      // self.clientHandler.GetConnetionByToken(token)
-                       //      println!("Disconn search . . .");
-                       //      if let Some(mut connection)  = GetGameLogic().write().unwrap().GetUserConnectionsByToken(token)
-                       //      {
-                       //          println!("User Disconnected . . 1");
-                       //          // poll.registry().deregister(connection);
-                       //          // let removeID = self.clientHandler.GetIDByConnection(token);
-                       //          // 두 과정은 하나의 함수로 표현해야함
-                       //          // self.clientHandler.RemoveConnectionByToken(token);
-                       //          // self.clientHandler.RemoveTokenPairByID(removeID);
-                       //          // self.RemovePlayerByID(removeID);
-                       //          // self.DecreaseNumUser();
-                       //      }
-                       // }
+                       if done {
+                            println!("Disconn search . . .");
+                            if let Some(mut connection)  = self.get_user_connetions_by_token(token)
+                            {
+                                println!("User Disconnected . . 1");
+                                poll.registry().deregister(connection);
+                                
+                                self.remove_connection(token);
+
+                                // let removeID = self.clientHandler.GetIDByConnection(token);
+                                // // 두 과정은 하나의 함수로 표현해야함
+                                // self.clientHandler.RemoveConnectionByToken(token);
+                                // self.clientHandler.RemoveTokenPairByID(removeID);
+                                // self.RemovePlayerByID(removeID);
+                                // self.DecreaseNumUser();
+                            }
+                       }
                     }
                 }
             }
@@ -146,6 +147,11 @@ impl server {
 
         }
 
+    }
+
+    pub fn remove_connection(&mut self, token : Token) 
+    {
+        self.connectionHandler.del_connection(token);
     }
 
     pub fn add_new_connect(&mut self, _tcpStream : TcpStream, _token: Token) 

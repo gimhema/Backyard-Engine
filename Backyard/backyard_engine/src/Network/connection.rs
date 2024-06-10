@@ -38,6 +38,13 @@ impl connection_handler {
         }
     }
 
+    pub fn del_connection(&mut self, token : Token) {
+        let mut id = self.connections.get(&token).unwrap().id;
+
+        self.connections.remove(&token);
+        self.tokenIdMap.remove(&id);
+    }
+
     pub fn get_current_id_sum(&mut self) -> i64 {
         self.id_sum.clone()
     }
