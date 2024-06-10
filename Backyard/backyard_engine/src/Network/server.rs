@@ -2,7 +2,7 @@ use super::Network;
 use std::str::from_utf8;
 use mio::event::Event;
 use std::sync::Mutex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::{thread, time};
 use std::sync::{RwLock, Arc, RwLockReadGuard};
@@ -149,6 +149,10 @@ impl server {
 
     }
 
+    pub fn get_id_list(&mut self) -> HashSet<i64> {
+        self.connectionHandler.get_id_set_clone()
+    }
+
     pub fn remove_connection(&mut self, token : Token) 
     {
         self.connectionHandler.del_connection(token);
@@ -163,6 +167,12 @@ impl server {
     {
         self.connectionHandler.get_connetion_by_token(token)
     }
+
+    pub fn get_user_connection_by_id(&mut self, id : i64) -> Option<&mut TcpStream>
+    {
+        self.connectionHandler.get_connection_by_id(id)
+    }
+
 }
 
 fn handle_connection_event(

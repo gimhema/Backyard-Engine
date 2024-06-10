@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use mio::net::{TcpListener, TcpStream};
 use mio::Token;
 
@@ -24,18 +25,25 @@ impl connection {
 pub struct connection_handler {
     id_sum : i64,
     connections: HashMap<Token, connection>,
-    tokenIdMap: HashMap<i64, Token>
+    tokenIdMap: HashMap<i64, Token>,
+    idSet : HashSet<i64>
 }
 
 impl connection_handler {
     pub fn new() -> Self {
         let mut _connetions = HashMap::new();
         let mut _tokenID = HashMap::new();
+        let mut _idSet = HashSet::new();
         connection_handler{
             id_sum : 0,
             connections : _connetions,
-            tokenIdMap : _tokenID
+            tokenIdMap : _tokenID,
+            idSet : _idSet
         }
+    }
+
+    pub fn get_id_set_clone(&mut self) -> HashSet<i64> {
+        self.idSet.clone()
     }
 
     pub fn del_connection(&mut self, token : Token) {
@@ -43,6 +51,7 @@ impl connection_handler {
 
         self.connections.remove(&token);
         self.tokenIdMap.remove(&id);
+        self.idSet.remove(&id);
     }
 
     pub fn get_current_id_sum(&mut self) -> i64 {
@@ -81,6 +90,7 @@ impl connection_handler {
 
         self.connections.insert(_token, _new_connection);
         self.tokenIdMap.insert(_id_top, _token);
+        self.idSet.insert(_id_top);
 
         self.update_id_sum();
     }
