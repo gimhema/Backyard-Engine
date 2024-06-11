@@ -1,3 +1,5 @@
+use crate::Event::event_handler::listen_event;
+
 use super::Network;
 use std::str::from_utf8;
 use mio::event::Event;
@@ -10,6 +12,8 @@ use super::connection::*;
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
+
+use super::Event::Event::*;
 
 const SERVER: Token = Token(0);
 const SERVER_TICK: u64 = 1000;
@@ -225,7 +229,8 @@ fn handle_connection_event(
                 // println!("Received data: {}", str_buf.trim_end());
                 // // 받은 데이터 처리
                 // // 데이터를 수신전용 버퍼에 추가한다.
-                // let recvMsg = String::from(from_utf8(received_data).unwrap());
+                let recvMsg = String::from(from_utf8(received_data).unwrap());
+                listen_event(recvMsg);
                 // CallServerActionByFunctionHeader(Some(recvMsg));
 
                 
