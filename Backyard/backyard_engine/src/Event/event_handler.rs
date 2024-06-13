@@ -22,31 +22,6 @@ impl From<i64> for event_header {
     }
 }
 
-impl event_header {
-    fn action(&self, msg : Vec<String>)
-    {
-        //match self {
-        //    FunctionHeader::DEFAULT => {
-        //    }
-        //    FunctionHeader::CHAT_MESSAGE_ALL => {
-        //        ServerAction_CHAT_MESSAGE_ALL(val);
-        //    }
-        //    FunctionHeader::CHAT_MESSAGE_TO_GROUP => {
-        //        ServerAction_CHAT_MESSAGE_TO_GROUP(val);
-        //    }
-        //    FunctionHeader::CHAT_MESSAGE_TO_ONE => {
-        //        ServerAction_CHAT_MESSAGE_TO_ONE(val);
-        //    }
-        //    FunctionHeader::MOVE_TO_LOCATION => {
-        //        ServerAction_MOVE_TO_LOCATION(val);
-        //    }
-        //    FunctionHeader::CONNECTION_SUCESSFUL => {
-        //        ServerAction_CONNECTION_SUCESSFUL(val);
-        //    }
-        //}
-    }
-}
-
 pub fn listen_event(msg : String) {
 
     if let Some((id, size, data)) = deseirialize(&msg) {
@@ -56,12 +31,26 @@ pub fn listen_event(msg : String) {
         let event = event_header::from(q_message.get_id());
 
         event.action(q_message.get_data());
-
-        // println!("id = {}", q_message.get_id());
-        // println!("size = {}", q_message.get_size());
-        // println!("data = {:?}", q_message.get_data());
-
     } else {
         println!("Invalid input format");
+    }
+}
+
+impl event_header {
+    fn action(&self, msg : Vec<String>)
+    {
+        match self {
+            event_header::DEFAULT => {
+            }
+            event_header::SEND_MESSAGE_TO_ALL => {
+               // ServerAction_CHAT_MESSAGE_ALL(val);
+            }
+            event_header::SEND_MESSAGE_TO_TARGET => {
+               // ServerAction_CHAT_MESSAGE_TO_GROUP(val);
+            }
+            event_header::END => {
+               // ServerAction_CHAT_MESSAGE_TO_ONE(val);
+            }
+        }
     }
 }
