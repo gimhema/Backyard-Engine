@@ -121,11 +121,10 @@ impl server {
                         } 
                         else 
                         {
-                            // println!("User Disconnected . . 2 2");
                             // Sporadic events happen, we can safely ignore them.
                             false
                         };
-    // 
+ 
                        if done {
                             println!("Disconn search . . .");
                             if let Some(mut connection)  = self.get_user_connetions_by_token(token)
@@ -134,13 +133,6 @@ impl server {
                                 poll.registry().deregister(connection);
                                 
                                 self.remove_connection(token);
-
-                                // let removeID = self.clientHandler.GetIDByConnection(token);
-                                // // 두 과정은 하나의 함수로 표현해야함
-                                // self.clientHandler.RemoveConnectionByToken(token);
-                                // self.clientHandler.RemoveTokenPairByID(removeID);
-                                // self.RemovePlayerByID(removeID);
-                                // self.DecreaseNumUser();
                             }
                        }
                     }
@@ -219,20 +211,9 @@ fn handle_connection_event(
             let received_data = &received_data[..bytes_read];
             if let Ok(str_buf) = from_utf8(received_data) {
 
-                // let bytes_slice: &[u8] = &[65, 66, 67, 68, 69];
                 let vec_of_bytes: Vec<u8> = received_data.to_vec();
-                // Json -> Message Pack
-                // MsgPackEventProcess(vec_of_bytes);
-
-                
-
-                // println!("Received data: {}", str_buf.trim_end());
-                // // 받은 데이터 처리
-                // // 데이터를 수신전용 버퍼에 추가한다.
                 let recvMsg = String::from(from_utf8(received_data).unwrap());
                 listen_event(recvMsg);
-                // CallServerActionByFunctionHeader(Some(recvMsg));
-
                 
             } else {
                 println!("Received (none UTF-8) data: {:?}", received_data);
