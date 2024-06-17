@@ -2,12 +2,23 @@ use super::Agent;
 
 
 
-// It can be a async task
-pub trait AgentLoopManager {
-    fn Update();
+// Manages connections between servers. 
+
+
+// Server Connection must be tcp stream
+pub struct AgentConnection {
+
 }
 
-// AgentAction is dependent on AgentLoopManager
-pub trait AgentAction {
-    fn Update();    
+impl AgentConnection {
+
+}
+
+pub struct ServerAgent {
+
+}
+
+
+impl ServerAgent {
+
 }
