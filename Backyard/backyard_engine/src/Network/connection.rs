@@ -9,9 +9,10 @@ pub trait connection_handle {
     fn del_connection(&mut self, token : Token);
     fn get_current_id_sum(&mut self) -> i64;
     fn update_id_sum(&mut self);
-    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>;
-    fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token);
-    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>;
+
+//    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>;
+//    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>;
+//    fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token);
 }
 
 
@@ -72,7 +73,13 @@ impl connection_handle for stream_handler {
         self.id_sum += 1;
     }
 
-    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
+    
+
+    
+}
+
+impl stream_handler {
+    pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
     {
         let mut _token = self.tokenIdMap.get(&id);
 
@@ -83,7 +90,7 @@ impl connection_handle for stream_handler {
         }   
     }
 
-    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
+    pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
     {
         if let Some(connection) = self.connections.get_mut(&token) {
             Some(&mut connection.tcpStream)
@@ -92,7 +99,7 @@ impl connection_handle for stream_handler {
         }
     }
 
-    fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
+    pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
     {
         // Id 처리 로직 필요함
         let _id_top = self.get_current_id_sum();
