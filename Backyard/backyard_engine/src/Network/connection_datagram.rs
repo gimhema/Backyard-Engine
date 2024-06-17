@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use mio::net::{UdpSocket, TcpStream};
 use mio::Token;
+use super::connection::*;
 
 pub struct connection_datagram
 {

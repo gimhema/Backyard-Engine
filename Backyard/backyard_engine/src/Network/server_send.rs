@@ -4,7 +4,7 @@ use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
 
-impl server {
+impl server_stream {
 
     pub fn send_message_to_all_conn(&mut self, msg : String) {
         for id in self.get_id_list() {

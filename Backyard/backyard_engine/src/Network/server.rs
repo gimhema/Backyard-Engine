@@ -19,27 +19,27 @@ const SERVER: Token = Token(0);
 const SERVER_TICK: u64 = 1000;
 
 lazy_static! {
-    static ref G_SERVER_INSTANCE: Arc<RwLock<server>> = Arc::new(RwLock::new(server::new()));
+    static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
 }
 
-pub struct server {
-    connectionHandler: connection_handler,
+pub struct server_stream {
+    connectionHandler: stream_handler,
     numUser: i64,
     step: i64,
     server_address : String,
     port : i64,
 }
 
-impl server {
+impl server_stream {
 
-    pub fn get_server_instance() -> &'static Arc<RwLock<server>> {
+    pub fn get_server_instance() -> &'static Arc<RwLock<server_stream>> {
         &G_SERVER_INSTANCE
     }
 
     pub fn new() -> Self {
-        let mut _connectionHandler = connection_handler::new();
+        let mut _connectionHandler = stream_handler::new();
 
-        server {
+        server_stream {
             connectionHandler: _connectionHandler,
             numUser: 0,
             step: 0,
