@@ -66,6 +66,7 @@ impl server_datagram {
     }
 }
 
+/*
 fn main() {
     let addr: SocketAddr = "127.0.0.1:9000".parse().unwrap();
     let mut server = server_datagram::new(addr);
@@ -74,3 +75,4 @@ fn main() {
 
     server.run();
 }
+*/
