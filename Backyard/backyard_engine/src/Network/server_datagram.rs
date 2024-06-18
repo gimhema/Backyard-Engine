@@ -3,8 +3,14 @@ use mio::net::UdpSocket;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::str;
-
+use super::Event::event_handler::*;
+use std::sync::{RwLock, Arc, RwLockReadGuard};
 const SERVER_TOKEN: Token = Token(0);
+
+lazy_static! {
+    static ref SERVER_DAGAGRAM_ADDR: SocketAddr = "127.0.0.1:8080".parse().unwrap();
+    static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
+}
 
 struct server_datagram {
     socket: UdpSocket,
@@ -14,8 +20,8 @@ struct server_datagram {
 }
 
 impl server_datagram {
-    fn new(addr: SocketAddr) -> server_datagram {
-        let mut socket = UdpSocket::bind(addr).unwrap();
+    fn new() -> server_datagram {
+        let mut socket = UdpSocket::bind(*SERVER_DAGAGRAM_ADDR).unwrap();
         let poll = Poll::new().unwrap();
         
         let mut registry = poll.registry();
@@ -33,12 +39,10 @@ impl server_datagram {
         let mut buf = [0; 1024];
         match self.socket.recv_from(&mut buf) {
             Ok((size, src_addr)) => {
-                println!("Received {} bytes from {}", size, src_addr);
-                println!("Message: {}", str::from_utf8(&buf[..size]).unwrap());
-                self.clients.insert(token, src_addr);
+                
+                let mut msg = str::from_utf8(&buf[..size]).unwrap().to_string();
+                listen_event(msg);
 
-                // Echo back to the client
-                self.socket.send_to(&buf[..size], src_addr).unwrap();
             }
             Err(e) => {
                 eprintln!("Failed to receive UDP message: {}", e);
