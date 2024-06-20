@@ -12,7 +12,7 @@ lazy_static! {
     static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
 }
 
-struct server_datagram {
+pub struct server_datagram {
     socket: UdpSocket,
     poll: Poll,
     clients: HashMap<Token, SocketAddr>,
