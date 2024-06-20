@@ -20,7 +20,7 @@ pub struct server_datagram {
 }
 
 impl server_datagram {
-    fn new() -> server_datagram {
+    pub fn new() -> server_datagram {
         let mut socket = UdpSocket::bind(*SERVER_DAGAGRAM_ADDR).unwrap();
         let poll = Poll::new().unwrap();
         
@@ -35,7 +35,7 @@ impl server_datagram {
         }
     }
 
-    fn handle_read_event(&mut self, token: Token) {
+    pub fn handle_read_event(&mut self, token: Token) {
         let mut buf = [0; 1024];
         match self.socket.recv_from(&mut buf) {
             Ok((size, src_addr)) => {
@@ -50,7 +50,7 @@ impl server_datagram {
         }
     }
 
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         let mut events = Events::with_capacity(1024);
         loop {
             self.poll.poll(&mut events, None).unwrap();
@@ -68,6 +68,30 @@ impl server_datagram {
             }
         }
     }
+
+    //pub fn get_id_list(&mut self) -> HashSet<i64> {
+    //    self.connectionHandler.get_id_set_clone()
+    //}
+//
+    //pub fn remove_connection(&mut self, token : Token) 
+    //{
+    //    self.connectionHandler.del_connection(token);
+    //}
+//
+    //pub fn add_new_connect(&mut self, _udpSocket : UdpSocket, _token: Token) 
+    //{
+    //    self.connectionHandler.new_connection(_udpSocket, _token);
+    //}
+//
+    //pub fn get_user_connetions_by_token(&mut self, token: Token) -> Option<&mut UdpSocket>
+    //{
+    //    self.connectionHandler.get_connetion_by_token(token)
+    //}
+//
+    //pub fn get_user_connection_by_id(&mut self, id : i64) -> Option<&mut UdpSocket>
+    //{
+    //    self.connectionHandler.get_connection_by_id(id)
+    //}
 }
 
 /*
