@@ -62,8 +62,7 @@ impl server_stream {
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
-        let addr = "127.0.0.1:9000".parse().unwrap();
-        let mut server = TcpListener::bind(addr)?;
+        let mut server = TcpListener::bind(self.connect_info.get_socket_addr())?;
     
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;

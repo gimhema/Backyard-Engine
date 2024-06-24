@@ -37,7 +37,6 @@ impl server_datagram {
         _conn_info.init();
 
         let mut socket = UdpSocket::bind(_conn_info.get_socket_addr()).unwrap();
-        // let mut socket = UdpSocket::bind(*SERVER_DAGAGRAM_ADDR).unwrap();
         let poll = Poll::new().unwrap();
         
         let mut registry = poll.registry();
