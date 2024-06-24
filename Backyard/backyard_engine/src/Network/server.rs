@@ -12,6 +12,7 @@ use super::connection::*;
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
+use super::serverinfo::*;
 
 use super::Event::Event::*;
 
@@ -32,6 +33,7 @@ pub struct server_stream {
     step: i64,
     server_address : String,
     port : i64,
+    connect_info : serverinfo
 }
 
 impl server_stream {
@@ -39,12 +41,16 @@ impl server_stream {
     pub fn new() -> Self {
         let mut _connectionHandler = stream_handler::new();
 
+        let mut _conn_info = serverinfo::new();
+        _conn_info.init();
+
         server_stream {
             connectionHandler: _connectionHandler,
             numUser: 0,
             step: 0,
             server_address : "".to_string(),
-            port : 0
+            port : 0,
+            connect_info : _conn_info
         }
     }
 
