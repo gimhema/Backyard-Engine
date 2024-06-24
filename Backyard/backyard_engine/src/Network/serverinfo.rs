@@ -3,15 +3,6 @@ use std::sync::{RwLock, Arc, RwLockReadGuard};
 use super::server;
 
 
-
-lazy_static! {
-    static ref G_SERVER_INFO: Arc<RwLock<serverinfo>> = Arc::new(RwLock::new(serverinfo::new()));
-}
-
-pub fn get_server_info() -> &'static Arc<RwLock<serverinfo>> {
-    &G_SERVER_INFO
-}
-
 pub struct serverinfo {
     socket_addr : SocketAddr
 }
@@ -23,5 +14,16 @@ impl serverinfo {
 
     pub fn set_socket_addr(&mut self, _socket_addr: SocketAddr) {
         self.socket_addr = _socket_addr;
+    }
+
+    pub fn get_socket_addr(&mut self) -> SocketAddr {
+        self.socket_addr.clone()
+    }
+
+    pub fn init(&mut self) {
+
+        // file read . . .
+
+        self.socket_addr = "127.0.0.1:8080".parse().unwrap();
     }
 }
