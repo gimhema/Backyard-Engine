@@ -22,6 +22,10 @@ lazy_static! {
     static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
 }
 
+pub fn get_server_instance() -> &'static Arc<RwLock<server_stream>> {
+    &G_SERVER_INSTANCE
+}
+
 pub struct server_stream {
     connectionHandler: stream_handler,
     numUser: i64,
@@ -31,10 +35,6 @@ pub struct server_stream {
 }
 
 impl server_stream {
-
-    pub fn get_server_instance() -> &'static Arc<RwLock<server_stream>> {
-        &G_SERVER_INSTANCE
-    }
 
     pub fn new() -> Self {
         let mut _connectionHandler = stream_handler::new();
