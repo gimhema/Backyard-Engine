@@ -3,7 +3,6 @@ use std::result;
 
 
 
-
 pub enum CryptMode {
     DEFAULT,
     AES,

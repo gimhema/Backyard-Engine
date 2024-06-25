@@ -8,7 +8,7 @@ use super::Event::event_handler::*;
 use std::sync::{RwLock, Arc, RwLockReadGuard};
 use super::connection_datagram::*;
 use std::collections::HashSet;
-use super::serverinfo::*;
+use super::server_common::*;
 
 const SERVER_TOKEN: Token = Token(0);
 
@@ -26,17 +26,16 @@ pub struct server_datagram {
     poll: Poll,
     clients: HashMap<Token, SocketAddr>,
     token_counter: usize,
-    connect_info : serverinfo
+    common_info : server_common_info
 }
 
 impl server_datagram {
 
     pub fn new() -> server_datagram {
 
-        let mut _conn_info = serverinfo::new();
-        _conn_info.init();
+        let mut _common_info = server_common_info::new();
 
-        let mut socket = UdpSocket::bind(_conn_info.get_socket_addr()).unwrap();
+        let mut socket = UdpSocket::bind(_common_info.get_socket_addr()).unwrap();
         let poll = Poll::new().unwrap();
         
         let mut registry = poll.registry();
@@ -50,7 +49,7 @@ impl server_datagram {
             poll,
             clients: HashMap::new(),
             token_counter: 1,
-            connect_info : _conn_info
+            common_info : _common_info
         }
     }
 

@@ -1,5 +1,6 @@
 use super::serverinfo::*;
 use super::Crypto::packet_crypto::*;
+use std::net::SocketAddr;
 
 pub struct server_common_info {
     connect_info : serverinfo,
@@ -15,6 +16,10 @@ impl server_common_info {
         _crypto_processor.init();
 
         server_common_info{connect_info : _conn_info, crypto_processor : _crypto_processor}
+    }
+
+    pub fn get_socket_addr(&mut self) -> SocketAddr {
+        self.connect_info.get_socket_addr()
     }
 }
 

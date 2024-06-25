@@ -12,7 +12,7 @@ use super::connection::*;
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
-use super::serverinfo::*;
+use super::server_common::*;
 
 use super::Event::Event::*;
 
@@ -33,7 +33,7 @@ pub struct server_stream {
     step: i64,
     server_address : String,
     port : i64,
-    connect_info : serverinfo
+    common_info : server_common_info
 }
 
 impl server_stream {
@@ -41,8 +41,7 @@ impl server_stream {
     pub fn new() -> Self {
         let mut _connectionHandler = stream_handler::new();
 
-        let mut _conn_info = serverinfo::new();
-        _conn_info.init();
+        let mut _common_info = server_common_info::new();
 
         server_stream {
             connectionHandler: _connectionHandler,
@@ -50,7 +49,7 @@ impl server_stream {
             step: 0,
             server_address : "".to_string(),
             port : 0,
-            connect_info : _conn_info
+            common_info : _common_info
         }
     }
 
@@ -62,7 +61,7 @@ impl server_stream {
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
-        let mut server = TcpListener::bind(self.connect_info.get_socket_addr())?;
+        let mut server = TcpListener::bind(self.common_info.get_socket_addr())?;
     
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;
