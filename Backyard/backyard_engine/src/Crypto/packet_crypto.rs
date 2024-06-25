@@ -16,8 +16,8 @@ pub struct cryption_processor {
 }
 
 impl cryption_processor {
-    pub fn new(_mode : CryptMode) -> Self {
-        cryption_processor { mode: _mode }
+    pub fn new() -> Self {
+        cryption_processor { mode: CryptMode::DEFAULT }
     }
 
     pub fn encrypt(target : String) -> String {
@@ -30,6 +30,10 @@ impl cryption_processor {
         let mut result = "";
 
         return result.to_string();
+    }
+
+    pub fn init(&mut self) {
+        // read file . . .
     }
 
 }
