@@ -1,1 +1,1 @@
-online platformer example
+online platformer example by golang (using ebitengine)
