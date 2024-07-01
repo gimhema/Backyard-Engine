@@ -2,7 +2,6 @@ package backyard_player
 
 import (
 	"fmt"
-	"net"
 )
 
 type NetworkProtocol int
@@ -20,8 +19,11 @@ type BackyardSocket struct {
 	ipAddress string
 }
 
-func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
+type SocketManager struct {
+	socket_container []BackyardSocket
+}
 
+func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
 	bSocket.protocol = _protocol
 
 	switch _protocol {
@@ -36,34 +38,17 @@ func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port strin
 	default:
 		fmt.Println("Unknown socket type")
 	}
-
 }
 
-func (bSocket *BackyardSocket) BuildSocketTCP() {
-	connet_info := bSocket.ipAddress + ":" + bSocket.port
+func (bSocket *BackyardSocket) Listen() {
 
-	_socket, err := net.Dial("tcp", connet_info)
-
-	if err != nil {
-		fmt.Println("Create Socket Error")
-	} else {
-		bSocket.socket = _socket
+	switch bSocket.protocol {
+	case TCP:
+		bSocket.LisetnSocketTCP()
+	case UDP:
+		bSocket.LisetnSocketUDP()
+	default:
+		fmt.Println("Unknown socket type")
 	}
 
-}
-
-func (bSocket *BackyardSocket) BuildSocketUDP() {
-	connet_info := bSocket.ipAddress + ":" + bSocket.port
-
-	_socket, err := net.ResolveUDPAddr("udp", connet_info)
-
-	if err != nil {
-		fmt.Println("Create Socket Error")
-	} else {
-		bSocket.socket = _socket
-	}
-}
-
-type SocketManager struct {
-	socket_container []BackyardSocket
 }
