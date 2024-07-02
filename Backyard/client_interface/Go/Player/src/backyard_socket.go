@@ -17,6 +17,7 @@ type BackyardSocket struct {
 	socket    interface{}
 	port      string
 	ipAddress string
+	buffer    []byte
 }
 
 type SocketManager struct {

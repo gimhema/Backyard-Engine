@@ -18,9 +18,22 @@ func (bSocket *BackyardSocket) BuildSocketUDP() {
 }
 
 func (bSocket *BackyardSocket) LisetnSocketUDP() {
+	for {
+		n, addr, err := bSocket.socket.(*net.UDPConn).ReadFromUDP(bSocket.buffer)
+		if err != nil {
+			fmt.Println("Error reading from server:", err)
+			return
+		}
 
+		fmt.Printf("Received from %v: %s\n", addr, string(bSocket.buffer[:n]))
+	}
 }
 
 func (bSocket *BackyardSocket) SendMessageUDP(_msg string) {
+
+	_, err := bSocket.socket.(*net.UDPConn).Write([]byte(_msg))
+	if err != nil {
+		fmt.Println("Error sending message:", err)
+	}
 
 }
