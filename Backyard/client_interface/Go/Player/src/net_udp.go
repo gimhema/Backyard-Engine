@@ -20,3 +20,7 @@ func (bSocket *BackyardSocket) BuildSocketUDP() {
 func (bSocket *BackyardSocket) LisetnSocketUDP() {
 
 }
+
+func (bSocket *BackyardSocket) SendMessageUDP(_msg string) {
+
+}

@@ -52,3 +52,16 @@ func (bSocket *BackyardSocket) Listen() {
 	}
 
 }
+
+func (bSocket *BackyardSocket) Send(_msg string) {
+
+	switch bSocket.protocol {
+	case TCP:
+		bSocket.SendMessageTCP(_msg)
+	case UDP:
+		bSocket.SendMessageUDP(_msg)
+	default:
+		fmt.Println("Unknown socket type")
+	}
+
+}

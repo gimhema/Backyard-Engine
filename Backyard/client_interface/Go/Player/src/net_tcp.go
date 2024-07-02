@@ -21,3 +21,7 @@ func (bSocket *BackyardSocket) BuildSocketTCP() {
 func (bSocket *BackyardSocket) LisetnSocketTCP() {
 
 }
+
+func (bSocket *BackyardSocket) SendMessageTCP(_msg string) {
+
+}
