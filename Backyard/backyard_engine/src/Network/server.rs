@@ -112,7 +112,9 @@ impl server_stream {
                         println!("Add New Player");
                         let mut sendConnect = connection;
                         
-                        self.add_new_connect(sendConnect, token);                        
+                        self.add_new_connect(sendConnect, token);
+
+                        get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
                     
 
                         println!("SendGamePacket End");
