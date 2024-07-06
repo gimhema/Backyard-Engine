@@ -7,6 +7,9 @@ mod Network;
 mod qsm;
 mod Crypto;
 
+// User Custom
+mod UserLogic;
+
 fn main() {
     println!("Server Start");
 }
