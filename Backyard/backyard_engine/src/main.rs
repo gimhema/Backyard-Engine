@@ -6,6 +6,7 @@ mod Event;
 mod Network;
 mod qsm;
 mod Crypto;
+mod Session;
 
 // User Custom
 mod UserLogic;
