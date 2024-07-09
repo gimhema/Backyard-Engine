@@ -28,7 +28,7 @@ impl server_common_info {
         server_common_info{connect_info : _conn_info, crypto_processor : _crypto_processor}
     }
 
-    pub fn get_socket_addr(&mut self) -> SocketAddr {
+    pub fn get_socket_addr(&mut self) -> String {
         self.connect_info.get_socket_addr()
     }
 }
