@@ -23,7 +23,7 @@ lazy_static! {
     static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
 }
 
-pub fn get_server_instance() -> &'static Arc<RwLock<server_stream>> {
+pub fn get_tcp_server_instance() -> &'static Arc<RwLock<server_stream>> {
     &G_SERVER_INSTANCE
 }
 
@@ -61,7 +61,7 @@ impl server_stream {
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
-        let mut server = TcpListener::bind(self.common_info.get_socket_addr())?;
+        let mut server = TcpListener::bind("127.0.0.1:8080".parse().unwrap())?;
     
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;
