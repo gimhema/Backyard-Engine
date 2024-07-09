@@ -1,3 +1,5 @@
+use Network::server::get_tcp_server_instance;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -13,4 +15,7 @@ mod UserLogic;
 
 fn main() {
     println!("Server Start");
+
+    // Run TCP
+    get_tcp_server_instance().write().unwrap().run();
 }
