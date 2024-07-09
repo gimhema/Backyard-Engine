@@ -16,7 +16,7 @@ lazy_static! {
     static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
 }
 
-pub fn get_server_instance() -> &'static Arc<RwLock<server_datagram>> {
+pub fn get_udp_server_instance() -> &'static Arc<RwLock<server_datagram>> {
     &G_SERVER_DATAGRAM_INSTANCE
 }
 
@@ -35,7 +35,7 @@ impl server_datagram {
 
         let mut _common_info = server_common_info::new();
 
-        let mut socket = UdpSocket::bind(_common_info.get_socket_addr()).unwrap();
+        let mut socket = UdpSocket::bind("127.0.0.1:8080".parse().unwrap()).unwrap();
         let poll = Poll::new().unwrap();
         
         let mut registry = poll.registry();
