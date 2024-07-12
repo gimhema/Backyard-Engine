@@ -32,5 +32,5 @@ func GameLogicMain() {
 
 	quickshotmessage.TEST()
 	GetPlayerNetworkManager().Init()
-	GetIOManager().Wait()
+	go GetIOManager().Wait()
 }
