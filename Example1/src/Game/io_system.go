@@ -33,6 +33,7 @@ func (ioManager *IOManager) Run() {
 
 		if key == keyboard.KeyEsc {
 			fmt.Println("Program Exit.")
+			GameSubRoutineDone()
 			break
 		}
 
