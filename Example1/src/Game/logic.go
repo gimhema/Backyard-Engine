@@ -2,35 +2,34 @@ package game
 
 import (
 	backyard_player "platformer/ClientInterface"
-	quickshotmessage "platformer/QuickShotPackage"
 	"sync"
 )
 
-var GplayerNetworkManagerInstance *backyard_player.PlayerNetworkManager
-var GIOManagerInstance *IOManager
+var gPlayerNetworkManagerInstance *backyard_player.PlayerNetworkManager
+var gIOManagerInstance *IOManager
 
 var once sync.Once
 var ioOnce sync.Once
 
 func GetPlayerNetworkManager() *backyard_player.PlayerNetworkManager {
 	once.Do(func() {
-		GplayerNetworkManagerInstance = &backyard_player.PlayerNetworkManager{}
+		gPlayerNetworkManagerInstance = &backyard_player.PlayerNetworkManager{}
 	})
 
-	return GplayerNetworkManagerInstance
+	return gPlayerNetworkManagerInstance
 }
 
 func GetIOManager() *IOManager {
 	once.Do(func() {
-		GIOManagerInstance = &IOManager{}
+		gIOManagerInstance = &IOManager{}
 	})
 
-	return GIOManagerInstance
+	return gIOManagerInstance
 }
 
 func GameLogicMain() {
+	println("Game Start . . .")
+	// go GetPlayerNetworkManager().Init()
+	GetIOManager().Run()
 
-	quickshotmessage.TEST()
-	GetPlayerNetworkManager().Init()
-	go GetIOManager().Wait()
 }
