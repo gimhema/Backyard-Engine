@@ -5,9 +5,9 @@ type PlayerNetworkManager struct {
 }
 
 func (pnManager *PlayerNetworkManager) Init(_protocol NetworkProtocol, _port string, _ipAddress string) {
-	pnManager.socket_manager.socket.MakeSocket(_protocol, _port, _ipAddress)
+	pnManager.socket_manager.Init(_protocol, _port, _ipAddress)
 }
 
 func (pnManager PlayerNetworkManager) Run() {
-	pnManager.socket_manager.socket.Listen()
+	pnManager.socket_manager.StartListen()
 }

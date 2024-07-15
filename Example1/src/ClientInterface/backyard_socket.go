@@ -24,6 +24,14 @@ type SocketManager struct {
 	socket BackyardSocket
 }
 
+func (socketManager *SocketManager) Init(_protocol NetworkProtocol, _port string, _ipAddress string) {
+	socketManager.socket.MakeSocket(_protocol, _port, _ipAddress)
+}
+
+func (socketManager *SocketManager) StartListen() {
+	socketManager.socket.Listen()
+}
+
 func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
 	bSocket.protocol = _protocol
 
