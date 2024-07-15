@@ -38,7 +38,7 @@ func GameLogicMain() {
 
 	gameWait.Add(1)
 
-	// go GetPlayerNetworkManager().Init()
+	go GetPlayerNetworkManager().Run()
 	go GetIOManager().Run()
 
 	gameWait.Wait()
