@@ -21,7 +21,7 @@ type BackyardSocket struct {
 }
 
 type SocketManager struct {
-	socket_container []BackyardSocket
+	socket BackyardSocket
 }
 
 func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
