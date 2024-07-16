@@ -11,3 +11,7 @@ func (pnManager *PlayerNetworkManager) Init(_protocol NetworkProtocol, _port str
 func (pnManager PlayerNetworkManager) Run() {
 	// pnManager.socket_manager.StartListen()
 }
+
+func (pnManager PlayerNetworkManager) Read() string {
+	return pnManager.socket_manager.ReadBuffer()
+}

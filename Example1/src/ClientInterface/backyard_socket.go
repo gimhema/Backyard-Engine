@@ -30,7 +30,7 @@ func (socketManager *SocketManager) Init(_protocol NetworkProtocol, _port string
 	socketManager.socket.MakeSocket(_protocol, _port, _ipAddress)
 }
 
-func (socketManager *SocketManager) GetBuffer() string {
+func (socketManager *SocketManager) ReadBuffer() string {
 	return socketManager.socket.ReadSocketBuffer()
 }
 
