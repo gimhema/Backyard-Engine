@@ -17,16 +17,20 @@ func (bSocket *BackyardSocket) BuildSocketUDP() {
 	}
 }
 
-func (bSocket *BackyardSocket) LisetnSocketUDP() {
-	for {
-		n, addr, err := bSocket.socket.(*net.UDPConn).ReadFromUDP(bSocket.buffer)
-		if err != nil {
-			fmt.Println("Error reading from server:", err)
-			return
-		}
+func (bSocket *BackyardSocket) ReadUDPSocketBuffer() string {
+	//for {
+	//	n, addr, err := bSocket.socket.(*net.UDPConn).ReadFromUDP(bSocket.datagramBuffer)
+	//	if err != nil {
+	//		fmt.Println("Error reading from server:", err)
+	//		return
+	//	}
+	//	// game.EventListen(string(bSocket.buffer[:n]))
+	//	fmt.Printf("Received from %v: %s\n", addr, string(bSocket.datagramBuffer[:n]))
+	//}
 
-		fmt.Printf("Received from %v: %s\n", addr, string(bSocket.buffer[:n]))
-	}
+	data, _, _ := bSocket.socket.(*net.UDPConn).ReadFromUDP(bSocket.datagramBuffer)
+
+	return string(bSocket.datagramBuffer[:data])
 }
 
 func (bSocket *BackyardSocket) SendMessageUDP(_msg string) {

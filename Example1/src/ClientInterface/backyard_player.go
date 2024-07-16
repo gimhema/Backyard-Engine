@@ -9,5 +9,5 @@ func (pnManager *PlayerNetworkManager) Init(_protocol NetworkProtocol, _port str
 }
 
 func (pnManager PlayerNetworkManager) Run() {
-	pnManager.socket_manager.StartListen()
+	// pnManager.socket_manager.StartListen()
 }

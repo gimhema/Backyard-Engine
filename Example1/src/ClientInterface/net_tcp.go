@@ -15,21 +15,26 @@ func (bSocket *BackyardSocket) BuildSocketTCP() {
 		fmt.Println("Create Socket Error")
 	} else {
 		bSocket.socket = _socket
+		bSocket.streamReader = bufio.NewReader(bSocket.socket.(net.Conn))
 	}
 
 }
 
-func (bSocket *BackyardSocket) LisetnSocketTCP() {
-	reader := bufio.NewReader(bSocket.socket.(net.Conn))
-	for {
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading from server:", err)
-			return
-		}
+func (bSocket *BackyardSocket) ReadTCPSocketBuffer() string {
 
-		fmt.Printf("Received: %s", response)
+	//for {
+	//	response, err := bSocket.streamReader.ReadString('\n')
+	//	if err != nil {
+	//		fmt.Println("Error reading from server:", err)
+	//	}
+	//
+	//	fmt.Printf("Received: %s", response)
+	//}
+	response, err := bSocket.streamReader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading from server:", err)
 	}
+	return response
 }
 
 func (bSocket *BackyardSocket) SendMessageTCP(_msg string) {

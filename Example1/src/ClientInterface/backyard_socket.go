@@ -1,6 +1,7 @@
 package backyard_player
 
 import (
+	"bufio"
 	"fmt"
 )
 
@@ -13,11 +14,12 @@ const (
 )
 
 type BackyardSocket struct {
-	protocol  NetworkProtocol
-	socket    interface{}
-	port      string
-	ipAddress string
-	buffer    []byte
+	protocol       NetworkProtocol
+	socket         interface{}
+	port           string
+	ipAddress      string
+	datagramBuffer []byte        // UDP Buffer
+	streamReader   *bufio.Reader //  TCP Buffer
 }
 
 type SocketManager struct {
@@ -28,8 +30,8 @@ func (socketManager *SocketManager) Init(_protocol NetworkProtocol, _port string
 	socketManager.socket.MakeSocket(_protocol, _port, _ipAddress)
 }
 
-func (socketManager *SocketManager) StartListen() {
-	socketManager.socket.Listen()
+func (socketManager *SocketManager) GetBuffer() string {
+	return socketManager.socket.ReadSocketBuffer()
 }
 
 func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
@@ -49,17 +51,16 @@ func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port strin
 	}
 }
 
-func (bSocket *BackyardSocket) Listen() {
+func (bSocket *BackyardSocket) ReadSocketBuffer() string {
 
 	switch bSocket.protocol {
 	case TCP:
-		bSocket.LisetnSocketTCP()
+		return bSocket.ReadTCPSocketBuffer()
 	case UDP:
-		bSocket.LisetnSocketUDP()
-	default:
-		fmt.Println("Unknown socket type")
+		return bSocket.ReadUDPSocketBuffer()
 	}
 
+	return "Unknown socket type"
 }
 
 func (bSocket *BackyardSocket) Send(_msg string) {
