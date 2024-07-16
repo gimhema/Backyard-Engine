@@ -39,7 +39,7 @@ func GameLogicMain() {
 	GetPlayerNetworkManager().Init(backyard_player.UDP, "", "")
 
 	gameWait.Add(2)
-	go GetPlayerNetworkManager().Run()
+	go EventListen()
 	go GetIOManager().Run()
 
 	gameWait.Wait()
