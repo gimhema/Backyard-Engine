@@ -1,7 +1,11 @@
 package game
 
-func EventCall(data string) {
+import (
+	quickshotmessage "platformer/QuickShotPackage"
+)
 
+func EventCall(data string) {
+	quickshotmessage.TEST()
 }
 
 func EventListen() {
