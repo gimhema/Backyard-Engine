@@ -143,11 +143,11 @@ func (qs *QString) Initialize() {
 	qs.Val.Buffer = fmt.Sprintf("[%d:%d:%s]", QTypeToValue(qs.Val.EType), qs.Val.MetaData, qs.Data)
 }
 
-func (qs *QString) getValue() QValue {
+func (qs *QString) GetValue() QValue {
 	return qs.Val
 }
 
-func (qs *QString) getBuffer() string {
+func (qs *QString) GetBuffer() string {
 	return qs.Val.Buffer
 }
 
@@ -189,11 +189,11 @@ func (qa *QArray) Initialize() {
 	qa.Val.Buffer = result
 }
 
-func (qa *QArray) getValue() QValue {
+func (qa *QArray) GetValue() QValue {
 	return qa.Val
 }
 
-func (qa *QArray) getBuffer() string {
+func (qa *QArray) GetBuffer() string {
 	return qa.Val.Buffer
 }
 
@@ -212,19 +212,19 @@ func NewQMessage(id int64, size int, data []string) *QMessage {
 	}
 }
 
-func (qm *QMessage) getID() int64 {
+func (qm *QMessage) GetID() int64 {
 	return qm.ID
 }
 
-func (qm *QMessage) getSize() int {
+func (qm *QMessage) GetSize() int {
 	return qm.Size
 }
 
-func (qm *QMessage) getData() []string {
+func (qm *QMessage) GetData() []string {
 	return qm.Data
 }
 
-func deserialize(input string) (uint32, uint32, string) {
+func Deserialize(input string) (uint32, uint32, string) {
 	re := regexp.MustCompile(`(\d+):(\d+):(.*)`)
 	matches := re.FindStringSubmatch(input)
 	if len(matches) > 3 {
@@ -236,7 +236,7 @@ func deserialize(input string) (uint32, uint32, string) {
 	return 0, 0, ""
 }
 
-func extractData(input string) []string {
+func ExtractData(input string) []string {
 	re := regexp.MustCompile(`\[[^\[\]]*\]`)
 	matches := re.FindAllString(input, -1)
 	var result []string
@@ -246,7 +246,7 @@ func extractData(input string) []string {
 	return result
 }
 
-func serialize(msg *QMessage) string {
+func Serialize(msg *QMessage) string {
 	var serialized strings.Builder
 	serialized.WriteString(fmt.Sprintf("%d:%d:{", msg.ID, msg.Size))
 	for _, elem := range msg.Data {
@@ -261,17 +261,17 @@ func serialize(msg *QMessage) string {
 func TEST() {
 	// deserialize 함수 테스트
 	input1 := "123:456:Hello"
-	id, size, data := deserialize(input1)
+	id, size, data := Deserialize(input1)
 	fmt.Printf("deserialize(%q) = (%d, %d, %q)\n", input1, id, size, data)
 
 	// extractData 함수 테스트
 	input2 := "[123:456:Hello][789:101112:World]"
-	extractedData := extractData(input2)
+	extractedData := ExtractData(input2)
 	fmt.Printf("extractData(%q) = %v\n", input2, extractedData)
 
 	// serialize 함수 테스트
 	msg := NewQMessage(123, 2, []string{"[1:2:Data1]", "[3:4:Data2]"})
-	serializedData := serialize(msg)
+	serializedData := Serialize(msg)
 	fmt.Printf("serialize(%v) = %q\n", msg, serializedData)
 
 	// Additional checks for correctness
@@ -318,7 +318,7 @@ func TestDeserialize(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		id, size, data := deserialize(tt.input)
+		id, size, data := Deserialize(tt.input)
 		if id != tt.expected.id || size != tt.expected.size || data != tt.expected.data {
 			t.Errorf("deserialize(%q) = (%d, %d, %q); expected (%d, %d, %q)",
 				tt.input, id, size, data, tt.expected.id, tt.expected.size, tt.expected.data)
@@ -338,7 +338,7 @@ func TestExtractData(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := extractData(tt.input)
+		result := ExtractData(tt.input)
 		if !reflect.DeepEqual(result, tt.expected) {
 			t.Errorf("extractData(%q) = %v; expected %v",
 				tt.input, result, tt.expected)
@@ -357,7 +357,7 @@ func TestSerialize(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := serialize(tt.msg)
+		result := Serialize(tt.msg)
 		if result != tt.expected {
 			t.Errorf("serialize(%v) = %q; expected %q",
 				tt.msg, result, tt.expected)
