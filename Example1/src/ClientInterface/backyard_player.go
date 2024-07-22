@@ -15,3 +15,7 @@ func (pnManager PlayerNetworkManager) Run() {
 func (pnManager PlayerNetworkManager) Read() string {
 	return pnManager.socket_manager.ReadBuffer()
 }
+
+func (pnManager PlayerNetworkManager) Send(msg string) {
+	pnManager.socket_manager.socket.Send(msg)
+}

@@ -7,7 +7,8 @@ func (ioManager *IOManager) InputAction(key rune) {
 
 	switch key {
 	case 'A', 'a':
-		fmt.Println("Action for A key")
+		fmt.Println("Request Echo")
+		RequestEcho()
 	case 'B', 'b':
 		fmt.Println("Action for B key")
 	case 'C', 'c':
@@ -17,4 +18,9 @@ func (ioManager *IOManager) InputAction(key rune) {
 	default:
 		fmt.Println("Unsupported Key")
 	}
+}
+
+func RequestEcho() {
+
+	GetPlayerNetworkManager().Send("Hello Server ! !")
 }
