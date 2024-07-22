@@ -37,6 +37,7 @@ func (ioManager *IOManager) Run() {
 			break
 		}
 
-		fmt.Printf("Key : %c\n", char)
+		ioManager.InputAction(char)
+		// fmt.Printf("Key : %c\n", char)
 	}
 }
