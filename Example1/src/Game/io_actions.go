@@ -1,6 +1,10 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+
+	quickshotmessage "platformer/QuickShotPackage"
+)
 
 func (ioManager *IOManager) InputAction(key rune) {
 	fmt.Printf("Key : %c\n", key)
@@ -21,6 +25,7 @@ func (ioManager *IOManager) InputAction(key rune) {
 }
 
 func RequestEcho() {
-
-	GetPlayerNetworkManager().Send("Hello Server ! !")
+	sendMsg := quickshotmessage.NewQMessage(1, 0, []string{"[3:0:HelloServer]"})
+	serializedData := quickshotmessage.Serialize(sendMsg)
+	GetPlayerNetworkManager().Send(serializedData)
 }
