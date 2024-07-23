@@ -25,7 +25,7 @@ func (ioManager *IOManager) InputAction(key rune) {
 }
 
 func RequestEcho() {
-	sendMsg := quickshotmessage.NewQMessage(1, 0, []string{"[3:0:HelloServer]"})
+	sendMsg := quickshotmessage.NewQMessage(3, 0, []string{"[3:0:HelloServer]"})
 	serializedData := quickshotmessage.Serialize(sendMsg)
 	GetPlayerNetworkManager().Send(serializedData)
 }

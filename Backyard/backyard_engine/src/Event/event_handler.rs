@@ -1,12 +1,16 @@
+use server::get_tcp_server_instance;
+
 use crate::qsm::QuickShotMessage;
 
 use super::Event;
 use super::qsm::qsm::*;
+use super::Network::*;
 
 pub enum event_header {
     DEFAULT,
     SEND_MESSAGE_TO_ALL,
     SEND_MESSAGE_TO_TARGET,
+    ECHO_MESSAGE,
     END
 }
 
@@ -16,7 +20,7 @@ impl From<i64> for event_header {
             0 => event_header::DEFAULT,
             1 => event_header::SEND_MESSAGE_TO_ALL,
             2 => event_header::SEND_MESSAGE_TO_TARGET,
-            3 => todo!(), // Explicit pattern for 3_i64
+            3 => event_header::ECHO_MESSAGE, // Explicit pattern for 3_i64
             _ => event_header::END, // Wildcard pattern for all other cases
         }
     }
@@ -47,6 +51,11 @@ impl event_header {
             }
             event_header::SEND_MESSAGE_TO_TARGET => {
                // ServerAction_CHAT_MESSAGE_TO_GROUP(val);
+            }
+            event_header::ECHO_MESSAGE => {
+                // TCP Test
+                let _msg = "ECHO TEST".to_string();
+                get_tcp_server_instance().write().unwrap().send_message_to_all_conn(_msg);
             }
             event_header::END => {
                // ServerAction_CHAT_MESSAGE_TO_ONE(val);
