@@ -11,8 +11,8 @@ func EventCall(msg string) {
 	id, _, data := quickshotmessage.Deserialize(msg)
 
 	switch id {
-	case 0:
-		fmt.Println("Recv Data : ", data)
+	case 3:
+		fmt.Println("Echo Recv Data : ", data)
 	default:
 		fmt.Println("Unknown Type")
 	}
