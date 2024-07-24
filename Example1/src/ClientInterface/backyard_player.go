@@ -19,3 +19,8 @@ func (pnManager PlayerNetworkManager) Read() string {
 func (pnManager PlayerNetworkManager) Send(msg string) {
 	pnManager.socket_manager.socket.Send(msg)
 }
+
+func (pnManager PlayerNetworkManager) DisConnect() {
+	pnManager.socket_manager.socket.DisConnectTCP()
+	pnManager.socket_manager.socket.DisConnectUDP()
+}

@@ -7,17 +7,17 @@ import (
 )
 
 func (bSocket *BackyardSocket) BuildSocketTCP() {
-	connet_info := bSocket.ipAddress + ":" + bSocket.port
+	connectInfo := bSocket.ipAddress + ":" + bSocket.port
 
-	_socket, err := net.Dial("tcp", connet_info)
-
+	_socket, err := net.Dial("tcp", connectInfo)
 	if err != nil {
-		fmt.Println("Create Socket Error")
-	} else {
-		bSocket.socket = _socket
-		bSocket.streamReader = bufio.NewReader(bSocket.socket.(net.Conn))
+		fmt.Printf("Create Socket Error: %v\n", err)
+		return
 	}
 
+	bSocket.socket = _socket
+	bSocket.streamReader = bufio.NewReader(_socket.(net.Conn))
+	fmt.Println("Socket successfully created and connected")
 }
 
 func (bSocket *BackyardSocket) ReadTCPSocketBuffer() string {
@@ -43,4 +43,8 @@ func (bSocket *BackyardSocket) SendMessageTCP(_msg string) {
 		fmt.Println("Error sending message:", err)
 		return
 	}
+}
+
+func (bSocket *BackyardSocket) DisConnectTCP() {
+	bSocket.socket.(net.Conn).Close()
 }

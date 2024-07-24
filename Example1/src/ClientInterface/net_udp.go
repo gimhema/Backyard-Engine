@@ -41,3 +41,7 @@ func (bSocket *BackyardSocket) SendMessageUDP(_msg string) {
 	}
 
 }
+
+func (bSocket *BackyardSocket) DisConnectUDP() {
+	bSocket.socket.(*net.UDPConn).Close()
+}
