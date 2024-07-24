@@ -57,6 +57,7 @@ impl event_header {
             }
             event_header::ECHO_MESSAGE => {
                 // TCP Test
+                println!("Call Echo Message");
                 let _msg = "ECHO TEST".to_string();
                 get_tcp_server_instance().write().unwrap().send_message_to_all_conn(_msg);
             }
