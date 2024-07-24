@@ -29,6 +29,9 @@ impl From<i64> for event_header {
 pub fn listen_event(msg : String) {
 
     if let Some((id, size, data)) = deseirialize(&msg) {
+
+        println!("Recv raw data : {}", data);
+
         let _data_vec = extract_data(data.as_str());
         let mut q_message = QMessage::new(id as i64, size as usize, _data_vec);
 
