@@ -7,9 +7,9 @@ import (
 )
 
 func (bSocket *BackyardSocket) BuildSocketTCP() {
-	connectInfo := bSocket.ipAddress + ":" + bSocket.port
+	// connectInfo := bSocket.ipAddress + ":8080"
 
-	_socket, err := net.Dial("tcp", connectInfo)
+	_socket, err := net.Dial("tcp", "127.0.0.1:8080")
 	if err != nil {
 		fmt.Printf("Create Socket Error: %v\n", err)
 		return

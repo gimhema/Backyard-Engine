@@ -17,7 +17,7 @@ use super::server_common::*;
 use super::Event::Event::*;
 
 const SERVER: Token = Token(0);
-const SERVER_TICK: u64 = 1;
+const SERVER_TICK: u64 = 10;
 
 lazy_static! {
     static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
