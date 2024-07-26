@@ -15,6 +15,9 @@ impl server_stream {
                 println!("Send Game Message {}", msg);
                 _targetConn.write(serialized_msg);
             }
+            else {
+                println!("Connection Invalid");
+            }
         }
     }
 
