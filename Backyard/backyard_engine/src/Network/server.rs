@@ -17,7 +17,7 @@ use super::server_common::*;
 use super::Event::Event::*;
 
 const SERVER: Token = Token(0);
-const SERVER_TICK: u64 = 10;
+const SERVER_TICK: u64 = 1000;
 
 lazy_static! {
     static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
@@ -143,8 +143,8 @@ impl server_stream {
                        }
                     }
                 }
+                // thread::sleep(Duration::from_secs(1));
             }
-
             // self.step += 1;
             // println!("server run...")
         }
@@ -152,6 +152,7 @@ impl server_stream {
     }
 
     pub fn get_id_list(&mut self) -> HashSet<i64> {
+        println!("Getting ID list...");
         self.connectionHandler.get_id_set_clone()
     }
 

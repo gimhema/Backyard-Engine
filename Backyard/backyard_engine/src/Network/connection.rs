@@ -54,6 +54,7 @@ impl connection_handle for stream_handler {
     }
 
     fn get_id_set_clone(&mut self) -> HashSet<i64> {
+        println!("Cloning ID set...");
         self.idSet.clone()
     }
 

@@ -5,6 +5,7 @@ use crate::qsm::QuickShotMessage;
 use super::Event;
 use super::qsm::qsm::*;
 use super::Network::*;
+use crate::Network::server_send::send_message_to_all_conn_TEST;
 
 pub enum event_header {
     DEFAULT,
@@ -57,9 +58,13 @@ impl event_header {
             }
             event_header::ECHO_MESSAGE => {
                 // TCP Test
-                println!("Call Echo Message");
                 let _msg = "ECHO TEST".to_string();
-                get_tcp_server_instance().write().unwrap().send_message_to_all_conn(_msg);
+                println!("Call Echo Message");
+                send_message_to_all_conn_TEST(_msg);
+                // {
+                //     get_tcp_server_instance().write().unwrap().send_message_to_all_conn(_msg);
+                // }
+
             }
             event_header::END => {
                // ServerAction_CHAT_MESSAGE_TO_ONE(val);
