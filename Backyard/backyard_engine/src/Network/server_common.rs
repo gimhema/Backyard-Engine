@@ -7,10 +7,15 @@ use std::net::SocketAddr;
 
 lazy_static! {
     static ref G_GAME_COMMON_LOGIC_INSTANCE: Arc<RwLock<server_extend_common>> = Arc::new(RwLock::new(server_extend_common::new()));
+    static ref G_CONNECTION_HANDLER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
 }
 
 pub fn get_common_logic_instance() -> &'static Arc<RwLock<server_extend_common>> {
     &G_GAME_COMMON_LOGIC_INSTANCE
+}
+
+pub fn get_connection_handler_instance() -> &'static Arc<RwLock<server_common_connetion_handler>> {
+    &G_CONNECTION_HANDLER_INSTANCE
 }
 
 pub struct server_common_info {
@@ -74,5 +79,11 @@ pub struct user_connect_info {
 
 pub struct server_common_connetion_handler {
     conn_container : Vec<user_connect_info>
+}
+
+impl server_common_connetion_handler {
+    pub fn new() -> Self {
+        server_common_connetion_handler{ conn_container : Vec::new() }
+    }
 }
 
