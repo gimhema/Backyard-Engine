@@ -1,3 +1,4 @@
+use mio::net::TcpStream;
 use mio::Token;
 use std::sync::{RwLock, Arc};
 use super::serverinfo::*;
@@ -59,3 +60,19 @@ impl server_extend_common {
         self.user_common_container.push(_new_user_common);
     }
 }
+
+
+// for udp
+pub struct user_datagram_session {
+    ipAddress : String
+}
+
+pub struct user_connect_info {
+    tcpStream : TcpStream,
+    udpSession : user_datagram_session
+}
+
+pub struct server_common_connetion_handler {
+    conn_container : Vec<user_connect_info>
+}
+
