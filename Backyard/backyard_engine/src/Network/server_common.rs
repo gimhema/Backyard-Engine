@@ -1,4 +1,4 @@
-use mio::net::TcpStream;
+use mio::net::{TcpStream, UdpSocket};
 use mio::Token;
 use std::sync::{RwLock, Arc};
 use super::connection::stream_handler;
@@ -82,6 +82,18 @@ impl server_common_connetion_handler {
             tcp_connections : stream_handler::new(), 
             udp_connections : datagram_handler::new() 
         }
+    }
+
+    // TCP
+    pub fn new_tcp_connection(&mut self, _tcpStream : TcpStream, _token: Token) 
+    {
+        self.tcp_connections.new_connection(_tcpStream, _token);
+    }
+
+    // UDP
+    pub fn new_udp_connection(&mut self, _udpSocket : UdpSocket, _token: Token)
+    {
+        self.udp_connections.new_connection(_udpSocket, _token);
     }
 }
 
