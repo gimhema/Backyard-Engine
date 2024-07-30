@@ -1,5 +1,6 @@
 use mio::net::{TcpStream, UdpSocket};
 use mio::Token;
+use std::collections::HashSet;
 use std::sync::{RwLock, Arc};
 use super::connection::stream_handler;
 use super::connection_datagram::datagram_handler;
@@ -104,6 +105,10 @@ impl server_common_connetion_handler {
         self.tcp_connections.del_connection(_token);
     }
 
+    pub fn get_tcp_connection_list(&mut self) -> HashSet<i64> {
+        self.tcp_connections.get_id_set_clone()
+    }
+
 
     // UDP
     pub fn new_udp_connection(&mut self, _udpSocket : UdpSocket, _token: Token)
@@ -123,6 +128,10 @@ impl server_common_connetion_handler {
 
     pub fn del_udp_connection(&mut self, _token: Token) {
         self.udp_connections.del_connection(_token);
+    }
+
+    pub fn get_udp_connection_list(&mut self) -> HashSet<i64> {
+        self.udp_connections.get_id_set_clone()
     }
 }
 
