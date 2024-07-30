@@ -1,9 +1,12 @@
 use mio::net::TcpStream;
 use mio::Token;
 use std::sync::{RwLock, Arc};
+use super::connection::stream_handler;
+use super::connection_datagram::datagram_handler;
 use super::serverinfo::*;
 use super::Crypto::packet_crypto::*;
 use std::net::SocketAddr;
+use crate::Network::connection::connection_handle;
 
 lazy_static! {
     static ref G_GAME_COMMON_LOGIC_INSTANCE: Arc<RwLock<server_extend_common>> = Arc::new(RwLock::new(server_extend_common::new()));
@@ -68,22 +71,17 @@ impl server_extend_common {
 
 
 // for udp
-pub struct user_datagram_session {
-    ipAddress : String
-}
-
-pub struct user_connect_info {
-    tcpStream : TcpStream,
-    udpSession : user_datagram_session
-}
-
 pub struct server_common_connetion_handler {
-    conn_container : Vec<user_connect_info>
+    tcp_connections : stream_handler,
+    udp_connections : datagram_handler
 }
 
 impl server_common_connetion_handler {
     pub fn new() -> Self {
-        server_common_connetion_handler{ conn_container : Vec::new() }
+        server_common_connetion_handler{ 
+            tcp_connections : stream_handler::new(), 
+            udp_connections : datagram_handler::new() 
+        }
     }
 }
 
