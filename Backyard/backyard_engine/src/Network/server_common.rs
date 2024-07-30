@@ -100,6 +100,10 @@ impl server_common_connetion_handler {
         self.tcp_connections.get_connection_by_id(_id)
     }
 
+    pub fn del_tcp_connection(&mut self, _token: Token) {
+        self.tcp_connections.del_connection(_token);
+    }
+
 
     // UDP
     pub fn new_udp_connection(&mut self, _udpSocket : UdpSocket, _token: Token)
@@ -115,6 +119,10 @@ impl server_common_connetion_handler {
     pub fn get_udp_connection_by_id(&mut self, _id: i64) -> Option<&mut UdpSocket>
     {
         self.udp_connections.get_connection_by_id(_id)
+    }
+
+    pub fn del_udp_connection(&mut self, _token: Token) {
+        self.udp_connections.del_connection(_token);
     }
 }
 

@@ -112,15 +112,17 @@ impl server_stream {
                         println!("Add New Player");
                         let mut sendConnect = connection;
                         
-                        self.add_new_connect(sendConnect, token);
+                        // self.add_new_connect(sendConnect, token);
+                        get_connection_handler_instance().write().unwrap().new_tcp_connection(sendConnect, token);
 
                         get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
-                    
+                        
 
                         println!("SendGamePacket End");
                     },
                     token => {
-                       let done = if let Some(connection)  = self.get_user_connetions_by_token(token) 
+                       let done = if let Some(connection)  = 
+                           get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token) 
                         {
                             println!("Handle Connection Event");
                             handle_connection_event(poll.registry(), connection, event)?
@@ -133,12 +135,14 @@ impl server_stream {
  
                        if done {
                             println!("Disconn search . . .");
-                            if let Some(mut connection)  = self.get_user_connetions_by_token(token)
+                            if let Some(mut connection)  = 
+                                get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token)
                             {
                                 println!("User Disconnected . . 1");
                                 poll.registry().deregister(connection);
                                 
-                                self.remove_connection(token);
+                                get_connection_handler_instance().write().unwrap().del_tcp_connection(token);
+                                // self.remove_connection(token);
                             }
                        }
                     }
