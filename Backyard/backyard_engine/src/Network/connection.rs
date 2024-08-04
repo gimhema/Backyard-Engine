@@ -5,7 +5,7 @@ use mio::Token;
 
 pub trait connection_handle {
     fn new() -> Self;
-    fn get_id_set_clone(&mut self) -> HashSet<i64>;
+    fn get_id_set_clone(&self) -> HashSet<i64>;
     fn del_connection(&mut self, token : Token);
     fn get_current_id_sum(&mut self) -> i64;
     fn update_id_sum(&mut self);
@@ -53,7 +53,7 @@ impl connection_handle for stream_handler {
         }
     }
 
-    fn get_id_set_clone(&mut self) -> HashSet<i64> {
+    fn get_id_set_clone(&self) -> HashSet<i64> {
         println!("Cloning ID set...");
         self.idSet.clone()
     }
@@ -111,5 +111,7 @@ impl stream_handler {
         self.idSet.insert(_id_top);
 
         self.update_id_sum();
+
+        println!("Add New Player Process End");
     }
 }

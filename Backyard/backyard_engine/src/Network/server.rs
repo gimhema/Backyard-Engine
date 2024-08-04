@@ -74,7 +74,7 @@ impl server_stream {
 
         loop {
             // println!("Set Poll Step : {}", self.step);
-            poll.poll(&mut events, Some(Duration::from_millis(SERVER_TICK)))?;
+            poll.poll(&mut events, Some(Duration::from_millis(10)))?;
     
             // println!("Iterate Event For Loop");
             for event in events.iter() {
@@ -115,16 +115,16 @@ impl server_stream {
                         // self.add_new_connect(sendConnect, token);
                         get_connection_handler_instance().write().unwrap().new_tcp_connection(sendConnect, token);
 
-                        get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
+                        // get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
                         
 
                         println!("SendGamePacket End");
                     },
                     token => {
                        let done = if let Some(connection)  = 
-                           get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token) 
+                            get_connection_hanlder_clone().write().unwrap().get_tcp_connection_by_token(token) 
                         {
-                            println!("Handle Connection Event");
+                            // println!("Handle Connection Event");
                             handle_connection_event(poll.registry(), connection, event)?
                         } 
                         else 
@@ -136,7 +136,7 @@ impl server_stream {
                        if done {
                             println!("Disconn search . . .");
                             if let Some(mut connection)  = 
-                                get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token)
+                            get_connection_hanlder_clone().write().unwrap().get_tcp_connection_by_token(token)
                             {
                                 println!("User Disconnected . . 1");
                                 poll.registry().deregister(connection);
@@ -147,7 +147,7 @@ impl server_stream {
                        }
                     }
                 }
-                // thread::sleep(Duration::from_secs(1));
+                thread::sleep(Duration::from_secs(1));
             }
             // self.step += 1;
             // println!("server run...")
@@ -194,28 +194,28 @@ fn handle_connection_event(
         let mut received_data = vec![0; 4096];
         let mut bytes_read = 0;
         // We can (maybe) read from the connection.
-        loop {
-            match connection.read(&mut received_data[bytes_read..]) {
-                Ok(0) => {
-                    // Reading 0 bytes means the other side has closed the
-                    // connection or is done writing, then so are we.
-                    connection_closed = true;
-                    break;
-                }
-                Ok(n) => {
-                    bytes_read += n;
-                    if bytes_read == received_data.len() {
-                        received_data.resize(received_data.len() + 1024, 0);
-                    }
-                }
-                // Would block "errors" are the OS's way of saying that the
-                // connection is not actually ready to perform this I/O operation.
-                Err(ref err) if would_block(err) => break,
-                Err(ref err) if interrupted(err) => continue,
-                // Other errors we'll consider fatal.
-                Err(err) => return Err(err),
-            }
-        }
+        // loop {
+        //     match connection.read(&mut received_data[bytes_read..]) {
+        //         Ok(0) => {
+        //             // Reading 0 bytes means the other side has closed the
+        //             // connection or is done writing, then so are we.
+        //             connection_closed = true;
+        //             break;
+        //         }
+        //         Ok(n) => {
+        //             bytes_read += n;
+        //             if bytes_read == received_data.len() {
+        //                 received_data.resize(received_data.len() + 1024, 0);
+        //             }
+        //         }
+        //         // Would block "errors" are the OS's way of saying that the
+        //         // connection is not actually ready to perform this I/O operation.
+        //         Err(ref err) if would_block(err) => break,
+        //         Err(ref err) if interrupted(err) => continue,
+        //         // Other errors we'll consider fatal.
+        //         Err(err) => return Err(err),
+        //     }
+        // }
 
         if bytes_read != 0 {
 

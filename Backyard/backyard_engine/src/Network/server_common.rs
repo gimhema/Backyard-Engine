@@ -22,6 +22,10 @@ pub fn get_connection_handler_instance() -> &'static Arc<RwLock<server_common_co
     &G_CONNECTION_HANDLER_INSTANCE
 }
 
+pub fn get_connection_hanlder_clone() -> Arc<RwLock<server_common_connetion_handler>> {
+    G_CONNECTION_HANDLER_INSTANCE.clone()
+}
+
 pub struct server_common_info {
     connect_info : serverinfo,
     crypto_processor : cryption_processor
@@ -105,7 +109,7 @@ impl server_common_connetion_handler {
         self.tcp_connections.del_connection(_token);
     }
 
-    pub fn get_tcp_connection_list(&mut self) -> HashSet<i64> {
+    pub fn get_tcp_connection_list(&self) -> HashSet<i64> {
         self.tcp_connections.get_id_set_clone()
     }
 

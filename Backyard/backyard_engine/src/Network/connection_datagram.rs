@@ -42,7 +42,7 @@ impl connection_handle for datagram_handler {
         }
     }
 
-    fn get_id_set_clone(&mut self) -> HashSet<i64> {
+    fn get_id_set_clone(&self) -> HashSet<i64> {
         self.idSet.clone()
     }
 
