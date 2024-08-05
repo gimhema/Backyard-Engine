@@ -11,15 +11,20 @@ use crate::Network::connection::connection_handle;
 
 lazy_static! {
     static ref G_GAME_COMMON_LOGIC_INSTANCE: Arc<RwLock<server_extend_common>> = Arc::new(RwLock::new(server_extend_common::new()));
-    static ref G_CONNECTION_HANDLER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
+    static ref G_RECV_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
+    static ref G_SEND_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
 }
 
 pub fn get_common_logic_instance() -> &'static Arc<RwLock<server_extend_common>> {
     &G_GAME_COMMON_LOGIC_INSTANCE
 }
 
-pub fn get_connection_handler_instance() -> &'static Arc<RwLock<server_common_connetion_handler>> {
-    &G_CONNECTION_HANDLER_INSTANCE
+pub fn get_recv_connection_handler() -> &'static Arc<RwLock<server_common_connetion_handler>> {
+    &G_RECV_CONNECTION_HANLDER_INSTANCE
+}
+
+pub fn get_send_connection_handler() -> &'static Arc<RwLock<server_common_connetion_handler>> {
+    &G_SEND_CONNECTION_HANLDER_INSTANCE
 }
 
 pub struct server_common_info {

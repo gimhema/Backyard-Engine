@@ -6,10 +6,11 @@ use mio::event::Event;
 use std::sync::Mutex;
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
-use std::{thread, time};
+use std::{net, thread, time};
 use std::sync::{RwLock, Arc, RwLockReadGuard};
 use super::connection::*;
 use mio::net::{TcpListener, TcpStream};
+
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
 use super::server_common::*;
@@ -113,38 +114,51 @@ impl server_stream {
                         let mut sendConnect = connection;
                         
                         // self.add_new_connect(sendConnect, token);
-                        get_connection_handler_instance().write().unwrap().new_tcp_connection(sendConnect, token);
-
+                        get_recv_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
+                        // get_send_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
                         get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
                         
 
                         println!("SendGamePacket End");
                     },
                     token => {
-                       let done = if let Some(connection)  = 
-                           get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token) 
-                        {
-                            println!("Handle Connection Event");
-                            handle_connection_event(poll.registry(), connection, event)?
-                        } 
-                        else 
-                        {
-                            // Sporadic events happen, we can safely ignore them.
-                            false
-                        };
- 
-                       if done {
-                            println!("Disconn search . . .");
-                            if let Some(mut connection)  = 
-                                get_connection_handler_instance().write().unwrap().get_tcp_connection_by_token(token)
-                            {
-                                println!("User Disconnected . . 1");
-                                poll.registry().deregister(connection);
-                                
-                                get_connection_handler_instance().write().unwrap().del_tcp_connection(token);
-                                // self.remove_connection(token);
+
+                        let done = {
+                            let mut handler = get_recv_connection_handler().write().unwrap();
+                            if let Some(connection) = handler.get_tcp_connection_by_token(token) {
+                                println!("Handle Connection Event");
+                                handle_connection_event(poll.registry(), connection, event)?
+                            } else {
+                                // Sporadic events happen, we can safely ignore them.
+                                false
                             }
-                       }
+                        };
+
+                       // let mut handle_connection = get_recv_connection_handler().write().unwrap().get_tcp_connection_by_token(token);
+                       //let done = if let Some(connection)  = handle_connection.get_tcp_connection_by_token(token)
+                       // {
+                       //     println!("Handle Connection Event");
+                       //     handle_connection_event(poll.registry(), connection, event)?
+                       // } 
+                       // else 
+                       // {
+                       //     // Sporadic events happen, we can safely ignore them.
+                       //     false
+                       // };
+ //
+                       if done {
+                                println!("Disconn search . . .");
+                                if let Some(mut connection)  = 
+                                get_recv_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
+                                {
+                                    println!("User Disconnected . . 1");
+                                    poll.registry().deregister(connection);
+                                    
+                                    get_recv_connection_handler().write().unwrap().del_tcp_connection(token);
+                                    // get_send_connection_handler().write().unwrap().del_tcp_connection(token);
+                                    // self.remove_connection(token);
+                                }
+                            }
                     }
                 }
                 // thread::sleep(Duration::from_secs(1));
