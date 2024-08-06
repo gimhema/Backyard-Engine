@@ -134,18 +134,7 @@ impl server_stream {
                             }
                         };
 
-                       // let mut handle_connection = get_recv_connection_handler().write().unwrap().get_tcp_connection_by_token(token);
-                       //let done = if let Some(connection)  = handle_connection.get_tcp_connection_by_token(token)
-                       // {
-                       //     println!("Handle Connection Event");
-                       //     handle_connection_event(poll.registry(), connection, event)?
-                       // } 
-                       // else 
-                       // {
-                       //     // Sporadic events happen, we can safely ignore them.
-                       //     false
-                       // };
- //
+
                        if done {
                                 println!("Disconn search . . .");
                                 if let Some(mut connection)  = 
