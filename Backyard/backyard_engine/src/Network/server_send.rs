@@ -4,22 +4,22 @@ use crate::Network::server_datagram::server_datagram;
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
-use crate::Network::server_common::get_recv_connection_handler;
-use crate::Network::server_common::get_send_connection_handler;
+use crate::Network::server_common::get_connection_handler;
+
 
 // logic에서 받아와야하나..
 pub fn send_message_to_all_conn_TEST(msg : String) {
 
-    println!("Send Game Message {}", msg);
-    for id in get_send_connection_handler().write().unwrap().get_tcp_connection_list() {
-        let serialized_msg = msg.as_bytes();
-        if let Some(_targetConn) = get_send_connection_handler().write().unwrap().get_tcp_connection_by_id(id) {
-            _targetConn.write(serialized_msg);
-        }
-        else {
-            println!("Connection Invalid");
-        }
-    }
+    // println!("Send Game Message {}", msg);
+    // for id in get_send_connection_handler().write().unwrap().get_tcp_connection_list() {
+    //     let serialized_msg = msg.as_bytes();
+    //     if let Some(_targetConn) = get_send_connection_handler().write().unwrap().get_tcp_connection_by_id(id) {
+    //         _targetConn.write(serialized_msg);
+    //     }
+    //     else {
+    //         println!("Connection Invalid");
+    //     }
+    // }
 
 }
 

@@ -114,7 +114,7 @@ impl server_stream {
                         let mut sendConnect = connection;
                         
                         // self.add_new_connect(sendConnect, token);
-                        get_recv_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
+                        get_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
                         // get_send_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
                         get_common_logic_instance().write().unwrap().create_new_user(address.to_string(), token, 0); // pId Test      
                         
@@ -124,7 +124,7 @@ impl server_stream {
                     token => {
 
                         let done = {
-                            let mut handler = get_recv_connection_handler().write().unwrap();
+                            let mut handler = get_connection_handler().write().unwrap();
                             if let Some(connection) = handler.get_tcp_connection_by_token(token) {
                                 println!("Handle Connection Event");
                                 handle_connection_event(poll.registry(), connection, event)?
@@ -149,12 +149,12 @@ impl server_stream {
                        if done {
                                 println!("Disconn search . . .");
                                 if let Some(mut connection)  = 
-                                get_recv_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
+                                get_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
                                 {
                                     println!("User Disconnected . . 1");
                                     poll.registry().deregister(connection);
                                     
-                                    get_recv_connection_handler().write().unwrap().del_tcp_connection(token);
+                                    get_connection_handler().write().unwrap().del_tcp_connection(token);
                                     // get_send_connection_handler().write().unwrap().del_tcp_connection(token);
                                     // self.remove_connection(token);
                                 }
