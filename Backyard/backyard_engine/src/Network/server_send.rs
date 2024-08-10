@@ -5,12 +5,12 @@ use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
 use crate::Network::server_common::get_connection_handler;
-
+use crate::Network::message_queue::get_callback_msg_queue_instance;
 
 // logic에서 받아와야하나..
 pub fn send_message_to_all_conn_TEST(msg : String) {
 
-    // println!("Send Game Message {}", msg);
+    println!("Send Game Message {}", msg);
     // for id in get_send_connection_handler().write().unwrap().get_tcp_connection_list() {
     //     let serialized_msg = msg.as_bytes();
     //     if let Some(_targetConn) = get_send_connection_handler().write().unwrap().get_tcp_connection_by_id(id) {

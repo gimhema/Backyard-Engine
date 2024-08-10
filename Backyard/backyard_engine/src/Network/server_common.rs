@@ -1,6 +1,7 @@
 use mio::net::{TcpStream, UdpSocket};
 use mio::Token;
-use std::collections::HashSet;
+use std::vec::Vec;
+use std::collections::{HashSet};
 use std::sync::{RwLock, Arc};
 use super::connection::stream_handler;
 use super::connection_datagram::datagram_handler;
@@ -13,6 +14,7 @@ lazy_static! {
     static ref G_GAME_COMMON_LOGIC_INSTANCE: Arc<RwLock<server_extend_common>> = Arc::new(RwLock::new(server_extend_common::new()));
     static ref G_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
     static ref G_SEND_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
+    static ref G_USER_CONN_INFO_INSTANCE: Arc<RwLock<user_connect_info>> = Arc::new(RwLock::new(user_connect_info::new()));
 }
 
 pub fn get_common_logic_instance() -> &'static Arc<RwLock<server_extend_common>> {
@@ -133,6 +135,28 @@ impl server_common_connetion_handler {
 
     pub fn get_udp_connection_list(&mut self) -> HashSet<i64> {
         self.udp_connections.get_id_set_clone()
+    }
+}
+
+
+pub struct user_connect_info {
+    user_token_vec : Vec<Token>
+}
+
+impl user_connect_info {
+    pub fn new() -> Self {
+        return user_connect_info{ user_token_vec : Vec::new() }
+    }
+
+    pub fn push(&mut self, new_token : Token) {
+        self.user_token_vec.push(new_token);
+    }
+
+    pub fn get_token(&self, idx: usize) -> Option<Token> {
+        if let Some(&value) = self.user_token_vec.get(idx) {
+            return Some(value);
+        }
+        None
     }
 }
 
