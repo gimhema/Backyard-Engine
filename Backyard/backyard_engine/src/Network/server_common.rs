@@ -25,6 +25,10 @@ pub fn get_connection_handler() -> &'static Arc<RwLock<server_common_connetion_h
     &G_CONNECTION_HANLDER_INSTANCE
 }
 
+pub fn get_user_connection_info() -> &'static Arc<RwLock<user_connect_info>> {
+    &G_USER_CONN_INFO_INSTANCE
+}
+
 pub struct server_common_info {
     connect_info : serverinfo,
     crypto_processor : cryption_processor
@@ -157,6 +161,10 @@ impl user_connect_info {
             return Some(value);
         }
         None
+    }
+
+    pub fn get_token_vec_size(&self) -> usize {
+        return self.user_token_vec.len()
     }
 }
 
