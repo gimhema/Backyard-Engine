@@ -166,5 +166,9 @@ impl user_connect_info {
     pub fn get_token_vec_size(&self) -> usize {
         return self.user_token_vec.len()
     }
+
+    pub fn get_token_vec(&self) -> Vec<Token> {
+        return self.user_token_vec.clone()
+    }
 }
 
