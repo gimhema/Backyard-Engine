@@ -1,37 +1,41 @@
 use std::collections::VecDeque;
+use std::sync::{RwLock, Arc};
 
-
-
-pub trait message_queue_action {
-    fn new() -> Self;
-    fn push(&mut self, message : String);
-    fn pop(&mut self) -> String;
-    fn get_size(&self) -> usize;
-    fn empty(&self) -> bool;
+lazy_static!{
+    static ref G_CALLBACK_MESSAGE_QUEUE : Arc<RwLock<message_queue_handler>> = Arc::new(RwLock::new(message_queue_handler::new()));
+    static ref G_UPDATE_MESSAGE_QUEUE : Arc<RwLock<message_queue_handler>> = Arc::new(RwLock::new(message_queue_handler::new()));
 }
 
-pub struct callback_response_message_queue {
+pub fn get_callback_msg_queue_instance() -> &'static Arc<RwLock<message_queue_handler>> {
+    &G_CALLBACK_MESSAGE_QUEUE
+}
+
+pub fn get_update_msg_queue_instance() -> &'static Arc<RwLock<message_queue_handler>> {
+    &G_UPDATE_MESSAGE_QUEUE
+}
+
+pub struct message_queue_handler {
     message_queue : VecDeque<String>
 }
 
-impl message_queue_action for callback_response_message_queue {
-    fn new() -> Self {
-        callback_response_message_queue{message_queue : VecDeque::new()}
+impl message_queue_handler {
+    pub fn new() -> Self {
+        message_queue_handler{message_queue : VecDeque::new()}
     }
 
-    fn push(&mut self, message : String) {
+    pub fn push(&mut self, message : String) {
         self.message_queue.push_back(message)
     }
 
-    fn pop(&mut self) -> String {
+    pub fn pop(&mut self) -> String {
         return self.message_queue.pop_back().unwrap()
     }
 
-    fn get_size(&self) -> usize {
+    pub fn get_size(&self) -> usize {
         return self.message_queue.len()
     }
     
-    fn empty(&self) -> bool {
+    pub fn empty(&self) -> bool {
         return self.message_queue.is_empty()       
     }
 }
