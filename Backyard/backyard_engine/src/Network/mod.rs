@@ -9,7 +9,7 @@ pub mod message_queue;
 
 use super::Event;
 use super::Crypto;
-
+use super::qsm;
 
 pub mod Network {
 

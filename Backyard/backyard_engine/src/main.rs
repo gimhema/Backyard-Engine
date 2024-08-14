@@ -1,4 +1,7 @@
 use Network::server::get_tcp_server_instance;
+use Network::message_queue::get_callback_msg_queue_instance;
+use Network::server_common::get_user_connection_info;
+use Network::server_common::get_connection_handler;
 
 #[macro_use]
 extern crate lazy_static;
@@ -25,6 +28,27 @@ fn main() {
         get_tcp_server_instance().write().unwrap().run();
         // let server = server_instance.read().unwrap();
         // server.run();
+    });
+
+    thread::spawn(move || {
+        // listen message . . .
+        loop 
+        {
+            if false == get_callback_msg_queue_instance().read().unwrap().empty() 
+            {
+                thread::sleep(Duration::from_secs(1)); // Listen Tick
+                // pop message
+                let mut _msg = get_callback_msg_queue_instance().write().unwrap().pop();
+
+                let mut _targetId = 0; // fetch from parsing msg
+
+                let mut _targetToken = get_user_connection_info().read().unwrap().get_token(_targetId);
+
+                // Test TCP
+                // 값 반환 이외에 단순 함수 호출도 read로 가능한가?
+                // get_connection_handler()
+            }
+        }
     });
 
     loop {

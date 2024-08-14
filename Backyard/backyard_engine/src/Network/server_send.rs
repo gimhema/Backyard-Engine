@@ -19,17 +19,6 @@ pub fn send_message_to_all_conn_TEST(msg : String) {
 
         get_callback_msg_queue_instance().write().unwrap().push(msg);
     }
-
-    // for id in get_send_connection_handler().write().unwrap().get_tcp_connection_list() {
-    //     let serialized_msg = msg.as_bytes();
-    //     if let Some(_targetConn) = get_send_connection_handler().write().unwrap().get_tcp_connection_by_id(id) {
-    //         _targetConn.write(serialized_msg);
-    //     }
-    //     else {
-    //         println!("Connection Invalid");
-    //     }
-    // }
-
 }
 
 impl server_stream {

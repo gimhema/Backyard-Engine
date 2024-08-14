@@ -62,6 +62,10 @@ impl connection_handle for datagram_handler {
         self.id_sum += 1;
     }
 
+    fn send(&mut self, _token :Token, _message : String) {
+        // Send to udp connection . . .
+    }
+
 }
 
 impl datagram_handler {

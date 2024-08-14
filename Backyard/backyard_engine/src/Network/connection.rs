@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use mio::net::{TcpListener, TcpStream};
+use mio::net::TcpStream;
 use mio::Token;
+use std::io::{self, Read, Write};
 
 pub trait connection_handle {
     fn new() -> Self;
@@ -9,6 +10,7 @@ pub trait connection_handle {
     fn del_connection(&mut self, token : Token);
     fn get_current_id_sum(&mut self) -> i64;
     fn update_id_sum(&mut self);
+    fn send(&mut self, _token :Token, _message : String);
 
 //    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>;
 //    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>;
@@ -30,6 +32,14 @@ impl connection_stream {
             id : _id,
             tcpStream : _stream
         }
+    }
+
+    pub fn write(&mut self, _message : String) {
+        // self.tcpStream.write(_message.as_byte());
+
+        let serialized_msg = _message.as_bytes();
+
+        self.tcpStream.write(serialized_msg);
     }
 }
 
@@ -74,7 +84,10 @@ impl connection_handle for stream_handler {
         self.id_sum += 1;
     }
 
-    
+    fn send(&mut self, _token :Token, _message : String) {
+        // Send to tcp connection . . .
+        self.connections.get(&_token).unwrap().write(_message);
+    }
 
     
 }
