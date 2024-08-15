@@ -38,6 +38,7 @@ fn main() {
             if false == get_callback_msg_queue_instance().read().unwrap().empty() 
             {
                 thread::sleep(Duration::from_secs(1)); // Listen Tick
+                println!("Fetch Message . . .");
                 // pop message
                 let mut _game_msg = get_callback_msg_queue_instance().write().unwrap().pop();
                 let mut _targetToken = _game_msg.get_token();
@@ -46,6 +47,7 @@ fn main() {
                 // let mut _targetToken = get_user_connection_info().read().unwrap().get_token(_targetId);
 
                 get_connection_handler().write().unwrap().send_message_to_stream(_targetToken, _send_msg);
+                println!("Completed Send Message . . .");
             }
         }
     });
