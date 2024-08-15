@@ -84,9 +84,15 @@ impl connection_handle for stream_handler {
         self.id_sum += 1;
     }
 
-    fn send(&mut self, _token :Token, _message : String) {
-        // Send to tcp connection . . .
-        self.connections.get(&_token).unwrap().write(_message);
+    fn send(&mut self, _token: Token, _message: String) {
+        // Connection을 맵에서 가져옴
+        if let Some(connection) = self.connections.get_mut(&_token) {
+            // 메시지를 전송
+            connection.write(_message);
+        } else {
+            // 연결이 없는 경우 처리 (예: 로그 남기기)
+            eprintln!("No connection found for token: {:?}", _token);
+        }
     }
 
     
