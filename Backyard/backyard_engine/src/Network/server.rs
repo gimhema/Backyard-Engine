@@ -194,7 +194,7 @@ fn handle_connection_event(
         let mut received_data = vec![0; 4096];
         let mut bytes_read = 0;
         // We can (maybe) read from the connection.
-        /*loop {
+        loop {
             match connection.read(&mut received_data[bytes_read..]) {
                 Ok(0) => {
                     // Reading 0 bytes means the other side has closed the
@@ -215,7 +215,7 @@ fn handle_connection_event(
                 // Other errors we'll consider fatal.
                 Err(err) => return Err(err),
             }
-        }*/
+        }
 
         if bytes_read != 0 {
 
