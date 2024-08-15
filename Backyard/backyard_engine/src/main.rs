@@ -39,13 +39,13 @@ fn main() {
             {
                 thread::sleep(Duration::from_secs(1)); // Listen Tick
                 // pop message
-                let mut _msg = get_callback_msg_queue_instance().write().unwrap().pop();
+                let mut _game_msg = get_callback_msg_queue_instance().write().unwrap().pop();
+                let mut _targetToken = _game_msg.get_token();
+                let mut _send_msg = _game_msg.get_message();
+                // let mut _targetId = 0; // fetch from parsing msg
+                // let mut _targetToken = get_user_connection_info().read().unwrap().get_token(_targetId);
 
-                let mut _targetId = 0; // fetch from parsing msg
-
-                let mut _targetToken = get_user_connection_info().read().unwrap().get_token(_targetId);
-
-                get_connection_handler().write().unwrap().send_message_to_stream(_targetToken.unwrap(), _msg);
+                get_connection_handler().write().unwrap().send_message_to_stream(_targetToken, _send_msg);
             }
         }
     });

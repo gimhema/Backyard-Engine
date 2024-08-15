@@ -1,5 +1,6 @@
 use super::server::*;
 use super::connection::*;
+use crate::Network::message_queue::game_message;
 use crate::Network::server_datagram::server_datagram;
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Registry, Token};
@@ -15,9 +16,10 @@ pub fn send_message_to_all_conn_TEST(msg : String) {
     let _token_vec = get_user_connection_info().read().unwrap().get_token_vec();
 
     for _token in _token_vec {
-        let mut msg = "".to_string(); // id + token + msg
+        let mut msg = "Response Test Message".to_string(); // id + token + msg
+        let mut _sendMsg = game_message::new(_token, msg);
 
-        get_callback_msg_queue_instance().write().unwrap().push(msg);
+        get_callback_msg_queue_instance().write().unwrap().push(_sendMsg);
     }
 }
 

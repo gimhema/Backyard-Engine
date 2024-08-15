@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 use std::sync::{RwLock, Arc};
+use mio::Token;
+
 use crate::qsm::*;
 
 lazy_static!{
@@ -15,8 +17,27 @@ pub fn get_update_msg_queue_instance() -> &'static Arc<RwLock<message_queue_hand
     &G_UPDATE_MESSAGE_QUEUE
 }
 
+pub struct game_message {
+    token : Token,
+    message : String
+}
+
+impl game_message {
+    pub fn new(_token : Token, _message : String) -> Self {
+        return game_message{token :_token, message : _message}
+    }
+
+    pub fn get_token(&self) -> Token {
+        return self.token.clone()
+    }
+
+    pub fn get_message(&self) -> String {
+        return self.message.clone()
+    }
+}
+
 pub struct message_queue_handler {
-    message_queue : VecDeque<String>
+    message_queue : VecDeque<game_message>
 }
 
 impl message_queue_handler {
@@ -24,11 +45,11 @@ impl message_queue_handler {
         message_queue_handler{message_queue : VecDeque::new()}
     }
 
-    pub fn push(&mut self, message : String) {
+    pub fn push(&mut self, message : game_message) {
         self.message_queue.push_back(message)
     }
 
-    pub fn pop(&mut self) -> String {
+    pub fn pop(&mut self) -> game_message {
         return self.message_queue.pop_back().unwrap()
     }
 
