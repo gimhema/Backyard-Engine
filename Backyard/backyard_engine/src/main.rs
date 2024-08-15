@@ -5,6 +5,7 @@ use Network::server_common::get_connection_handler;
 
 #[macro_use]
 extern crate lazy_static;
+use std::io::Write;
 use std::thread;
 use std::sync::Arc;
 use std::time::Duration;
@@ -44,9 +45,7 @@ fn main() {
 
                 let mut _targetToken = get_user_connection_info().read().unwrap().get_token(_targetId);
 
-                // Test TCP
-                // 값 반환 이외에 단순 함수 호출도 read로 가능한가?
-                // get_connection_handler()
+                get_connection_handler().write().unwrap().send_message_to_stream(_targetToken.unwrap(), _msg);
             }
         }
     });

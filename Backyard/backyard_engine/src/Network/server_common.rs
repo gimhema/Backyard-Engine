@@ -116,6 +116,10 @@ impl server_common_connetion_handler {
         self.tcp_connections.get_id_set_clone()
     }
 
+    pub fn send_message_to_stream(&mut self, _token : Token, _msg : String) {
+        self.tcp_connections.send(_token, _msg);
+    }
+
 
     // UDP
     pub fn new_udp_connection(&mut self, _udpSocket : UdpSocket, _token: Token)
