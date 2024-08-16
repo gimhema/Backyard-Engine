@@ -1,32 +1,22 @@
+use super::Core;
 
-#[macro_use]
-extern crate lazy_static;
+use super::Network::server::get_tcp_server_instance;
+use super::Network::message_queue::get_callback_msg_queue_instance;
+use super::Network::server_common::get_user_connection_info;
+use super::Network::server_common::get_connection_handler;
 
-mod Agent;
-mod Event;
-mod Network;
-mod qsm;
-mod Crypto;
-mod Session;
+use std::thread;
+use std::sync::Arc;
+use std::time::Duration;
 
-// User Custom
-mod UserLogic;
-
-// Core Logic
-mod Core;
-
-fn main() {
-    println!("Server Start");
-
-    Core::core::MainLogic();
-
-    /*
-    // Run TCP
+pub fn SpawnWorkerMessageAction() {
     let server_instance = Arc::clone(get_tcp_server_instance());
     thread::spawn(move || {
         get_tcp_server_instance().write().unwrap().run();
     });
+}
 
+pub fn SpawnWorkerServerRun() {
     thread::spawn(move || {
         // listen message . . .
         loop 
@@ -45,9 +35,17 @@ fn main() {
         }
     });
 
+}
+
+
+pub fn MainLogic() {
+
+    SpawnWorkerServerRun();
+
+    SpawnWorkerMessageAction();
+
     loop {
         thread::sleep(Duration::from_secs(1));
     }
-    */
-
 }
+
