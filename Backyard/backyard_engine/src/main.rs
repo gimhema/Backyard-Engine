@@ -37,7 +37,7 @@ fn main() {
         {
             if false == get_callback_msg_queue_instance().read().unwrap().empty() 
             {
-                thread::sleep(Duration::from_secs(1)); // Listen Tick
+                // thread::sleep(Duration::from_secs(1)); // Listen Tick
                 println!("Fetch Message . . .");
                 // pop message
                 let mut _game_msg = get_callback_msg_queue_instance().write().unwrap().pop();

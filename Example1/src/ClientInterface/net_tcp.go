@@ -20,21 +20,21 @@ func (bSocket *BackyardSocket) BuildSocketTCP() {
 	fmt.Println("Socket successfully created and connected")
 }
 
-func (bSocket *BackyardSocket) ReadTCPSocketBuffer() string {
+func (bSocket *BackyardSocket) ReadTCPSocketBuffer() {
 
-	//for {
-	//	response, err := bSocket.streamReader.ReadString('\n')
-	//	if err != nil {
-	//		fmt.Println("Error reading from server:", err)
-	//	}
-	//
-	//	fmt.Printf("Received: %s", response)
-	//}
-	response, err := bSocket.streamReader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading from server:", err)
+	for {
+
+		fmt.Printf("Read buffer . . .")
+		response, err := bSocket.streamReader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading from server:", err)
+		}
+	
+		fmt.Printf("Received: %s", response)
+
+		// return response
 	}
-	return response
+	
 }
 
 func (bSocket *BackyardSocket) SendMessageTCP(_msg string) {

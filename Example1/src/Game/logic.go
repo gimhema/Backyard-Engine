@@ -34,7 +34,7 @@ func GetIOManager() *IOManager {
 }
 
 func GameLogicMain() {
-	println("Game Start . . .")
+	println("Game Start . . . 22")
 
 	GetPlayerNetworkManager().Init(backyard_player.TCP, "127.0.0.1", "8080")
 

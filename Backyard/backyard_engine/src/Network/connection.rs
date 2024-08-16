@@ -88,7 +88,9 @@ impl connection_handle for stream_handler {
         // Connection을 맵에서 가져옴
         if let Some(connection) = self.connections.get_mut(&_token) {
             // 메시지를 전송
+            println!("Write Message Complemeted :{:?}", _message.clone());
             connection.write(_message);
+            
         } else {
             // 연결이 없는 경우 처리 (예: 로그 남기기)
             eprintln!("No connection found for token: {:?}", _token);

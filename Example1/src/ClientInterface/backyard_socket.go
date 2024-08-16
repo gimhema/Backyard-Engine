@@ -30,8 +30,8 @@ func (socketManager *SocketManager) Init(_protocol NetworkProtocol, _port string
 	socketManager.socket.MakeSocket(_protocol, _port, _ipAddress)
 }
 
-func (socketManager *SocketManager) ReadBuffer() string {
-	return socketManager.socket.ReadSocketBuffer()
+func (socketManager *SocketManager) ReadBuffer() {
+	socketManager.socket.ReadSocketBuffer()
 }
 
 func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port string, _ipAddress string) {
@@ -51,16 +51,15 @@ func (bSocket *BackyardSocket) MakeSocket(_protocol NetworkProtocol, _port strin
 	}
 }
 
-func (bSocket *BackyardSocket) ReadSocketBuffer() string {
+func (bSocket *BackyardSocket) ReadSocketBuffer() {
 
 	switch bSocket.protocol {
 	case TCP:
-		return bSocket.ReadTCPSocketBuffer()
-	case UDP:
-		return bSocket.ReadUDPSocketBuffer()
+		bSocket.ReadTCPSocketBuffer()
+	// case UDP:
+	// 	return bSocket.ReadUDPSocketBuffer()
 	}
 
-	return "Unknown socket type"
 }
 
 func (bSocket *BackyardSocket) Send(_msg string) {

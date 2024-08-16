@@ -12,8 +12,8 @@ func (pnManager PlayerNetworkManager) Run() {
 	// pnManager.socket_manager.StartListen()
 }
 
-func (pnManager PlayerNetworkManager) Read() string {
-	return pnManager.socket_manager.ReadBuffer()
+func (pnManager PlayerNetworkManager) Read() {
+	pnManager.socket_manager.ReadBuffer()
 }
 
 func (pnManager PlayerNetworkManager) Send(msg string) {

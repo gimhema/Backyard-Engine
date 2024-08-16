@@ -16,7 +16,7 @@ pub fn send_message_to_all_conn_TEST(msg : String) {
     let _token_vec = get_user_connection_info().read().unwrap().get_token_vec();
 
     for _token in _token_vec {
-        let mut msg = "Response Test Message".to_string(); // id + token + msg
+        let mut msg = "Response Test Message\n".to_string(); // id + token + msg
         let mut _sendMsg = game_message::new(_token, msg);
 
         get_callback_msg_queue_instance().write().unwrap().push(_sendMsg);
