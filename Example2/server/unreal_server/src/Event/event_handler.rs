@@ -29,19 +29,19 @@ impl From<i64> for event_header {
 
 pub fn listen_event(msg : String) {
 
-    if let Some((id, size, data)) = deseirialize(&msg) {
+    // if let Some((id, size, data)) = deseirialize(&msg) {
 
-        println!("Recv raw data : {}", data);
+    //     println!("Recv raw data : {}", data);
 
-        let _data_vec = extract_data(data.as_str());
-        let mut q_message = QMessage::new(id as i64, size as usize, _data_vec);
+    //     let _data_vec = extract_data(data.as_str());
+    //     let mut q_message = QMessage::new(id as i64, size as usize, _data_vec);
 
-        let event = event_header::from(q_message.get_id());
+    //     let event = event_header::from(q_message.get_id());
 
-        event.action(q_message.get_data());
-    } else {
-        println!("Invalid input format");
-    }
+    //     event.action(q_message.get_data());
+    // } else {
+    //     println!("Invalid input format");
+    // }
 }
 
 impl event_header {
