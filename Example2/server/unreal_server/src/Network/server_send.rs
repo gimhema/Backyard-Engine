@@ -7,6 +7,7 @@ use mio::{Events, Interest, Poll, Registry, Token};
 use std::io::{self, Read, Write};
 use crate::Network::server_common::{get_connection_handler, get_user_connection_info};
 use crate::Network::message_queue::get_callback_msg_queue_instance;
+use crate::qsm::qsm::*;
 
 // logic에서 받아와야하나..
 pub fn send_message_to_all_conn_TEST(msg : String) {
@@ -62,34 +63,27 @@ impl server_stream {
 }
 
 impl server_datagram {
-    pub fn send_message_to_all_conn(&mut self, msg : String) {
+    pub fn send_message_to_all_conn(&mut self, msg : &[u8]) {
          for id in self.get_id_list() {
-             let serialized_msg = msg.as_bytes();
              if let Some(_targetConn) = self.get_user_connection_by_id(id) {
-                 println!("Send Game Message {}", msg);
-                 _targetConn.send(serialized_msg);
-                 // _targetConn.write(serialized_msg);
+                 _targetConn.send(msg);
              }
          }
     }
 
-    pub fn send_message_to_target(&mut self, target : i64, msg : String) {
+    pub fn send_message_to_target(&mut self, target : i64, msg : &[u8]) {
 
-        let serialized_msg = msg.as_bytes();
         if let Some(_targetConn) = self.get_user_connection_by_id(target) {
-            println!("Send Game Message {}", msg);
-            _targetConn.send(serialized_msg);
+            _targetConn.send(msg);
         }
         
     }
 
-    pub fn send_message_to_group(&mut self, target_vec : Vec<i64>, msg : String) {
+    pub fn send_message_to_group(&mut self, target_vec : Vec<i64>,  msg : &[u8]) {
 
         for id in target_vec {
-            let serialized_msg = msg.as_bytes();
             if let Some(_targetConn) = self.get_user_connection_by_id(id) {
-                println!("Send Game Message {}", msg);
-                _targetConn.send(serialized_msg);
+                _targetConn.send(msg);
             }
         }
     }
