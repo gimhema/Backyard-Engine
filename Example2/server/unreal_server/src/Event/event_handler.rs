@@ -65,32 +65,8 @@ pub fn listen_event(msg : String) {
 }
 
 impl EventHeader {
-    fn action(&self, buffer: &[u8])
+    pub fn action(buffer: &[u8])
     {
-
         handle_quicksot_message(buffer);
-        // match self {
-        //     event_header::DEFAULT => {
-        //     }
-        //     event_header::SEND_MESSAGE_TO_ALL => {
-        //        // ServerAction_CHAT_MESSAGE_ALL(val);
-        //     }
-        //     event_header::SEND_MESSAGE_TO_TARGET => {
-        //        // ServerAction_CHAT_MESSAGE_TO_GROUP(val);
-        //     }
-        //     event_header::ECHO_MESSAGE => {
-        //         // TCP Test
-        //         let _msg = "ECHO TEST".to_string();
-        //         println!("Call Echo Message");
-        //         send_message_to_all_conn_TEST(_msg);
-        //         // {
-        //         //     get_tcp_server_instance().write().unwrap().send_message_to_all_conn(_msg);
-        //         // }
-
-        //     }
-        //     event_header::END => {
-        //        // ServerAction_CHAT_MESSAGE_TO_ONE(val);
-        //     }
-        // }
     }
 }

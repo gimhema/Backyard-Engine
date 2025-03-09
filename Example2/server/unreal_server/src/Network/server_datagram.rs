@@ -58,8 +58,7 @@ impl server_datagram {
         match self.socket.recv_from(&mut buf) {
             Ok((size, src_addr)) => {
                 
-                let mut msg = str::from_utf8(&buf[..size]).unwrap().to_string();
-                listen_event(msg);
+                EventHeader::action(&buf);
 
             }
             Err(e) => {
