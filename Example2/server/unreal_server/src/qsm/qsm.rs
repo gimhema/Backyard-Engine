@@ -1,5 +1,5 @@
 // use crate::messages::example_message::ExampleMessage;
-use crate::{qsm::messages::ExampleMessage, Event::event_handler::event_header};
+use crate::{qsm::messages::ExampleMessage, Event::event_handler::EventHeader};
 
 #[repr(packed)]
 pub struct BaseMessage {
@@ -35,13 +35,15 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
     let base_message_id = base_message.id; // id를 복사
 
     // Customize . . .
-    let mut _message_header = event_header::from(base_message_id);
+//    let mut _message_header = event_header::from(base_message_id);
+    let _message_header : EventHeader = base_message_id.into();
+
     // Example
     match _message_header {
-        event_header::DEFAULT => {
+        EventHeader::DEFAULT => {
             println!("message id 0");
          }
-         event_header::SEND_MESSAGE_TO_ALL => {
+         EventHeader::SEND_MESSAGE_TO_ALL => {
             println!("message id 1");
             let mut _example_message = ExampleMessage::deserialize(buffer).unwrap();
             println!("id : {}", _example_message.id.clone());
@@ -49,7 +51,7 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
             println!("name : {}", _example_message.name.clone());
             println!("nums : {:?}", _example_message.nums.clone());
          }
-         event_header::SEND_MESSAGE_TO_TARGET => {
+         EventHeader::SEND_MESSAGE_TO_TARGET => {
             println!("message id 2");
          }
          _ => {
