@@ -1,62 +1,66 @@
 use mio::{Events, Poll, Token, Interest, Registry};
 use mio::net::UdpSocket;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::str;
 use super::connection::connection_handle;
 use super::Event::event_handler::*;
+use std::sync::{RwLock, Arc, RwLockReadGuard};
 use super::connection_datagram::*;
+use std::collections::HashSet;
 use super::server_common::*;
 
 const SERVER_TOKEN: Token = Token(0);
 
-// OnceLock을 사용하여 안전하게 싱글톤 인스턴스를 생성
-static G_SERVER_DATAGRAM_INSTANCE: OnceLock<Arc<Mutex<server_datagram>>> = OnceLock::new();
-
-pub fn init_udp_server_instance() -> Arc<Mutex<server_datagram>> {
-    G_SERVER_DATAGRAM_INSTANCE.get_or_init(|| Arc::new(Mutex::new(server_datagram::new()))).clone()
+lazy_static! {
+    static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
 }
 
-pub fn get_udp_server_instance() -> Option<Arc<Mutex<server_datagram>>> {
-    G_SERVER_DATAGRAM_INSTANCE.get().cloned()
+pub fn get_udp_server_instance() -> &'static Arc<RwLock<server_datagram>> {
+    &G_SERVER_DATAGRAM_INSTANCE
 }
 
 pub struct server_datagram {
-    connection_handler: datagram_handler,
+    connectionHandler : datagram_handler,
     socket: UdpSocket,
     poll: Poll,
     clients: HashMap<Token, SocketAddr>,
     token_counter: usize,
-    common_info: server_common_info,
+    common_info : server_common_info
 }
 
 impl server_datagram {
+
     pub fn new() -> server_datagram {
-        let common_info = server_common_info::new();
 
-        let socket = UdpSocket::bind("127.0.0.1:8080".parse().unwrap()).unwrap();
+        let mut _common_info = server_common_info::new();
+
+        let mut socket = UdpSocket::bind("127.0.0.1:8080".parse().unwrap()).unwrap();
         let poll = Poll::new().unwrap();
+        
+        let mut registry = poll.registry();
+        registry.register(&mut socket, SERVER_TOKEN, Interest::READABLE | Interest::WRITABLE).unwrap();
 
-        let registry = poll.registry();
-        registry.register(&socket, SERVER_TOKEN, Interest::READABLE | Interest::WRITABLE).unwrap();
-
-        let connection_handler = datagram_handler::new();
+        let mut _connectionHandler = datagram_handler::new();
 
         server_datagram {
-            connection_handler,
+            connectionHandler: _connectionHandler,
             socket,
             poll,
             clients: HashMap::new(),
             token_counter: 1,
-            common_info,
+            common_info : _common_info
         }
     }
 
-    pub fn handle_read_event(&mut self, _token: Token) {
+    pub fn handle_read_event(&mut self, token: Token) {
         let mut buf = [0; 1024];
         match self.socket.recv_from(&mut buf) {
-            Ok((_size, _src_addr)) => {
-                EventHeader::action(&buf);
+            Ok((size, src_addr)) => {
+                
+                let mut msg = str::from_utf8(&buf[..size]).unwrap().to_string();
+                listen_event(msg);
+
             }
             Err(e) => {
                 eprintln!("Failed to receive UDP message: {}", e);
@@ -83,23 +87,38 @@ impl server_datagram {
         }
     }
 
-    pub fn get_id_list(&self) -> HashSet<i64> {
-        self.connection_handler.get_id_set_clone()
+    pub fn get_id_list(&mut self) -> HashSet<i64> {
+        self.connectionHandler.get_id_set_clone()
     }
 
-    pub fn remove_connection(&mut self, token: Token) {
-        self.connection_handler.del_connection(token);
+    pub fn remove_connection(&mut self, token : Token) 
+    {
+        self.connectionHandler.del_connection(token);
     }
-
-    pub fn add_new_connect(&mut self, udp_socket: UdpSocket, token: Token) {
-        self.connection_handler.new_connection(udp_socket, token);
+//
+    pub fn add_new_connect(&mut self, _udpSocket : UdpSocket, _token: Token) 
+    {
+        self.connectionHandler.new_connection(_udpSocket, _token);
     }
-
-    pub fn get_user_connections_by_token(&mut self, token: Token) -> Option<&mut UdpSocket> {
-        self.connection_handler.get_connection_by_token(token)
+//
+    pub fn get_user_connetions_by_token(&mut self, token: Token) -> Option<&mut UdpSocket>
+    {
+        self.connectionHandler.get_connetion_by_token(token)
     }
-
-    pub fn get_user_connection_by_id(&mut self, id: i64) -> Option<&mut UdpSocket> {
-        self.connection_handler.get_connection_by_id(id)
+//
+    pub fn get_user_connection_by_id(&mut self, id : i64) -> Option<&mut UdpSocket>
+    {
+        self.connectionHandler.get_connection_by_id(id)
     }
 }
+
+/*
+fn main() {
+    let addr: SocketAddr = "127.0.0.1:9000".parse().unwrap();
+    let mut server = server_datagram::new(addr);
+
+    println!("UDP echo server running on {}", addr);
+
+    server.run();
+}
+*/
