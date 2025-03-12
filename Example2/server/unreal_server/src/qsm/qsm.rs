@@ -1,5 +1,43 @@
 // use crate::messages::example_message::ExampleMessage;
 use crate::{qsm::messages::ExampleMessage, Event::event_handler::EventHeader};
+use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::collections::HashMap;
+lazy_static! {
+    static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
+}
+
+pub struct event_handler {
+    function_map: HashMap<u32, Box<dyn Fn(&[u8]) + Send + Sync>>,  // &[u8]을 받음
+}
+
+impl event_handler {
+    pub fn new() -> Self {
+        let f_map: HashMap<u32, Box<dyn Fn(&[u8]) + Send + Sync>> = HashMap::new();
+
+        event_handler {
+            function_map: f_map,
+        }
+    }
+
+    pub fn init_function_map(&mut self) {
+        // 일반 함수 추가 (버퍼 처리)
+        // self.function_map.insert(1, Box::new(print_buffer));
+        // self.function_map.insert(2, Box::new(print_buffer_length));
+        // self.function_map.insert(3, Box::new(print_first_byte));
+    }
+
+    pub fn call_func(&self, fid: u32, buffer: &[u8]) {
+        if let Some(func) = self.function_map.get(&fid) {
+            func(buffer);
+        } else {
+            println!("Function ID {} not found!", fid);
+        }
+    }
+}
+
+
+
+
 
 #[repr(packed)]
 pub struct BaseMessage {
