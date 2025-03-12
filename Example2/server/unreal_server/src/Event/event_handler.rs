@@ -1,7 +1,6 @@
+use std::collections::HashMap;
 use server::get_tcp_server_instance;
-
 use crate::qsm::QuickShotMessage;
-
 use super::Event;
 use super::qsm::qsm::*;
 use super::Network::*;
@@ -24,6 +23,21 @@ macro_rules! enum_from_u32 {
             }
         }
     };
+}
+
+pub struct event_handler {
+    function_map : HashMap<u32, Box<dyn Fn(i32) -> i32>>
+}
+
+impl event_handler {
+    pub fn new() -> Self {
+
+        let mut f_map: HashMap<u32, Box<dyn Fn(i32) -> i32>> = HashMap::new();
+
+        return event_handler{
+            function_map : f_map
+        }
+    }
 }
 
 
