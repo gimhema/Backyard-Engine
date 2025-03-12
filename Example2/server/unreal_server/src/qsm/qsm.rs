@@ -6,6 +6,10 @@ lazy_static! {
     static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
 }
 
+pub fn get_event_handler() -> &'static Arc<RwLock<event_handler>> {
+    &G_EVENT_HANDLER
+}
+
 pub struct event_handler {
     function_map: HashMap<u32, Box<dyn Fn(&[u8]) + Send + Sync>>,  // &[u8]을 받음
 }
@@ -76,24 +80,26 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
 //    let mut _message_header = event_header::from(base_message_id);
     let _message_header : EventHeader = base_message_id.into();
 
+    get_event_handler().write().unwrap().call_func(base_message_id, buffer);
+
     // Example
-    match _message_header {
-        EventHeader::DEFAULT => {
-            println!("message id 0");
-         }
-         EventHeader::SEND_MESSAGE_TO_ALL => {
-            println!("message id 1");
-            let mut _example_message = ExampleMessage::deserialize(buffer).unwrap();
-            println!("id : {}", _example_message.id.clone());
-            println!("val : {}", _example_message.val.clone());
-            println!("name : {}", _example_message.name.clone());
-            println!("nums : {:?}", _example_message.nums.clone());
-         }
-         EventHeader::SEND_MESSAGE_TO_TARGET => {
-            println!("message id 2");
-         }
-         _ => {
-             println!("Unknown message id: {}", base_message_id);
-         }
-     }
+    // match _message_header {
+    //     EventHeader::DEFAULT => {
+    //         println!("message id 0");
+    //      }
+    //      EventHeader::SEND_MESSAGE_TO_ALL => {
+    //         println!("message id 1");
+    //         let mut _example_message = ExampleMessage::deserialize(buffer).unwrap();
+    //         println!("id : {}", _example_message.id.clone());
+    //         println!("val : {}", _example_message.val.clone());
+    //         println!("name : {}", _example_message.name.clone());
+    //         println!("nums : {:?}", _example_message.nums.clone());
+    //      }
+    //      EventHeader::SEND_MESSAGE_TO_TARGET => {
+    //         println!("message id 2");
+    //      }
+    //      _ => {
+    //          println!("Unknown message id: {}", base_message_id);
+    //      }
+    //  }
 }
