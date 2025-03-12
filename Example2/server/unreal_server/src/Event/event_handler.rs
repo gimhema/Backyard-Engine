@@ -1,10 +1,43 @@
 use std::collections::HashMap;
+use std::sync::{Arc, RwLock, RwLockReadGuard};
 use server::get_tcp_server_instance;
 use crate::qsm::QuickShotMessage;
 use super::Event;
 use super::qsm::qsm::*;
 use super::Network::*;
 use crate::Network::server_send::send_message_to_all_conn_TEST;
+
+lazy_static! {
+    static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
+}
+
+pub struct event_handler {
+    function_map: HashMap<u32, Box<dyn Fn(i32) + Send + Sync>>,  // () 반환
+}
+
+impl event_handler {
+    pub fn new() -> Self {
+        let f_map: HashMap<u32, Box<dyn Fn(i32) + Send + Sync>> = HashMap::new();
+
+        event_handler {
+            function_map: f_map,
+        }
+    }
+
+    pub fn init_function_map(&mut self) {
+        // 일반 함수 추가 (리턴값 없음)
+        // self.function_map.insert(1, Box::new(some_func));
+    }
+
+    pub fn call_func(&self, fid: u32, input: i32) {
+        if let Some(func) = self.function_map.get(&fid) {
+            func(input);
+        } else {
+            println!("Function ID {} not found!", fid);
+        }
+    }
+}
+
 
 macro_rules! enum_from_u32 {
     ($name:ident { $($variant:ident = $value:expr),* $(,)? }) => {
@@ -25,20 +58,6 @@ macro_rules! enum_from_u32 {
     };
 }
 
-pub struct event_handler {
-    function_map : HashMap<u32, Box<dyn Fn(i32) -> i32>>
-}
-
-impl event_handler {
-    pub fn new() -> Self {
-
-        let mut f_map: HashMap<u32, Box<dyn Fn(i32) -> i32>> = HashMap::new();
-
-        return event_handler{
-            function_map : f_map
-        }
-    }
-}
 
 
 // pub enum event_header {
