@@ -1,4 +1,5 @@
-use crate::Event::event_handler::listen_event;
+
+use crate::Event::event_handler::EventHeader;
 
 use super::Network;
 use std::str::from_utf8;
@@ -222,9 +223,10 @@ fn handle_connection_event(
             let received_data = &received_data[..bytes_read];
             if let Ok(str_buf) = from_utf8(received_data) {
 
-                let vec_of_bytes: Vec<u8> = received_data.to_vec();
-                let recvMsg = String::from(from_utf8(received_data).unwrap());
-                listen_event(recvMsg);
+                EventHeader::action(received_data);
+                // let vec_of_bytes: Vec<u8> = received_data.to_vec();
+                // let recvMsg = String::from(from_utf8(received_data).unwrap());
+                // listen_event(recvMsg);
                 
             } else {
                 println!("Received (none UTF-8) data: {:?}", received_data);

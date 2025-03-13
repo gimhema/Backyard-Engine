@@ -37,11 +37,6 @@ enum_from_u32! {
 }
 
 
-
-pub fn listen_event(msg : String) {
-
-}
-
 impl EventHeader {
     pub fn action(buffer: &[u8])
     {
