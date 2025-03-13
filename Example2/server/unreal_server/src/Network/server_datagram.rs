@@ -59,8 +59,6 @@ impl server_datagram {
             Ok((size, src_addr)) => {
                 
                 EventHeader::action(&buf);
-                // let mut msg = str::from_utf8(&buf[..size]).unwrap().to_string();
-                // listen_event(msg);
 
             }
             Err(e) => {

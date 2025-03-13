@@ -224,9 +224,6 @@ fn handle_connection_event(
             if let Ok(str_buf) = from_utf8(received_data) {
 
                 EventHeader::action(received_data);
-                // let vec_of_bytes: Vec<u8> = received_data.to_vec();
-                // let recvMsg = String::from(from_utf8(received_data).unwrap());
-                // listen_event(recvMsg);
                 
             } else {
                 println!("Received (none UTF-8) data: {:?}", received_data);
