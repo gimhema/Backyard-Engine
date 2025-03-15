@@ -24,17 +24,7 @@ use std::thread;
 fn main() {
     println!("Server Start");
 
-    Core::core::MainLogic();
-
     // Run UDP
-    let server_instance = Arc::clone(get_udp_server_instance());
-    thread::spawn(move || {
-        get_udp_server_instance().write().unwrap().run();
-    });
-
-
-    // loop {
-    //     thread::sleep(Duration::from_secs(1));
-    // }
+    get_udp_server_instance().write().unwrap().run();
 
 }
