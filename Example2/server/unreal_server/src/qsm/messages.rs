@@ -1,5 +1,6 @@
 use std::io;
 
+// Exxample
 // 자동 생성된 구조체 및 관련 메서드
 #[repr(C)]
 #[derive(Debug, Clone)]

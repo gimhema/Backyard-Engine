@@ -25,6 +25,11 @@ fn main() {
     println!("Server Start");
 
     // Run UDP
+    // let server_instance = Arc::clone(get_udp_server_instance());
+    // thread::spawn(move || {
+    //     get_udp_server_instance().write().unwrap().run();
+    // });
+
     get_udp_server_instance().write().unwrap().run();
 
 }
