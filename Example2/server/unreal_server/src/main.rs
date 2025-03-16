@@ -1,3 +1,4 @@
+use qsm::qsm::get_event_handler;
 use Network::server_datagram::get_udp_server_instance;
 
 
@@ -29,7 +30,7 @@ fn main() {
     // thread::spawn(move || {
     //     get_udp_server_instance().write().unwrap().run();
     // });
-
+    get_event_handler().write().unwrap().init_function_map();
     get_udp_server_instance().write().unwrap().run();
 
 }

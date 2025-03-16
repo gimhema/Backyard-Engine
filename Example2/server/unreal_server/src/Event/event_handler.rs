@@ -31,7 +31,9 @@ enum_from_u32! {
         SEND_MESSAGE_TO_ALL = 1,
         SEND_MESSAGE_TO_TARGET = 2,
         ECHO_MESSAGE = 3,
-        END = 4
+        CHAT_MESSAGE = 4,
+        PLAYER_MOVEMENT_UPDATE = 5,
+        END = 6
     }
 }
 

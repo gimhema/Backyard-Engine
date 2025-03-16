@@ -31,8 +31,8 @@ impl event_handler {
 
     pub fn init_function_map(&mut self) {
         // 일반 함수 추가 (버퍼 처리)
-        self.function_map.insert(1, Box::new(CallBack_Chat));
-        self.function_map.insert(2, Box::new(CallBack_PlayerMovementUpdate));
+        self.function_map.insert(EventHeader::CHAT_MESSAGE as u32, Box::new(CallBack_Chat));
+        self.function_map.insert(EventHeader::PLAYER_MOVEMENT_UPDATE as u32, Box::new(CallBack_PlayerMovementUpdate));
     }
 
     pub fn call_func(&self, fid: u32, buffer: &[u8]) {
