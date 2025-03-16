@@ -33,7 +33,8 @@ enum_from_u32! {
         ECHO_MESSAGE = 3,
         CHAT_MESSAGE = 4,
         PLAYER_MOVEMENT_UPDATE = 5,
-        END = 6
+        NEW_PLAYER = 6,
+        END = 7
     }
 }
 
