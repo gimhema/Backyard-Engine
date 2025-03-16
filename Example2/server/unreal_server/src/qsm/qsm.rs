@@ -2,6 +2,12 @@
 use crate::{qsm::messages::ExampleMessage, Event::event_handler::EventHeader};
 use std::sync::{Arc, RwLock, RwLockReadGuard};
 use std::collections::HashMap;
+
+use crate::qsm::user_event::*;
+
+use super::user_event::event_chat::CallBack_Chat;
+use super::user_event::event_player_movement::CallBack_PlayerMovementUpdate;
+
 lazy_static! {
     static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
 }
@@ -25,9 +31,8 @@ impl event_handler {
 
     pub fn init_function_map(&mut self) {
         // 일반 함수 추가 (버퍼 처리)
-        // self.function_map.insert(1, Box::new(print_buffer));
-        // self.function_map.insert(2, Box::new(print_buffer_length));
-        // self.function_map.insert(3, Box::new(print_first_byte));
+        self.function_map.insert(1, Box::new(CallBack_Chat));
+        self.function_map.insert(2, Box::new(CallBack_PlayerMovementUpdate));
     }
 
     pub fn call_func(&self, fid: u32, buffer: &[u8]) {
@@ -76,30 +81,7 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
 
     let base_message_id = base_message.id; // id를 복사
 
-    // Customize . . .
-//    let mut _message_header = event_header::from(base_message_id);
     let _message_header : EventHeader = base_message_id.into();
 
     get_event_handler().write().unwrap().call_func(base_message_id, buffer);
-
-    // Example
-    // match _message_header {
-    //     EventHeader::DEFAULT => {
-    //         println!("message id 0");
-    //      }
-    //      EventHeader::SEND_MESSAGE_TO_ALL => {
-    //         println!("message id 1");
-    //         let mut _example_message = ExampleMessage::deserialize(buffer).unwrap();
-    //         println!("id : {}", _example_message.id.clone());
-    //         println!("val : {}", _example_message.val.clone());
-    //         println!("name : {}", _example_message.name.clone());
-    //         println!("nums : {:?}", _example_message.nums.clone());
-    //      }
-    //      EventHeader::SEND_MESSAGE_TO_TARGET => {
-    //         println!("message id 2");
-    //      }
-    //      _ => {
-    //          println!("Unknown message id: {}", base_message_id);
-    //      }
-    //  }
 }
