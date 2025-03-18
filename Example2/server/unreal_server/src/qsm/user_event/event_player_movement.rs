@@ -20,6 +20,9 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
              loc_x, loc_y, loc_z);
             println!("euler rotation roll : {}, pitch : {}, yaw : {}",
              roll, pitch, yaw);
+
+             
+             get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);
