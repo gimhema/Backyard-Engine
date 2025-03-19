@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::qsm::user_event::*;
 
 use super::user_event::event_chat::CallBack_Chat;
-use super::user_event::event_player::CallBack_CreatePlayer;
+use super::user_event::event_new_player::CallBack_CreateNewPlayer;
 use super::user_event::event_player_movement::CallBack_PlayerMovementUpdate;
 
 lazy_static! {
@@ -34,7 +34,7 @@ impl event_handler {
         // 일반 함수 추가 (버퍼 처리)
         self.function_map.insert(EventHeader::CHAT_MESSAGE as u32, Box::new(CallBack_Chat));
         self.function_map.insert(EventHeader::PLAYER_MOVEMENT_UPDATE as u32, Box::new(CallBack_PlayerMovementUpdate));
-        self.function_map.insert(EventHeader::NEW_PLAYER as u32, Box::new(CallBack_CreatePlayer));
+        self.function_map.insert(EventHeader::NEW_PLAYER as u32, Box::new(CallBack_CreateNewPlayer));
     }
 
     pub fn call_func(&self, fid: u32, buffer: &[u8]) {
