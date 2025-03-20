@@ -5,6 +5,9 @@
 #include <cstring>  // memcpy
 #include <cstdint>  // uint32_t, uint64_t
 #include <stdexcept> // std::runtime_error
+#include <memory>
+#include <unordered_map>
+
 #include "MessageEnum.hpp"
 #include "../Unreal_QMessage_Event/QEvent_Base.h"
 
@@ -32,6 +35,37 @@ struct BaseMessage {
 };
 #pragma pack(pop)
 
+
+class FunctionDispatcher {
+    public:
+        using FunctionPtr = std::unique_ptr<IFunction>;
+    
+        void registerFunction(FunctionType type, FunctionPtr func) {
+            functions_.emplace(type, std::move(func));
+        }
+    
+        void execute(FunctionType type) const {
+            auto it = functions_.find(type);
+            if (it != functions_.end()) {
+                (*it->second)(); // 기본 실행
+            } else {
+                std::cerr << "No function registered for type: " << toInt(type) << std::endl;
+            }
+        }
+    
+        void execute(FunctionType type, const std::vector<uint8_t>& data) const {
+            auto it = functions_.find(type);
+            if (it != functions_.end()) {
+                (*it->second)(data); // 데이터 전달 실행
+            } else {
+                std::cerr << "No function registered for type: " << toInt(type) << std::endl;
+            }
+        }
+    
+    private:
+        std::unordered_map<FunctionType, FunctionPtr> functions_;
+    };
+
 class MessageCaster
 {
 public:
@@ -40,7 +74,7 @@ public:
 
 private:
     int MAX_BUUFER_SIZE = 2048;
-
+    FunctionDispatcher f_Dispatcher;
 
 public:
     void RecvPostProcess();
@@ -50,7 +84,7 @@ public:
     // Custom
 public:
     void InitEventMap();
-    void ExecFunc();
+    void ExecFunc(int fid, const std::vector<uint8_t>& buffer);
 
 };
 
