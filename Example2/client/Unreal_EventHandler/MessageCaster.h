@@ -44,6 +44,10 @@ public:
     void RecvPostProcess();
     void SendPreProcess();
     void HandleMessage(const std::vector<uint8_t>& buffer);
+    
+    // Custom
+public:
+    void InitEventMap();
 
 };
 
