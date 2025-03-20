@@ -6,6 +6,7 @@
 #include <cstdint>  // uint32_t, uint64_t
 #include <stdexcept> // std::runtime_error
 #include "MessageEnum.hpp"
+#include "../Unreal_QMessage_Event/QEvent_Base.h"
 
 
 #pragma pack(push, 1)
