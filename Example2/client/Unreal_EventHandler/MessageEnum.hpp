@@ -9,13 +9,13 @@ enum class QFunctionType : int {
 
 namespace std {
     template <>
-    struct hash<FunctionType> {
-        size_t operator()(const FunctionType& type) const noexcept {
+    struct hash<QFunctionType> {
+        size_t operator()(const QFunctionType& type) const noexcept {
             return static_cast<size_t>(type);
         }
     };
 }
 
-constexpr int toInt(FunctionType type) {
+constexpr int toInt(QFunctionType type) {
     return static_cast<int>(type);
 }
