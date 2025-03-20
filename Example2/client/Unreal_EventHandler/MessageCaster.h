@@ -5,6 +5,7 @@
 #include <cstring>  // memcpy
 #include <cstdint>  // uint32_t, uint64_t
 #include <stdexcept> // std::runtime_error
+#include "MessageEnum.hpp"
 
 
 #pragma pack(push, 1)
@@ -48,6 +49,7 @@ public:
     // Custom
 public:
     void InitEventMap();
+    void ExecFunc();
 
 };
 
