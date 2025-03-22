@@ -1,5 +1,6 @@
 use qsm::qsm::get_event_handler;
 use Network::server_datagram::get_udp_server_instance;
+use Network::server::get_tcp_server_instance;
 
 
 #[macro_use]
@@ -26,11 +27,21 @@ fn main() {
     println!("Server Start");
 
     // Run UDP
-    // let server_instance = Arc::clone(get_udp_server_instance());
-    // thread::spawn(move || {
-    //     get_udp_server_instance().write().unwrap().run();
-    // });
-    get_event_handler().write().unwrap().init_function_map();
-    get_udp_server_instance().write().unwrap().run();
+    let unreliable_server_instance = Arc::clone(get_udp_server_instance());
+    let udp_thread = thread::spawn(move || {
+        get_udp_server_instance().write().unwrap().run();
+    });
+    
+    // Run TCP
+    let reliable_server_instance = Arc::clone(get_tcp_server_instance());
+    let tcp_thread = thread::spawn(move || {
+        get_tcp_server_instance().write().unwrap().run();
+    });
+
+    udp_thread.join().unwrap();
+    tcp_thread.join().unwrap();
+    
+    // get_event_handler().write().unwrap().init_function_map();
+    // get_udp_server_instance().write().unwrap().run();
 
 }

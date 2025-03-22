@@ -10,7 +10,7 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
             let _name = new_player_message.name;
 
             println!("pid : {}", _pid);
-            println!("player name : ", _name);
+            println!("player name : {}", _name);
         }
         Err(e)=>{
             eprintln!("Failed to deserialize MovementMessage: {}", e);

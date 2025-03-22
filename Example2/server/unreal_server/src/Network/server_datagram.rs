@@ -68,6 +68,9 @@ impl server_datagram {
     }
 
     pub fn run(&mut self) {
+
+        println!("Run UDP Server . . . .");
+
         let mut events = Events::with_capacity(1024);
         loop {
             self.poll.poll(&mut events, None).unwrap();

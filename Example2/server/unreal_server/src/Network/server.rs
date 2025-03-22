@@ -68,8 +68,7 @@ impl server_stream {
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;
     
-        // Map of `Token` -> `TcpStream`.
-        // let mut connections = HashMap::new();
+        println!("Run TCP Server . . . .");
 
         let mut unique_token = Token(SERVER.0 + 1);
 
