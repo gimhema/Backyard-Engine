@@ -18,8 +18,10 @@ use super::server_common::*;
 
 use super::Event::Event::*;
 
+
 const SERVER: Token = Token(0);
 const SERVER_TICK: u64 = 1000;
+const TCP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8080";
 
 lazy_static! {
     static ref G_SERVER_INSTANCE: Arc<RwLock<server_stream>> = Arc::new(RwLock::new(server_stream::new()));
@@ -33,7 +35,6 @@ pub struct server_stream {
     connectionHandler: stream_handler,
     numUser: i64,
     step: i64,
-    connect_info : String,
     common_info : server_common_info
 }
 
@@ -48,13 +49,8 @@ impl server_stream {
             connectionHandler: _connectionHandler,
             numUser: 0,
             step: 0,
-            connect_info : "".to_string(),
             common_info : _common_info
         }
-    }
-
-    pub fn set_connect_info(&mut self, _connect_info : String) {
-        self.connect_info = _connect_info;
     }
 
     pub fn run(&mut self) -> io::Result<()>  {
@@ -64,7 +60,7 @@ impl server_stream {
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
-        let mut server = TcpListener::bind(self.connect_info.parse().unwrap())?;
+        let mut server = TcpListener::bind(TCP_SERVER_CONNECT_INFO.parse().unwrap())?;
         // let mut server = TcpListener::bind("127.0.0.1:8080".parse().unwrap())?;
     
         // Register the server with poll we can receive events for it.

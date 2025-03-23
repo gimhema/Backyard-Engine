@@ -28,15 +28,12 @@ fn main() {
 
     // Run UDP
     let unreliable_server_instance = Arc::clone(get_udp_server_instance());
-    get_udp_server_instance().write().unwrap().set_connect_info("127.0.0.1:8080".to_string());
     let udp_thread = thread::spawn(move || {
         get_udp_server_instance().write().unwrap().run();
     });
     
     // Run TCP
     let reliable_server_instance = Arc::clone(get_tcp_server_instance());
-
-    get_tcp_server_instance().write().unwrap().set_connect_info("127.0.0.1:8080".to_string());
     let tcp_thread = thread::spawn(move || {
         get_tcp_server_instance().write().unwrap().run();
     });

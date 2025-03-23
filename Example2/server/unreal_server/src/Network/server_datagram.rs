@@ -11,6 +11,7 @@ use std::collections::HashSet;
 use super::server_common::*;
 
 const SERVER_TOKEN: Token = Token(0);
+const UDP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8081";
 
 lazy_static! {
     static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
@@ -35,7 +36,7 @@ impl server_datagram {
 
         let mut _common_info = server_common_info::new();
 
-        let mut socket = UdpSocket::bind("127.0.0.1:8080".parse().unwrap()).unwrap();
+        let mut socket = UdpSocket::bind(UDP_SERVER_CONNECT_INFO.parse().unwrap()).unwrap();
         let poll = Poll::new().unwrap();
         
         let mut registry = poll.registry();
