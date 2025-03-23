@@ -33,8 +33,7 @@ pub struct server_stream {
     connectionHandler: stream_handler,
     numUser: i64,
     step: i64,
-    server_address : String,
-    port : i64,
+    connect_info : String,
     common_info : server_common_info
 }
 
@@ -49,21 +48,24 @@ impl server_stream {
             connectionHandler: _connectionHandler,
             numUser: 0,
             step: 0,
-            server_address : "".to_string(),
-            port : 0,
+            connect_info : "".to_string(),
             common_info : _common_info
         }
     }
 
-    pub fn run(&mut self) -> io::Result<()> 
-    {
+    pub fn set_connect_info(&mut self, _connect_info : String) {
+        self.connect_info = _connect_info;
+    }
+
+    pub fn run(&mut self) -> io::Result<()>  {
         env_logger::init();
 
         let mut userCount: i64 = 0;
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
-        let mut server = TcpListener::bind("127.0.0.1:8080".parse().unwrap())?;
+        let mut server = TcpListener::bind(self.connect_info.parse().unwrap())?;
+        // let mut server = TcpListener::bind("127.0.0.1:8080".parse().unwrap())?;
     
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;
