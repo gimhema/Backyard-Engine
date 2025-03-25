@@ -1,28 +1,28 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 #include "IPAddress.h"
+#include "HAL/Runnable.h"
+#include "HAL/RunnableThread.h"
 
-
-/**
- * 
- */
-class UNREALCLIENT_API FUDPSocketWrapper
+class UNREALCLIENT_API FUDPSocketWrapper : public FRunnable
 {
 private:
-	FSocket* UdpSocket;
-	TSharedPtr<FInternetAddr> RemoteAddress;
-	const int32 BufferSize = 2 * 1024; // 2KB 버퍼
+    FSocket* UdpSocket;
+    TSharedPtr<FInternetAddr> RemoteAddress;
+    FRunnableThread* Thread;
+    bool bRunThread;
+    const int32 BufferSize = 2048; // 2KB 버퍼
 
 public:
-	FUDPSocketWrapper();
-	~FUDPSocketWrapper();
+    FUDPSocketWrapper();
+    virtual ~FUDPSocketWrapper();
 
-public:
-	void SendMessage(const FString& Message, const FString& TargetIP, int32 TargetPort);
-	void ReceiveMessage();
+    void SendMessage(const FString& Message, const FString& TargetIP, int32 TargetPort);
+    void StopReceiving();
 
+private:
+    virtual uint32 Run() override;
 };
