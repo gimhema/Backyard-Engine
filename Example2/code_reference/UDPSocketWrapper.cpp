@@ -11,7 +11,7 @@ FUDPSocketWrapper::FUDPSocketWrapper()
         return;
     }
 
-    // 2️⃣ UDP 소켓 생성
+
     UdpSocket = SocketSubsystem->CreateSocket(NAME_DGram, TEXT("MyUdpSocket"), false);
     if (!UdpSocket)
     {
@@ -21,20 +21,17 @@ FUDPSocketWrapper::FUDPSocketWrapper()
 
     int32 ActualBufferSize = BufferSize;
 
-    // 3️⃣ 소켓 설정 (비동기, 버퍼 크기 지정)
     UdpSocket->SetNonBlocking(true);
     UdpSocket->SetReuseAddr(true);
     UdpSocket->SetRecvErr(true);
     UdpSocket->SetSendBufferSize(BufferSize, ActualBufferSize);
     UdpSocket->SetReceiveBufferSize(BufferSize, ActualBufferSize);
 
-    // 4️⃣ 바인딩할 주소 생성 (서버용)
     TSharedPtr<FInternetAddr> LocalAddress = SocketSubsystem->CreateInternetAddr();
     bool bIsValid;
     LocalAddress->SetIp(TEXT("0.0.0.0"), bIsValid);
     LocalAddress->SetPort(7777);
 
-    // 5️⃣ 소켓을 포트 7777에 바인딩
     if (!UdpSocket->Bind(*LocalAddress))
     {
         UE_LOG(LogTemp, Error, TEXT("UDP 소켓 바인딩 실패!"));
