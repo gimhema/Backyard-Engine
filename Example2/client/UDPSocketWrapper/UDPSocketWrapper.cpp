@@ -1,4 +1,7 @@
 #include "UDPSocketWrapper.h"
+#include "QSM/QSM_ChatMessage.hpp"
+#include "QSM/QSM_NewPlayer.hpp"
+#include "QSM/QSM_PlayerMovement.hpp"
 
 FUDPSocketWrapper::FUDPSocketWrapper()
     : UdpSocket(nullptr), Thread(nullptr), bRunThread(true)
