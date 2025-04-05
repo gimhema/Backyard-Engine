@@ -3,12 +3,30 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use super::game_geometry::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VEPlayerNetWorkStatus
 {
     session_id : i64,
     ip_addr : String
 }
+
+#[derive(Debug, Clone)]
+pub struct VEPlayerPersonalInfo
+{
+    player_name : String
+}
+
+impl VEPlayerPersonalInfo
+{
+    pub fn new_zero() -> VEPlayerPersonalInfo {
+        return VEPlayerPersonalInfo { player_name: "".to_string() }
+    }
+
+    pub fn new(_name : String) -> VEPlayerPersonalInfo {
+        return VEPlayerPersonalInfo { player_name: _name }
+    }
+}
+
 
 impl VEPlayerNetWorkStatus
 {
@@ -21,11 +39,22 @@ impl VEPlayerNetWorkStatus
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VECharcater
 {
     player_network_config : VEPlayerNetWorkStatus,
+    player_personal_info : VEPlayerPersonalInfo,
     transform : Transform
+}
+
+impl VECharcater {
+    pub fn new_zero() -> Self {
+        return VECharcater { 
+            player_network_config: VEPlayerNetWorkStatus::new_zero(),
+            player_personal_info: VEPlayerPersonalInfo::new_zero(),
+            transform: Transform::new_zero() }
+    }
+
 }
 
 pub struct VECharacterManager
@@ -46,5 +75,14 @@ impl VECharacterManager
             player_container_vec: vec, 
             player_container_search_map: map
          }
+    }
+
+    pub fn new_character(&mut self, _new_char : VECharcater) {
+        
+        let _char_arc = Arc::new(RefCell::new(_new_char));
+
+        self.player_container_vec.push(Arc::clone(&_char_arc));
+        // let mut _current_top = self.player_container_vec.len() - 1;
+        self.player_container_search_map.insert(0, Arc::clone(&_char_arc));
     }
 }
