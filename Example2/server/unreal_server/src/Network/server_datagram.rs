@@ -9,8 +9,10 @@ use std::sync::{RwLock, Arc, RwLockReadGuard};
 use super::connection_datagram::*;
 use std::collections::HashSet;
 use super::server_common::*;
+use std::time::Duration;
 
 const SERVER_TOKEN: Token = Token(0);
+const UDP_SERVER_TICK: u64 = 1000;
 const UDP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8081";
 
 lazy_static! {
@@ -74,7 +76,8 @@ impl server_datagram {
 
         let mut events = Events::with_capacity(1024);
         loop {
-            self.poll.poll(&mut events, None).unwrap();
+            self.poll.poll(&mut events, Some(Duration::from_millis(UDP_SERVER_TICK))).unwrap();
+//            self.poll.poll(&mut events, None).unwrap();
             for event in events.iter() {
                 match event.token() {
                     SERVER_TOKEN => {
