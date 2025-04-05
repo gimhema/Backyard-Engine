@@ -12,6 +12,7 @@ mod Network;
 mod qsm;
 mod Crypto;
 mod Session;
+mod GameLogic;
 
 // User Custom
 mod UserLogic;
