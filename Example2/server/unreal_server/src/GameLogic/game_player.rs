@@ -1,7 +1,19 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::sync::{RwLock, RwLockReadGuard};
 use super::game_geometry::*;
+
+
+lazy_static! {
+    static ref G_VE_CHARACTER_MANAGER_INSTANCE: Arc<RwLock<VECharacterManager>> = 
+Arc::new(RwLock::new(VECharacterManager::new()));
+}
+
+
+pub fn get_ve_char_manager_instance() -> &'static Arc<RwLock<VECharacterManager>> {
+    &G_VE_CHARACTER_MANAGER_INSTANCE
+}
 
 #[derive(Debug, Clone)]
 pub struct VEPlayerNetWorkStatus
@@ -61,15 +73,15 @@ pub struct VECharacterManager
 {
     // index = session_id
     // player_container : Vec<VECharcater>
-    player_container_vec : Vec<Arc<RefCell<VECharcater>>>,
-    player_container_search_map : HashMap<i64, Arc<RefCell<VECharcater>>>
+    player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
+    player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>
 }
 
 impl VECharacterManager
 {
     pub fn new() -> VECharacterManager {
-        let mut vec: Vec<Arc<RefCell<VECharcater>>> = Vec::new();
-        let mut map: HashMap<i64, Arc<RefCell<VECharcater>>> = HashMap::new();
+        let mut vec: Vec<Arc<Mutex<VECharcater>>> = Vec::new();
+        let mut map: HashMap<i64, Arc<Mutex<VECharcater>>> = HashMap::new();
 
         return VECharacterManager { 
             player_container_vec: vec, 
@@ -79,7 +91,7 @@ impl VECharacterManager
 
     pub fn new_character(&mut self, _new_char : VECharcater) {
         
-        let _char_arc = Arc::new(RefCell::new(_new_char));
+        let _char_arc = Arc::new(Mutex::new(_new_char));
 
         self.player_container_vec.push(Arc::clone(&_char_arc));
         // let mut _current_top = self.player_container_vec.len() - 1;
