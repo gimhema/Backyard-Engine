@@ -6,12 +6,30 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GameNetworkInstanceSubsystem.generated.h"
 
+DECLARE_DELEGATE_OneParam(FMessageHandler, const TArray<uint8>&)
+
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class EServerMessageType : uint8
+{
+	DEFAULT        UMETA(DisplayName = "DEFAULT"),
+	CHAT      UMETA(DisplayName = "CHAT"),
+	NEW_PLAYER        UMETA(DisplayName = "NEW_PLAYER"),
+	PLAYER_MOVEMENT        UMETA(DisplayName = "PLAYER_MOVEMENT"),
+};
+
+
 UCLASS()
 class VOIDESCAPE_API UGameNetworkInstanceSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 	
+public:
+	void RegisterHandler(FName MessageType, FMessageHandler Handler);
+	void DispatchMessage(FName MessageType, const TArray<uint8>& Payload);
+
+private:
+	TMap<FName, FMessageHandler> HandlerMap;
 };
