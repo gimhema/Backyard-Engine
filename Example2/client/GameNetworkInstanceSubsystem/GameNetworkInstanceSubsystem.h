@@ -27,9 +27,10 @@ class VOIDESCAPE_API UGameNetworkInstanceSubsystem : public UGameInstanceSubsyst
 	GENERATED_BODY()
 	
 public:
-	void RegisterHandler(FName MessageType, FMessageHandler Handler);
-	void DispatchMessage(FName MessageType, const TArray<uint8>& Payload);
+	void RegisterHandler(EServerMessageType MessageType, FMessageHandler Handler);
+	void DispatchMessage(EServerMessageType MessageType, const TArray<uint8>& Payload);
+	void InitFunctionHandler();
 
 private:
-	TMap<FName, FMessageHandler> HandlerMap;
+	TMap<EServerMessageType, FMessageHandler> HandlerMap;
 };
