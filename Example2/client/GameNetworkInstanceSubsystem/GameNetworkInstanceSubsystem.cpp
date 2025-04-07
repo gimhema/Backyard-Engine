@@ -3,12 +3,12 @@
 
 #include "GameNetworkInstanceSubsystem.h"
 
-void UGameNetworkInstanceSubsystem::RegisterHandler(FName MessageType, FMessageHandler Handler)
+void UGameNetworkInstanceSubsystem::RegisterHandler(EServerMessageType MessageType, FMessageHandler Handler)
 {
     HandlerMap.Add(MessageType, Handler);
 }
 
-void UGameNetworkInstanceSubsystem::DispatchMessage(FName MessageType, const TArray<uint8>& Payload)
+void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageType, const TArray<uint8>& Payload)
 {
     if (FMessageHandler* Handler = HandlerMap.Find(MessageType))
     {
@@ -16,6 +16,14 @@ void UGameNetworkInstanceSubsystem::DispatchMessage(FName MessageType, const TAr
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("No handler for message type: %s"), *MessageType.ToString());
+        // UE_LOG(LogTemp, Warning, TEXT("No handler for message type: %s"), *MessageType.ToString());
     }
+}
+
+void UGameNetworkInstanceSubsystem::InitFunctionHandler()
+{
+    // this->RegisterHandler(
+    //     EServerMessageType::DEFAULT,
+    //     FMessageHandler::CreateRaw(Handler, &MyHandler::HandleMove)
+    // );
 }
