@@ -18,6 +18,7 @@ use super::server_common::*;
 
 use super::Event::Event::*;
 
+use super::GameLogic::game_player::*;
 
 const SERVER: Token = Token(0);
 const SERVER_TICK: u64 = 1000;
@@ -137,10 +138,12 @@ impl server_stream {
                                 {
                                     println!("User Disconnected . . 1");
                                     poll.registry().deregister(connection);
-                                    
+
+                                    // let _taget_id = get_connection_handler().read().unwrap().get_tcp_connection_id_by_token(token);
+
+                                    get_ve_char_manager_instance().write().unwrap().delete_characeter(_taget_id);                                 
                                     get_connection_handler().write().unwrap().del_tcp_connection(token);
-                                    // get_send_connection_handler().write().unwrap().del_tcp_connection(token);
-                                    // self.remove_connection(token);
+
                                 }
                             }
                     }

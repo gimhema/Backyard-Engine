@@ -107,4 +107,8 @@ impl VECharacterManager
 
         self.increase_id_top();
     }
+
+    pub fn delete_characeter(&mut self, _target_id : i64) {
+        
+    }
 }
