@@ -64,7 +64,8 @@ impl VECharcater {
         return VECharcater { 
             player_network_config: VEPlayerNetWorkStatus::new_zero(),
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
-            transform: Transform::new_zero() }
+            transform: Transform::new_zero(),
+            }
     }
 
 }
@@ -74,7 +75,8 @@ pub struct VECharacterManager
     // index = session_id
     // player_container : Vec<VECharcater>
     player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
-    player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>
+    player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
+    id_top : i64
 }
 
 impl VECharacterManager
@@ -85,16 +87,24 @@ impl VECharacterManager
 
         return VECharacterManager { 
             player_container_vec: vec, 
-            player_container_search_map: map
+            player_container_search_map: map,
+            id_top : 0
          }
+    }
+
+    pub fn increase_id_top(&mut self) {
+        self.id_top += 1;
     }
 
     pub fn new_character(&mut self, _new_char : VECharcater) {
         
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
+        let _new_id = self.id_top.clone();
+
         self.player_container_vec.push(Arc::clone(&_char_arc));
-        // let mut _current_top = self.player_container_vec.len() - 1;
-        self.player_container_search_map.insert(0, Arc::clone(&_char_arc));
+        self.player_container_search_map.insert(_new_id, Arc::clone(&_char_arc));
+
+        self.increase_id_top();
     }
 }
