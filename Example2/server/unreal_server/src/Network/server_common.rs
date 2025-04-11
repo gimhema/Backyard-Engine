@@ -103,7 +103,7 @@ impl server_common_connetion_handler {
         self.tcp_connections.get_connetion_by_token(_token)
     }
 
-    pub fn get_tcp_connection_id_by_token(&mut self, _token : Token) -> i64 {
+    pub fn get_tcp_connection_id_by_token(&mut self, _token : Token) -> Option<i64> {
         return self.tcp_connections.get_id_by_token(_token)
     }
 
