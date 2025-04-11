@@ -121,6 +121,13 @@ impl stream_handler {
         }
     }
 
+    pub fn get_id_by_token(&self, token: Token) -> Option<i64> {
+        self.tokenIdMap.iter()
+            .find(|(_, &val)| val == token)
+            .map(|(&key, _)| key)
+    }
+    
+
     pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
     {
         // Id 처리 로직 필요함
