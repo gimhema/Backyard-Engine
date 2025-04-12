@@ -27,6 +27,8 @@ use std::thread;
 fn main() {
     println!("Server Start");
 
+    get_event_handler().write().unwrap().init_function_map();
+
     // Run UDP
     let unreliable_server_instance = Arc::clone(get_udp_server_instance());
     let udp_thread = thread::spawn(move || {
