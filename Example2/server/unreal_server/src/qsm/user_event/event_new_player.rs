@@ -1,6 +1,7 @@
 use crate::get_udp_server_instance;
 use crate::qsm::user_message::message_new_player::*;
 
+use super::GameLogic::*;
 
 pub fn CallBack_CreateNewPlayer(buffer: &[u8])
 {
@@ -11,6 +12,8 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
 
             println!("pid : {}", _pid);
             println!("player name : {}", _name);
+
+
         }
         Err(e)=>{
             eprintln!("Failed to deserialize MovementMessage: {}", e);
