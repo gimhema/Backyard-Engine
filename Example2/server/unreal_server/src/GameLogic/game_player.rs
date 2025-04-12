@@ -108,7 +108,14 @@ impl VECharacterManager
         self.increase_id_top();
     }
 
-    pub fn delete_characeter(&mut self, _target_id : i64) {
-        
+    pub fn delete_characeter(&mut self, _target_id: i64) {
+        if let Some(target_arc) = self.player_container_search_map.remove(&_target_id) {
+            // vec에서 해당 Arc를 제거
+            self.player_container_vec.retain(|item| {
+                !Arc::ptr_eq(item, &target_arc)
+            });
+        } else {
+            eprintln!("Tried to delete character with id {}, but not found.", _target_id);
+        }
     }
 }
