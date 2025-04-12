@@ -18,7 +18,7 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
             
             _new_character.set_player_name(_name);
             
-            // get_ve_char_manager_instance().write().unwrap().new_character(new_char);
+            get_ve_char_manager_instance().write().unwrap().new_character(_new_character);
         }
         Err(e)=>{
             eprintln!("Failed to deserialize MovementMessage: {}", e);

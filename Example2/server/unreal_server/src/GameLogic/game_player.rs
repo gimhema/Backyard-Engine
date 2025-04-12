@@ -46,8 +46,12 @@ impl VEPlayerNetWorkStatus
         return VEPlayerNetWorkStatus { session_id: 0, ip_addr: "".to_string() }
     }
 
-    pub fn set_net_work_info(_id : i64, _addr : String) -> Self {
-        return VEPlayerNetWorkStatus { session_id: _id, ip_addr: _addr }
+    pub fn set_pid(&mut self, _id : i64) {
+        self.session_id = _id;
+    }
+
+    pub fn set_ip_addr(&mut self, _addr : String) {
+        self.ip_addr = _addr;
     }
 }
 
@@ -72,7 +76,13 @@ impl VECharcater {
         self.player_personal_info.set_name(_name);
     }
 
+    pub fn set_player_pid(&mut self, _id : i64) {
+        self.set_player_pid(_id);
+    }
 
+    pub fn set_player_ip_addr(&mut self, _addr : String) {
+        self.set_player_ip_addr(_addr);
+    }
 
 }
 
@@ -107,6 +117,8 @@ impl VECharacterManager
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
         let _new_id = self.id_top.clone();
+
+        // _char_arc.get_mut().unwrap().
 
         self.player_container_vec.push(Arc::clone(&_char_arc));
         self.player_container_search_map.insert(_new_id, Arc::clone(&_char_arc));
