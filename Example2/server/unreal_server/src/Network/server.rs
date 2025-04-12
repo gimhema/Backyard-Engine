@@ -139,9 +139,15 @@ impl server_stream {
                                     println!("User Disconnected . . 1");
                                     poll.registry().deregister(connection);
 
-                                    // let _taget_id = get_connection_handler().read().unwrap().get_tcp_connection_id_by_token(token);
-
-                                    get_ve_char_manager_instance().write().unwrap().delete_characeter(_taget_id);                                 
+                                    let _taget_id = get_connection_handler().write().unwrap().get_tcp_connection_id_by_token(token);
+                                    
+                                    if let Some(id) = _taget_id {
+                                        get_ve_char_manager_instance().write().unwrap().delete_characeter(id);
+                                    } else {
+                                        // 로그를 남기거나, 에러 처리를 할 수 있어요.
+                                        eprintln!("Failed to find target id for token: {:?}", token);
+                                    }
+                                    
                                     get_connection_handler().write().unwrap().del_tcp_connection(token);
 
                                 }
