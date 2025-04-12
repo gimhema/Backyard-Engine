@@ -34,8 +34,8 @@ impl VEPlayerPersonalInfo
         return VEPlayerPersonalInfo { player_name: "".to_string() }
     }
 
-    pub fn new(_name : String) -> VEPlayerPersonalInfo {
-        return VEPlayerPersonalInfo { player_name: _name }
+    pub fn set_name(&mut self, _name : String) {
+        self.player_name = _name;
     }
 }
 
@@ -46,7 +46,7 @@ impl VEPlayerNetWorkStatus
         return VEPlayerNetWorkStatus { session_id: 0, ip_addr: "".to_string() }
     }
 
-    pub fn new(_id : i64, _addr : String) -> Self {
+    pub fn set_net_work_info(_id : i64, _addr : String) -> Self {
         return VEPlayerNetWorkStatus { session_id: _id, ip_addr: _addr }
     }
 }
@@ -54,8 +54,8 @@ impl VEPlayerNetWorkStatus
 #[derive(Debug, Clone)]
 pub struct VECharcater
 {
-    player_network_config : VEPlayerNetWorkStatus,
-    player_personal_info : VEPlayerPersonalInfo,
+    pub player_network_config : VEPlayerNetWorkStatus,
+    pub player_personal_info : VEPlayerPersonalInfo,
     transform : Transform
 }
 
@@ -67,6 +67,12 @@ impl VECharcater {
             transform: Transform::new_zero(),
             }
     }
+
+    pub fn set_player_name(&mut self, _name : String) {
+        self.player_personal_info.set_name(_name);
+    }
+
+
 
 }
 
