@@ -140,4 +140,8 @@ impl stream_handler {
 
         self.update_id_sum();
     }
+
+    pub fn get_id_top(&self) -> i64 {
+        return self.id_sum
+    }
 }

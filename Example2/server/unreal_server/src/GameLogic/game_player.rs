@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use super::game_geometry::*;
+use super::Network::server_common::*;
 
 
 lazy_static! {
@@ -116,9 +117,10 @@ impl VECharacterManager
         
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
-        let _new_id = self.id_top.clone();
+        // let _new_id = self.id_top.clone();
 
         // _char_arc.get_mut().unwrap().
+        let _new_id = get_connection_handler().read().unwrap().get_connection_id_top();
 
         self.player_container_vec.push(Arc::clone(&_char_arc));
         self.player_container_search_map.insert(_new_id, Arc::clone(&_char_arc));

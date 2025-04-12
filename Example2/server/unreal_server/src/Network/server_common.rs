@@ -107,6 +107,10 @@ impl server_common_connetion_handler {
         return self.tcp_connections.get_id_by_token(_token)
     }
 
+    pub fn get_connection_id_top(&self) -> i64 {
+        return self.tcp_connections.get_id_top()
+    }
+
     pub fn get_tcp_connection_by_id(&mut self, _id: i64) -> Option<&mut TcpStream>
     {
         self.tcp_connections.get_connection_by_id(_id)
