@@ -6,10 +6,11 @@ use super::GameLogic::*;
 
 pub fn CallBack_CreateNewPlayer(buffer: &[u8])
 {
-    match NewPlayer::deserialize(buffer) {
+    match CreatePlayer::deserialize(buffer) {
         Ok(new_player_message) => {
-            let _pid = new_player_message.pid;
+            let _pid = new_player_message.id;
             let _name = new_player_message.name;
+            let _conn_info = new_player_message.connect_info;
 
             println!("pid : {}", _pid);
             println!("player name : {}", _name);
