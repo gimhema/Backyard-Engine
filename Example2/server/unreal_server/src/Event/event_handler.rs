@@ -34,7 +34,9 @@ enum_from_u32! {
         CHAT_MESSAGE = 4,
         PLAYER_MOVEMENT_UPDATE = 5,
         NEW_PLAYER = 6,
-        END = 7
+        MAKE_ACCOUNT = 7,
+        VERIFY_ACCOUNT = 8,
+        END = 9
     }
 }
 

@@ -8,6 +8,7 @@ use crate::qsm::user_event::*;
 use super::user_event::event_chat::CallBack_Chat;
 use super::user_event::event_new_player::CallBack_CreateNewPlayer;
 use super::user_event::event_player_movement::CallBack_PlayerMovementUpdate;
+use super::user_event::event_make_account::CallBack_MakeAccount;
 
 lazy_static! {
     static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
@@ -35,6 +36,7 @@ impl event_handler {
         self.function_map.insert(EventHeader::CHAT_MESSAGE as u32, Box::new(CallBack_Chat));
         self.function_map.insert(EventHeader::PLAYER_MOVEMENT_UPDATE as u32, Box::new(CallBack_PlayerMovementUpdate));
         self.function_map.insert(EventHeader::NEW_PLAYER as u32, Box::new(CallBack_CreateNewPlayer));
+        self.function_map.insert(EventHeader::MAKE_ACCOUNT as u32, Box::new(CallBack_MakeAccount));
     }
 
     pub fn call_func(&self, fid: u32, buffer: &[u8]) {
