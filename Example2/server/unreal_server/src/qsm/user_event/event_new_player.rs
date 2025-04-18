@@ -26,3 +26,9 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
         }
     }
 }
+
+pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
+{
+
+
+}
