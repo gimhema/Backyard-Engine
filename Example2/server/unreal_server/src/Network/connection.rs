@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use mio::net::TcpStream;
 use mio::Token;
 use std::io::{self, Read, Write};
+use std::net::SocketAddr;
 
 pub trait connection_handle {
     fn new() -> Self;
@@ -101,10 +102,18 @@ impl connection_handle for stream_handler {
 }
 
 impl stream_handler {
-    pub fn is_exist_connection_by_address(&mut self, _addr : String) -> bool {
-        
-        
-        return false
+    pub fn is_exist_connection_by_address(&mut self, _addr: String) -> bool {
+        // 입력받은 문자열 주소를 SocketAddr로 변환 시도
+        if let Ok(target_addr) = _addr.parse::<SocketAddr>() {
+            for connection in self.connections.values_mut() {
+                if let Ok(peer_addr) = connection.tcpStream.peer_addr() {
+                    if peer_addr == target_addr {
+                        return true;
+                    }
+                }
+            }
+        }
+        false
     }
 
     pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
