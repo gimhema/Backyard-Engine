@@ -10,6 +10,7 @@ use super::user_event::event_new_player::CallBack_CreateNewPlayer;
 use super::user_event::event_player_movement::CallBack_PlayerMovementUpdate;
 use super::user_event::event_make_account::CallBack_MakeAccount;
 use super::user_event::event_make_account::CallBack_VerifyAccount;
+use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
 
 lazy_static! {
     static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
@@ -39,7 +40,7 @@ impl event_handler {
         self.function_map.insert(EventHeader::NEW_PLAYER as u32, Box::new(CallBack_CreateNewPlayer));
         self.function_map.insert(EventHeader::MAKE_ACCOUNT as u32, Box::new(CallBack_MakeAccount));
         self.function_map.insert(EventHeader::VERIFY_ACCOUNT as u32, Box::new(CallBack_VerifyAccount));
-
+        self.function_map.insert(EventHeader::ENTER_NEW_PAYER as u32, Box::new(CallBack_EnterNewPlayerToGame));
     }
 
     pub fn call_func(&self, fid: u32, buffer: &[u8]) {
