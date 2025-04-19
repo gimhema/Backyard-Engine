@@ -101,6 +101,12 @@ impl connection_handle for stream_handler {
 }
 
 impl stream_handler {
+    pub fn is_exist_connection_by_address(&mut self, _addr : String) -> bool {
+        
+        
+        return false
+    }
+
     pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
     {
         let mut _token = self.tokenIdMap.get(&id);

@@ -21,6 +21,12 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
 {
     match VerifyAccount::deserialize(buffer) {
         Ok(verify_account_message) => {
+            let _accountId = verify_account_message.userId;
+            let _password = verify_account_message.password;
+            let _player_name = verify_account_message.userName;
+            let _conn = verify_account_message.connect_info;
+
+            
 
         }
         Err(e) => {

@@ -36,10 +36,9 @@ pub fn get_tcp_server_instance() -> &'static Arc<RwLock<server_stream>> {
 1. 클라이언트가 서버로 접속 요청
 2. 서버는 우선 일시적으로 수락
 3. 클라이언트는 TCP Recv를 수립받았을때 즉시 계정 정보를 전송
-4. 만약 타임아웃된다면 클라이언트는 스스로 해지 (서버는 당연히 disconnect 처리됨)
-5. 클라이언트는 계정 정보와 자신의 네트워크 정보를 서버로 전송함
-6. 클라이언트는 계정 정보를 조회하고, 네트워크 정보가 현재 접속 리스트에 있는지를 조회한다음, 검증과정을 통과하면? 접속 처리
-7. 만약 6번단계에서 검증 실패할경우 강제 접속 해제 요청
+4. 만약 타임아웃된다면(=지정된 시간안에 응답을 못받는다면) 클라이언트는 스스로 해지 (서버는 당연히 disconnect 처리됨)
+5. 서버는 계정 정보를 조회하고, 네트워크 정보가 현재 접속 리스트에 있는지를 조회한다음, 검증과정을 통과하면? 접속 처리
+6. 만약 6번단계에서 검증 실패할경우 강제 접속 해제 요청
 */
 
 pub struct server_stream {
@@ -170,6 +169,10 @@ impl server_stream {
             // println!("server run...")
         }
 
+    }
+
+    pub fn is_exist_connection(&mut self, _addr : String) -> bool {
+        return self.connectionHandler.is_exist_connection_by_address(_addr)
     }
 
     pub fn get_id_list(&mut self) -> HashSet<i64> {
