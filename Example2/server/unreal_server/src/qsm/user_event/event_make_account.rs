@@ -26,7 +26,13 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             let _player_name = verify_account_message.userName;
             let _conn = verify_account_message.connect_info;
 
-            
+            if (true == get_tcp_server_instance().write().unwrap().is_exist_connection(_conn)) 
+            {
+                // 클라이언트에게 답장 회신
+                // 아직 id 검증 로직은 넣지말고
+
+                // 클라는 답장을 받으면 캐릭터 생성뷰로 진입한다.
+            }
 
         }
         Err(e) => {
