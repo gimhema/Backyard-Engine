@@ -1,57 +1,57 @@
-#include "TCPSocketListener.h"
+#include "TCPSocketClient.h"
 
-FTCPSocketListener::FTCPSocketListener()
-    : ServerSocket(nullptr), ClientSocket(nullptr), Thread(nullptr), bRunThread(true)
+FTCPSocketClient::FTCPSocketClient()
+    : ClientSocket(nullptr), Thread(nullptr), bRunThread(true)
 {
 }
 
-FTCPSocketListener::~FTCPSocketListener()
+FTCPSocketClient::~FTCPSocketClient()
 {
-    StopTCPListener();
+    Disconnect();
 }
 
-bool FTCPSocketListener::StartTCPListener(int32 Port)
+bool FTCPSocketClient::ConnectToServer(const FString& IP, int32 Port)
 {
     ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
     if (!SocketSubsystem)
     {
-        UE_LOG(LogTemp, Error, TEXT("소켓 서브시스템을 찾을 수 없음!"));
+        UE_LOG(LogTemp, Error, TEXT("소켓 서브시스템을 찾을 수 없습니다."));
         return false;
     }
 
-    ServerSocket = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("TCPListener"), false);
-    if (!ServerSocket)
+    ClientSocket = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("TCPClient"), false);
+    if (!ClientSocket)
     {
-        UE_LOG(LogTemp, Error, TEXT("TCP 소켓 생성 실패!"));
+        UE_LOG(LogTemp, Error, TEXT("클라이언트 소켓 생성 실패"));
         return false;
     }
 
-    TSharedPtr<FInternetAddr> LocalAddress = SocketSubsystem->CreateInternetAddr();
+    TSharedRef<FInternetAddr> ServerAddr = SocketSubsystem->CreateInternetAddr();
     bool bIsValid;
-    LocalAddress->SetIp(TEXT("0.0.0.0"), bIsValid);
-    LocalAddress->SetPort(Port);
+    ServerAddr->SetIp(*IP, bIsValid);
+    ServerAddr->SetPort(Port);
 
-    if (!ServerSocket->Bind(*LocalAddress))
+    if (!bIsValid)
     {
-        UE_LOG(LogTemp, Error, TEXT("TCP 소켓 바인딩 실패!"));
+        UE_LOG(LogTemp, Error, TEXT("유효하지 않은 IP 주소: %s"), *IP);
         return false;
     }
 
-    if (!ServerSocket->Listen(8)) // 최대 8개의 연결 대기 가능
+    if (!ClientSocket->Connect(*ServerAddr))
     {
-        UE_LOG(LogTemp, Error, TEXT("TCP 소켓 리스닝 실패!"));
+        UE_LOG(LogTemp, Error, TEXT("서버에 연결할 수 없습니다."));
         return false;
     }
 
-//    UE_LOG(LogTemp, Log, TEXT("TCP 서버가 포트 %d에서 실행 중"), Port);
+    UE_LOG(LogTemp, Log, TEXT("서버에 연결됨: %s:%d"), *IP, Port);
 
-    // 새로운 스레드에서 실행
-    Thread = FRunnableThread::Create(this, TEXT("TCPListenerThread"), 0, TPri_BelowNormal);
+    // 수신용 스레드 시작
+    Thread = FRunnableThread::Create(this, TEXT("TCPClientThread"), 0, TPri_BelowNormal);
 
     return true;
 }
 
-void FTCPSocketListener::StopTCPListener()
+void FTCPSocketClient::Disconnect()
 {
     bRunThread = false;
 
@@ -69,49 +69,44 @@ void FTCPSocketListener::StopTCPListener()
         ClientSocket = nullptr;
     }
 
-    if (ServerSocket)
-    {
-        ServerSocket->Close();
-        ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ServerSocket);
-        ServerSocket = nullptr;
-    }
+    UE_LOG(LogTemp, Log, TEXT("클라이언트 연결 종료"));
 }
 
-uint32 FTCPSocketListener::Run()
+bool FTCPSocketClient::SendMessage(const FString& Message)
 {
-    while (bRunThread)
-    {
-        if (!ServerSocket) break;
+    if (!ClientSocket) return false;
 
-        // 클라이언트 연결 대기
-        ClientSocket = ServerSocket->Accept(TEXT("TCPClient"));
-        if (ClientSocket)
-        {
-            UE_LOG(LogTemp, Log, TEXT("클라이언트가 연결되었습니다!"));
-            ReceiveData();
-        }
+    FTCHARToUTF8 Converter(*Message);
+    int32 BytesSent = 0;
+    bool bSuccess = ClientSocket->Send((uint8*)Converter.Get(), Converter.Length(), BytesSent);
+
+    if (!bSuccess)
+    {
+        UE_LOG(LogTemp, Error, TEXT("메시지 전송 실패"));
     }
+
+    return bSuccess;
+}
+
+uint32 FTCPSocketClient::Run()
+{
+    ReceiveData();
     return 0;
 }
 
-void FTCPSocketListener::ReceiveData()
+void FTCPSocketClient::ReceiveData()
 {
-    if (!ClientSocket) return;
-
-    uint8 Buffer[4096];
+    uint8 Buffer[BufferSize];
     int32 BytesRead = 0;
 
-    while (bRunThread && ClientSocket->Recv(Buffer, BufferSize, BytesRead))
+    while (bRunThread && ClientSocket && ClientSocket->Recv(Buffer, BufferSize, BytesRead))
     {
         if (BytesRead > 0)
         {
-            FString ReceivedMessage = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
-            UE_LOG(LogTemp, Log, TEXT("TCP 메시지 수신: %s (%d bytes)"), *ReceivedMessage, BytesRead);
+            FString Received = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
+            UE_LOG(LogTemp, Log, TEXT("서버로부터 수신된 메시지: %s"), *Received);
         }
     }
 
-//    UE_LOG(LogTemp, Log, TEXT("클라이언트 연결 종료"));
-    ClientSocket->Close();
-    ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ClientSocket);
-    ClientSocket = nullptr;
+    UE_LOG(LogTemp, Warning, TEXT("서버와의 연결이 끊어졌습니다."));
 }
