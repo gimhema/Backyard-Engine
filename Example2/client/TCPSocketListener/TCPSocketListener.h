@@ -8,11 +8,10 @@
 #include "IPAddress.h"
 #include "HAL/Runnable.h"
 #include "HAL/RunnableThread.h"
-
 /**
- * TCP 클라이언트 클래스
+ * 
  */
-class VOIDESCAPE_API FTCPSocketClient : public FRunnable
+class VOIDESCAPE_API FTCPSocketListener : public FRunnable
 {
 private:
     FSocket* ClientSocket;
@@ -20,9 +19,10 @@ private:
     FThreadSafeBool bRunThread;
     const int32 BufferSize = 4096;
 
+
 public:
-    FTCPSocketClient();
-    virtual ~FTCPSocketClient();
+    FTCPSocketListener();
+    virtual ~FTCPSocketListener();
 
     /** 서버에 연결 시도 */
     bool ConnectToServer(const FString& IP, int32 Port);
