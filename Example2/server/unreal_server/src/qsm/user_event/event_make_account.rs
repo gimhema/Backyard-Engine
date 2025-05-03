@@ -22,10 +22,10 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
 {
     match VerifyAccount::deserialize(buffer) {
         Ok(verify_account_message) => {
-            let _accountId = verify_account_message.userId;
-            let _password = verify_account_message.password;
-            let _player_name = verify_account_message.userName;
-            let _conn = verify_account_message.connect_info;
+            let _accountId = verify_account_message.userId.clone();
+            let _password = verify_account_message.password.clone();
+            let _player_name = verify_account_message.userName.clone();
+            let _conn = verify_account_message.connect_info.clone();
 
             if (true == get_tcp_server_instance().write().unwrap().is_exist_connection(_conn)) 
             {
@@ -35,6 +35,25 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 // 클라는 답장을 받으면 캐릭터 생성뷰로 진입한다.
 
                 // 지정된 id를 세팅해서 AllowConnectGame 메세지에 할당한후 전송
+
+                let _session_id = 0; // 서버가 지정
+                let _pid : u32 = 0; // 서버가 지정
+                let _account_id = verify_account_message.userId.clone();
+                let _player_name = verify_account_message.userName.clone();
+                let _conn_info = verify_account_message.connect_info.clone();
+
+                let mut _allow_connect_game = AllowConnectGame::new(
+                    _session_id, 
+                    _pid, 
+                    _account_id, 
+                    _player_name, 
+                    _conn_info);
+
+                let mut _send_msg = _allow_connect_game.serialize();
+
+                get_tcp_server_instance().write().unwrap().send_message_byte_to_target(
+                    _pid as i64,
+                     _send_msg);
             }
 
         }

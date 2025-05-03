@@ -49,6 +49,12 @@ impl server_stream {
         
     }
 
+    pub fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>) {
+        if let Some(_targetConn) = self.get_user_connection_by_id(target) {
+            _targetConn.write(&msg_byte);
+        }
+    }
+
     pub fn send_message_to_group(&mut self, target_vec : Vec<i64>, msg : String) {
 
         for id in target_vec {
