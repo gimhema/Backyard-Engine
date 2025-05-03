@@ -200,6 +200,10 @@ impl server_stream {
         self.connectionHandler.get_connection_by_id(id)
     }
 
+    pub fn get_pid_by_connection(&mut self, conn : String) -> Option<&mut i64> {
+        self.connectionHandler.get_id_by_connection(conn)
+    }
+
 }
 
 fn handle_connection_event(

@@ -141,6 +141,19 @@ impl stream_handler {
             .find(|(_, &val)| val == token)
             .map(|(&key, _)| key)
     }
+
+    pub fn get_id_by_connection(&mut self, _addr : String) -> Option<&mut i64> {
+        if let Ok(target_ip) = _addr.parse::<IpAddr>() {
+            for connection in self.connections.values_mut() {
+                if let Ok(peer_addr) = connection.tcpStream.peer_addr() {
+                    if peer_addr.ip() == target_ip {
+                        return Some(&mut connection.id)
+                    }
+                }
+            }
+        }
+        None
+    }
     
 
     pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)

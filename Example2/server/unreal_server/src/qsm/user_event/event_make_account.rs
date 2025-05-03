@@ -27,6 +27,10 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             let _player_name = verify_account_message.userName.clone();
             let _conn = verify_account_message.connect_info.clone();
 
+            let mut server = get_tcp_server_instance().write().unwrap();
+            let mut _pid = server.get_pid_by_connection(_conn.clone());
+            let mut _pid_copy = _pid.unwrap().clone() as u32;
+
             if (true == get_tcp_server_instance().write().unwrap().is_exist_connection(_conn)) 
             {
                 // 클라이언트에게 답장 회신
@@ -37,14 +41,16 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 // 지정된 id를 세팅해서 AllowConnectGame 메세지에 할당한후 전송
 
                 let _session_id = 0; // 서버가 지정
-                let _pid : u32 = 0; // 서버가 지정
+
+
+
                 let _account_id = verify_account_message.userId.clone();
                 let _player_name = verify_account_message.userName.clone();
                 let _conn_info = verify_account_message.connect_info.clone();
 
                 let mut _allow_connect_game = AllowConnectGame::new(
                     _session_id, 
-                    _pid, 
+                    _pid_copy, 
                     _account_id, 
                     _player_name, 
                     _conn_info);
@@ -52,7 +58,7 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 let mut _send_msg = _allow_connect_game.serialize();
 
                 get_tcp_server_instance().write().unwrap().send_message_byte_to_target(
-                    _pid as i64,
+                    _pid_copy as i64,
                      _send_msg);
             }
 
