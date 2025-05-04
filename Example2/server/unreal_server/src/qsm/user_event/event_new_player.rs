@@ -1,7 +1,9 @@
 use crate::get_udp_server_instance;
+use crate::get_tcp_server_instance;
 use crate::qsm::user_message::message_new_player::*;
 use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 use crate::qsm::user_message::message_enter_player_to_game::*;
+use crate::qsm::user_message::message_server_response::{self, ServerResponse};
 
 use super::GameLogic::*;
 
@@ -24,6 +26,11 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
             _new_character.set_player_name(_name);
             
             get_ve_char_manager_instance().write().unwrap().new_character(_new_character);
+
+            let mut _server_resp = ServerResponse::new(_pid.clone(), 0, "Create Character Sucessfull".to_string());
+            let mut _resp_msg = _server_resp.serialize();
+
+            get_tcp_server_instance().write().unwrap().send_message_byte_to_target(_pid.clone() as i64, _resp_msg);
         }
         Err(e)=>{
             eprintln!("Failed to deserialize MovementMessage: {}", e);
