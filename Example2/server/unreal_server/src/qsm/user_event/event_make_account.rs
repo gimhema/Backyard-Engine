@@ -42,8 +42,6 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
 
                 let _session_id = 0; // 서버가 지정
 
-
-
                 let _account_id = verify_account_message.userId.clone();
                 let _player_name = verify_account_message.userName.clone();
                 let _conn_info = verify_account_message.connect_info.clone();
@@ -60,6 +58,8 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 get_tcp_server_instance().write().unwrap().send_message_byte_to_target(
                     _pid_copy as i64,
                      _send_msg);
+
+                // 클라이언트는 검증 메세지를 받은 뒤 캐릭터 선택/생성 화면으로 진입
             }
 
         }
