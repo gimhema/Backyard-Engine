@@ -46,6 +46,8 @@ pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
             let _accountId = entered_payer_message.accountId;
             let _name = entered_payer_message.name;
             let _conn_info = entered_payer_message.connect_info;
+
+            
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);
