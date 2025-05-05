@@ -1,7 +1,7 @@
-// game_logic.rs
-
 use crossbeam::queue::SegQueue;
 use std::sync::Arc;
+
+use super::game_ecs::*;
 
 #[derive(Debug)]
 pub enum Command {
