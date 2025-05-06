@@ -1,7 +1,12 @@
 use crossbeam::queue::SegQueue;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use super::game_ecs::*;
+
+lazy_static! {
+    pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
+}
 
 #[derive(Debug)]
 pub enum Command {
@@ -9,13 +14,13 @@ pub enum Command {
     Shoot { entity_id: u32 },
 }
 
-pub struct GameLogic {
+pub struct GameLogicMain {
     pub command_queue: Arc<SegQueue<Command>>,
 }
 
-impl GameLogic {
+impl GameLogicMain {
     pub fn new() -> Self {
-        GameLogic {
+        GameLogicMain {
             command_queue: Arc::new(SegQueue::new()),
         }
     }
