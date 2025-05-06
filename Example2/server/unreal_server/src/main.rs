@@ -46,8 +46,28 @@ fn main() {
         get_tcp_server_instance().write().unwrap().run();
     });
 
+
+    let game_logic_thread = thread::spawn(||{
+
+        loop {
+            let start = Instant::now();
+    
+            {
+                let logic = G_GAME_LOGIC.lock().unwrap();
+                logic.process_commands();
+            }
+    
+            let elapsed = start.elapsed();
+            if elapsed < Duration::from_millis(16) {
+                thread::sleep(Duration::from_millis(16) - elapsed);
+            }
+        }
+
+    });
+
     udp_thread.join().unwrap();
     tcp_thread.join().unwrap();
+    game_logic_thread.join().unwrap();
     
     // get_event_handler().write().unwrap().init_function_map();
     // get_udp_server_instance().write().unwrap().run();
