@@ -10,6 +10,7 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum Command {
+    
     Move { entity_id: u32, dx: f32, dy: f32 },
     Shoot { entity_id: u32 },
 }
