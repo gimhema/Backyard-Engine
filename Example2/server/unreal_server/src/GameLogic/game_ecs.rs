@@ -8,13 +8,21 @@ use super::game_player::*;
 use std::collections::{HashMap, HashSet};
 
 type EntityId = u32;
+type WorldId = i64;
 
+pub enum WorldType
+{
+    Default,
+    Lobby,
+    MainWorld,
+}
 
 
 // ==== ECS World ====
 
 pub struct World {
-//    next_entity_id: EntityId,
+    world_type : WorldType,
+    world_id : WorldId,
     entities: HashSet<EntityId>,
     transforms: HashMap<EntityId, Transform>,
 }
@@ -22,7 +30,8 @@ pub struct World {
 impl World {
     pub fn new() -> Self {
         Self {
- //           next_entity_id: 0,
+            world_type : WorldType::Default,
+            world_id : 0,
             entities: HashSet::new(),
             transforms: HashMap::new(),
         }
