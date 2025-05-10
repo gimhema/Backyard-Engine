@@ -1,6 +1,6 @@
 use std::fmt::Pointer;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Rotation
 {
     q_x : f64,
@@ -29,7 +29,7 @@ impl Rotation
     pub fn get_w(&self) -> f64 {return self.q_w}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Position
 {
     x : f64,
@@ -54,7 +54,7 @@ impl Position {
     pub fn get_z(&self) -> f64 {return self.z}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Transform
 {
     position : Position,
@@ -93,3 +93,4 @@ impl Transform
         self.position = _target;
     }
 }
+
