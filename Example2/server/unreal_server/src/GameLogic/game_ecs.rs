@@ -14,7 +14,7 @@ type EntityId = u32;
 // ==== ECS World ====
 
 pub struct World {
-    next_entity_id: EntityId,
+//    next_entity_id: EntityId,
     entities: HashSet<EntityId>,
     transforms: HashMap<EntityId, Transform>,
 }
@@ -22,26 +22,27 @@ pub struct World {
 impl World {
     pub fn new() -> Self {
         Self {
-            next_entity_id: 0,
+ //           next_entity_id: 0,
             entities: HashSet::new(),
             transforms: HashMap::new(),
         }
     }
 
     /// 기본 Entity 생성 (빈 컴포넌트)
-    pub fn create_entity(&mut self) -> EntityId {
-        let id = self.next_entity_id;
-        self.next_entity_id += 1;
-        self.entities.insert(id);
-        id
+    pub fn create_entity(&mut self, _new_id : EntityId) -> EntityId {
+ //       let id = self.next_entity_id;
+ //       self.next_entity_id += 1;
+        self.entities.insert(_new_id);
+        _new_id
     }
 
     /// Entity 생성과 동시에 Position, Velocity 등록
     pub fn create_entity_with_components(
         &mut self,
         position: Option<Transform>,
+        _new_id : EntityId
     ) -> EntityId {
-        let id = self.create_entity();
+        let id = self.create_entity(_new_id);
         if let Some(pos) = position {
             self.transforms.insert(id, pos);
         }
