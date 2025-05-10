@@ -37,6 +37,12 @@ impl World {
         }
     }
 
+    pub fn init_world_info(&mut self, _world_id : WorldId, 
+        _world_type : WorldType) {
+            self.world_id = _world_id;
+            self.world_type = _world_type;
+    }
+
     /// 기본 Entity 생성 (빈 컴포넌트)
     pub fn create_entity(&mut self, _new_id : EntityId) -> EntityId {
  //       let id = self.next_entity_id;

@@ -5,6 +5,8 @@ use std::sync::Mutex;
 use super::game_ecs::*;
 use super::game_logic_action::*;
 
+use std::collections::{HashMap};
+
 lazy_static! {
     pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
 }
@@ -18,11 +20,13 @@ pub enum Command {
 
 pub struct GameLogicMain {
     pub command_queue: Arc<SegQueue<Command>>,
+    pub world_container : HashMap<i64, World>
 }
 
 impl GameLogicMain {
     pub fn new() -> Self {
         GameLogicMain {
+            world_container : HashMap::new(),
             command_queue: Arc::new(SegQueue::new()),
         }
     }
