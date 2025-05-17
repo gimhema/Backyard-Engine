@@ -13,8 +13,8 @@ pub fn do_command_create(_command: Command) {
         println!("Create entity {}", entity_id);
 
         // 일단 단일월드라고 가정
+
         
-             
     }
 }
 

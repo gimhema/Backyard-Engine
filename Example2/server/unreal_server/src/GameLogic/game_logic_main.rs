@@ -62,4 +62,13 @@ impl GameLogicMain {
             }
         }
     }
+
+
+    pub fn get_world(&self, world_id: i64) -> Option<&World> {
+        self.world_container.get(&world_id)
+    }
+
+    pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
+        self.world_container.get_mut(&world_id)
+    }
 }

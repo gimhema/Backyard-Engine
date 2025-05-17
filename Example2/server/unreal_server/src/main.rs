@@ -46,6 +46,9 @@ fn main() {
         get_tcp_server_instance().write().unwrap().run();
     });
 
+    {
+        G_GAME_LOGIC.lock().unwrap().world_create();
+    }
 
     let game_logic_thread = thread::spawn(||{
 
