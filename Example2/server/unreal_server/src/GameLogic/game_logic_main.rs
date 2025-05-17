@@ -63,11 +63,21 @@ impl GameLogicMain {
         }
     }
 
+    // let mut game_logic = G_GAME_LOGIC.lock().unwrap();
 
+    // if let Some(world) = game_logic.get_world(0) {
+    //     if let Some(pos) = world.get_position(42) {
+    //         println!("Entity 42 position: {:?}", pos);
+    //     }
+    // }
     pub fn get_world(&self, world_id: i64) -> Option<&World> {
         self.world_container.get(&world_id)
     }
 
+
+    // if let Some(world) = game_logic.get_world_mut(0) {
+    //     world.create_entity_with_components(None, 42);
+    // }
     pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
         self.world_container.get_mut(&world_id)
     }

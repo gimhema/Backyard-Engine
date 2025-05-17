@@ -14,7 +14,11 @@ pub fn do_command_create(_command: Command) {
 
         // 일단 단일월드라고 가정
 
-        
+        let mut game_logic = G_GAME_LOGIC.lock().unwrap();
+
+        if let Some(world) = game_logic.get_world_mut(0) {
+            world.create_entity(entity_id);
+        }
     }
 }
 
