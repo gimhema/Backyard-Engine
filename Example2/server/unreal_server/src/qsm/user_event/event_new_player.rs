@@ -52,6 +52,13 @@ pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
                 push_command_to_game_logic(Command::Create { entity_id: _pid });
             }
 
+            {
+                let mut _server_resp = ServerResponse::new(_pid.clone(), 1, "Enter World Character Sucessfull".to_string());
+                let mut _resp_msg = _server_resp.serialize();
+    
+                get_tcp_server_instance().write().unwrap().send_message_byte_to_target(_pid.clone() as i64, _resp_msg);
+            }
+
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);
