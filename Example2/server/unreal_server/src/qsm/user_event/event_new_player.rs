@@ -49,7 +49,7 @@ pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
             let _conn_info = entered_payer_message.connect_info;
 
             {
-                // G_GAME_LOGIC.lock().unwrap().
+                push_command_to_game_logic(Command::Create { entity_id: _pid });
             }
 
         }
