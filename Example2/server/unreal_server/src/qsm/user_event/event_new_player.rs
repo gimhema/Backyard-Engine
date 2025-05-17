@@ -6,6 +6,7 @@ use crate::qsm::user_message::message_enter_player_to_game::*;
 use crate::qsm::user_message::message_server_response::{self, ServerResponse};
 
 use super::GameLogic::*;
+use super::GameLogic::game_logic_main::*;
 
 pub fn CallBack_CreateNewPlayer(buffer: &[u8])
 {
@@ -47,7 +48,10 @@ pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
             let _name = entered_payer_message.name;
             let _conn_info = entered_payer_message.connect_info;
 
-            
+            {
+                // G_GAME_LOGIC.lock().unwrap().
+            }
+
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);

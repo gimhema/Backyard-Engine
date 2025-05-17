@@ -11,6 +11,10 @@ lazy_static! {
     pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
 }
 
+pub fn push_command_to_game_logic(command : Command) {
+    G_GAME_LOGIC.lock().unwrap().push_command(command);
+}
+
 #[derive(Debug)]
 pub enum Command {
     Create { entity_id: u32 },
@@ -29,6 +33,10 @@ impl GameLogicMain {
             world_container : HashMap::new(),
             command_queue: Arc::new(SegQueue::new()),
         }
+    }
+
+    pub fn push_command(&mut self, cmd : Command) {
+        self.command_queue.push(cmd);
     }
 
     pub fn process_commands(&self) {
