@@ -45,8 +45,6 @@ impl World {
 
     /// 기본 Entity 생성 (빈 컴포넌트)
     pub fn create_entity(&mut self, _new_id : EntityId) -> EntityId {
- //       let id = self.next_entity_id;
- //       self.next_entity_id += 1;
         self.entities.insert(_new_id);
         _new_id
     }

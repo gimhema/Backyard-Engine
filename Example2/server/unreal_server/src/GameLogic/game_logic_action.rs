@@ -10,7 +10,11 @@ pub fn push_command_create(entity_id: u32) {
 
 pub fn do_command_create(_command: Command) {
     if let Command::Create { entity_id } = _command {
-        println!("Create entity {}", entity_id);        
+        println!("Create entity {}", entity_id);
+
+        // 일단 단일월드라고 가정
+        
+             
     }
 }
 
