@@ -5,7 +5,6 @@ use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 use crate::qsm::user_message::message_enter_player_to_game::*;
 use crate::qsm::user_message::message_server_response::{self, ServerResponse};
 
-use super::GameLogic::*;
 use super::GameLogic::game_logic_main::*;
 
 pub fn CallBack_CreateNewPlayer(buffer: &[u8])
