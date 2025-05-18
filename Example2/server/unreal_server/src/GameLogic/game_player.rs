@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
+use crate::qsm::user_event::event_delete_player::RequestDeletePlayer;
+
 use super::game_geometry::*;
 use super::Network::server_common::*;
 use super::game_logic_main::*;
@@ -135,6 +137,8 @@ impl VECharacterManager
             self.player_container_vec.retain(|item| {
                 !Arc::ptr_eq(item, &target_arc)
             });
+
+            RequestDeletePlayer(_target_id);
 
         } else {
             eprintln!("Tried to delete character with id {}, but not found.", _target_id);
