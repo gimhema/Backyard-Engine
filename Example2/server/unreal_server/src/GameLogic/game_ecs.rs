@@ -62,6 +62,12 @@ impl World {
         id
     }
 
+    pub fn update_movement(&mut self, entity: EntityId,  update_mov : Transform) {
+
+        // self.transforms.get_mut(&entity).unwrap().set_position(target);
+        // self.transforms.get_mut(&entity).unwrap().set_rotation(target);
+    }
+
     pub fn delete_entity(&mut self, entity: EntityId) {
         self.entities.remove(&entity);
         self.transforms.remove(&entity);

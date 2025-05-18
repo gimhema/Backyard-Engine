@@ -52,5 +52,15 @@ pub fn push_command_move(entity_id: u32, loc_x : f32, loc_y : f32, loc_z : f32,r
 pub fn do_command_move(_command : Command) {
     if let Command::Move { entity_id, loc_x, loc_y, loc_z, roll, pitch, yaw } = _command {
 //        println!("Moving entity {} by {}, {}", entity_id, dx, dy);
+        // 추후에 월드 ID를 받아야함
+
+        // 우선 main 월드로 고정
+
+        let mut game_logic = G_GAME_LOGIC.lock().unwrap();
+
+        if let Some(world) = game_logic.get_world_mut(0) {
+            // world.create_entity(entity_id);
+            // world.update_movement(entity_id, update_mov);
+        }
     }
 }
