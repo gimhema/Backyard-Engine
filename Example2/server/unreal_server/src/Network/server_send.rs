@@ -55,6 +55,17 @@ impl server_stream {
         }
     }
 
+    pub fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>) {
+        for id in self.get_id_list() {
+            if let Some(_targetConn) = self.get_user_connection_by_id(id) {
+                _targetConn.write(&msg_byte);
+            }
+            else {
+                println!("Connection Invalid");
+            }
+        }
+    }
+
     pub fn send_message_to_group(&mut self, target_vec : Vec<i64>, msg : String) {
 
         for id in target_vec {
