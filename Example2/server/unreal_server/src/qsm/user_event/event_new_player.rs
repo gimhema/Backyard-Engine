@@ -64,7 +64,7 @@ pub fn CallBack_EnterNewPlayerToGame(buffer: &[u8])
                 let mut _resp_new_player = EnterPlayerToGame::new(_pid, _accountId, _name, _conn_info);
                 let mut _resp_send_buffer = EnterPlayerToGame::serialize(&_resp_new_player);
 
-                get_tcp_server_instance().write().unwrap().send_message_byte_to_target(_pid.clone() as i64, _resp_send_buffer);
+                get_tcp_server_instance().write().unwrap().send_message_byte_to_all(_resp_send_buffer);
             }
 
         }
