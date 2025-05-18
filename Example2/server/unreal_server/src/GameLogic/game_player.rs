@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use super::game_geometry::*;
 use super::Network::server_common::*;
-
+use super::game_logic_main::*;
 
 lazy_static! {
     static ref G_VE_CHARACTER_MANAGER_INSTANCE: Arc<RwLock<VECharacterManager>> = 
@@ -131,9 +131,11 @@ impl VECharacterManager
     pub fn delete_characeter(&mut self, _target_id: i64) {
         if let Some(target_arc) = self.player_container_search_map.remove(&_target_id) {
             // vec에서 해당 Arc를 제거
+            push_command_to_game_logic(Command::Delete { entity_id: _target_id.clone() as u32 });
             self.player_container_vec.retain(|item| {
                 !Arc::ptr_eq(item, &target_arc)
             });
+
         } else {
             eprintln!("Tried to delete character with id {}, but not found.", _target_id);
         }
