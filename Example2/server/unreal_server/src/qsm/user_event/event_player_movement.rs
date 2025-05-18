@@ -21,8 +21,9 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
             println!("euler rotation roll : {}, pitch : {}, yaw : {}",
              roll, pitch, yaw);
 
+            // push_command_to_game_logic(Command::Move { entity_id: (), dx: (), dy: () });
              
-             get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
+            get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);

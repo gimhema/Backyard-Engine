@@ -36,17 +36,21 @@ pub fn do_command_delete(_command: Command) {
     }
 }
 
-pub fn push_command_move(entity_id: u32, _dx : f32, _dy : f32) {
+pub fn push_command_move(entity_id: u32, loc_x : f32, loc_y : f32, loc_z : f32,roll : f32, pitch : f32,yaw : f32) {
     let logic = G_GAME_LOGIC.lock().unwrap();
     logic.command_queue.push(Command::Move {
         entity_id,
-        dx : _dx,
-        dy : _dy
+        loc_x : loc_x,
+        loc_y : loc_y,
+        loc_z : loc_z,
+        roll : roll,
+        pitch : pitch,
+        yaw : yaw    
     });
 }
 
 pub fn do_command_move(_command : Command) {
-    if let Command::Move { entity_id, dx, dy } = _command {
-        println!("Moving entity {} by {}, {}", entity_id, dx, dy);
+    if let Command::Move { entity_id, loc_x, loc_y, loc_z, roll, pitch, yaw } = _command {
+//        println!("Moving entity {} by {}, {}", entity_id, dx, dy);
     }
 }

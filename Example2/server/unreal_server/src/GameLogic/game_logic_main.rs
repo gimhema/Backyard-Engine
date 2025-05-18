@@ -19,7 +19,7 @@ pub fn push_command_to_game_logic(command : Command) {
 pub enum Command {
     Create { entity_id: u32 },
     Delete {entity_id: u32},
-    Move { entity_id: u32, dx: f32, dy: f32 },
+    Move { entity_id: u32, loc_x: f32, loc_y: f32, loc_z: f32, roll: f32, pitch: f32, yaw: f32 },
     Shoot { entity_id: u32 },
 }
 
@@ -57,7 +57,7 @@ impl GameLogicMain {
                 Command::Delete { entity_id } => {
                     do_command_delete(cmd);
                 }
-                Command::Move { entity_id, dx, dy } => {
+                Command::Move { entity_id, loc_x, loc_y, loc_z,roll, pitch,yaw } => {
                     do_command_move(cmd);
                 }
                 Command::Shoot { entity_id } => {
