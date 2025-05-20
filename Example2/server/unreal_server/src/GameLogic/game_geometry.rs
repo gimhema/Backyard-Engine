@@ -42,7 +42,7 @@ impl Position {
         return Position { x: 0.0, y: 0.0, z: 0.0 }
     }
 
-    pub fn new(_x : f64, _y : f64, _z : f64, _w : f64) -> Self {
+    pub fn new(_x : f64, _y : f64, _z : f64) -> Self {
         return Position { x: _x, y: _y, z: _z}
     }
 

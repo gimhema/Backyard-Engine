@@ -1,4 +1,4 @@
-use super::game_logic_main::*;
+use super::{game_geometry::{Position, Rotation, Transform}, game_logic_main::*};
 
 
 pub fn push_command_create(entity_id: u32) {
@@ -36,21 +36,21 @@ pub fn do_command_delete(_command: Command) {
     }
 }
 
-pub fn push_command_move(entity_id: u32, loc_x : f32, loc_y : f32, loc_z : f32,roll : f32, pitch : f32,yaw : f32) {
-    let logic = G_GAME_LOGIC.lock().unwrap();
-    logic.command_queue.push(Command::Move {
-        entity_id,
-        loc_x : loc_x,
-        loc_y : loc_y,
-        loc_z : loc_z,
-        roll : roll,
-        pitch : pitch,
-        yaw : yaw    
-    });
-}
+// pub fn push_command_move(entity_id: u32, loc_x : f32, loc_y : f32, loc_z : f32,roll : f32, pitch : f32,yaw : f32) {
+//     let logic = G_GAME_LOGIC.lock().unwrap();
+//     logic.command_queue.push(Command::Move {
+//         entity_id,
+//         loc_x : loc_x,
+//         loc_y : loc_y,
+//         loc_z : loc_z,
+//         roll : roll,
+//         pitch : pitch,
+//         yaw : yaw    
+//     });
+// }
 
 pub fn do_command_move(_command : Command) {
-    if let Command::Move { entity_id, loc_x, loc_y, loc_z, roll, pitch, yaw } = _command {
+    if let Command::Move { entity_id, loc_x, loc_y, loc_z, q_x, q_y, q_z, q_w } = _command {
 //        println!("Moving entity {} by {}, {}", entity_id, dx, dy);
         // 추후에 월드 ID를 받아야함
 
@@ -58,9 +58,12 @@ pub fn do_command_move(_command : Command) {
 
         let mut game_logic = G_GAME_LOGIC.lock().unwrap();
 
+        let update_mov = Transform::new(
+            Position::new(loc_x as f64, loc_y as f64, loc_z as f64),
+            Rotation::new(q_x as f64, q_y as f64, q_z as f64, q_w as f64));
+
         if let Some(world) = game_logic.get_world_mut(0) {
-            // world.create_entity(entity_id);
-            // world.update_movement(entity_id, update_mov);
+            world.update_movement(entity_id, update_mov);
         }
     }
 }
