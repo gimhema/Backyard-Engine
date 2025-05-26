@@ -25,21 +25,24 @@ pub enum Command {
 
 pub struct GameLogicMain {
     pub command_queue: Arc<SegQueue<Command>>,
-    pub world_container : HashMap<i64, World>
+//    pub world_container : HashMap<i64, World>
+    pub game_world : World,
 }
 
 impl GameLogicMain {
     pub fn new() -> Self {
         GameLogicMain {
-            world_container : HashMap::new(),
+            game_world : World::new(),
+//            world_container : HashMap::new(),
             command_queue: Arc::new(SegQueue::new()),
         }
     }
 
     pub fn world_create(&mut self) {
-        let mut new_world = World::new();
-        new_world.init_world_info(0, WorldType::MainWorld);
-        self.world_container.insert(0, new_world);
+        
+        // let mut new_world = World::new();
+        // new_world.init_world_info(0, WorldType::MainWorld);
+        // self.world_container.insert(0, new_world);
 
         // . . .
     }
@@ -74,15 +77,15 @@ impl GameLogicMain {
     //         println!("Entity 42 position: {:?}", pos);
     //     }
     // }
-    pub fn get_world(&self, world_id: i64) -> Option<&World> {
-        self.world_container.get(&world_id)
-    }
+    // pub fn get_world(&self, world_id: i64) -> Option<&World> {
+    //     self.world_container.get(&world_id)
+    // }
 
 
     // if let Some(world) = game_logic.get_world_mut(0) {
     //     world.create_entity_with_components(None, 42);
     // }
-    pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
-        self.world_container.get_mut(&world_id)
-    }
+    // pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
+    //     self.world_container.get_mut(&world_id)
+    // }
 }

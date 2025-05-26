@@ -16,9 +16,11 @@ pub fn do_command_create(_command: Command) {
 
         let mut game_logic = G_GAME_LOGIC.lock().unwrap();
 
-        if let Some(world) = game_logic.get_world_mut(0) {
-            world.create_entity(entity_id);
-        }
+        game_logic.game_world.create_entity(entity_id);
+
+        // if let Some(world) = game_logic.get_world_mut(0) {
+        //     world.create_entity(entity_id);
+        // }
     }
 }
 
@@ -30,9 +32,10 @@ pub fn do_command_delete(_command: Command) {
 
         let mut game_logic = G_GAME_LOGIC.lock().unwrap();
  
-        if let Some(world) = game_logic.get_world_mut(0) {
-            world.delete_entity(entity_id);
-        }
+        game_logic.game_world.delete_entity(entity_id);
+        // if let Some(world) = game_logic.get_world_mut(0) {
+        //     world.delete_entity(entity_id);
+        // }
     }
 }
 
@@ -62,8 +65,9 @@ pub fn do_command_move(_command : Command) {
             Position::new(loc_x as f64, loc_y as f64, loc_z as f64),
             Rotation::new(q_x as f64, q_y as f64, q_z as f64, q_w as f64));
 
-        if let Some(world) = game_logic.get_world_mut(0) {
-            world.update_movement(entity_id, update_mov);
-        }
+        game_logic.game_world.update_movement(entity_id, update_mov);
+        // if let Some(world) = game_logic.get_world_mut(0) {
+        //     world.update_movement(entity_id, update_mov);
+        // }
     }
 }
