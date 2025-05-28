@@ -44,8 +44,11 @@ bool FTCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
         return false;
     }
 
- //   // UE_LOG(LogTemp, Log, TEXT("서버에 연결됨: %s:%d"), *IP, Port);
-
+    VerifyAccount _respConnectMsg(0, "TESTID", "1234", "127.0.0.1:8080");
+    std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
+    FString _sendMsg = FBase64::Encode(_msgBuffer.data(), _msgBuffer.size());
+    SendMessage(_sendMsg);
+ 
     // 수신용 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("TCPClientThread"), 0, TPri_BelowNormal);
 
