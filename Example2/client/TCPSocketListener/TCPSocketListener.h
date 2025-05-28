@@ -30,6 +30,8 @@ public:
     /** 서버로 메시지 전송 */
     bool SendMessage(const FString& Message);
 
+    bool SendMessageBinary(const std::vector<uint8_t>& Data);
+
     /** 연결 종료 및 정리 */
     void Disconnect();
 

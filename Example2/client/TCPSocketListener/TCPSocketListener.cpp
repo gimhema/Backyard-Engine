@@ -46,8 +46,7 @@ bool FTCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
 
     VerifyAccount _respConnectMsg(0, "TESTID", "1234", "127.0.0.1:8080");
     std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
-    FString _sendMsg = FBase64::Encode(_msgBuffer.data(), _msgBuffer.size());
-    SendMessage(_sendMsg);
+    SendMessageBinary(_msgBuffer);  
  
     // 수신용 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("TCPClientThread"), 0, TPri_BelowNormal);
@@ -91,6 +90,20 @@ bool FTCPSocketListener::SendMessage(const FString& Message)
 
     return bSuccess;
 }
+
+bool FTCPSocketListener::SendMessageBinary(const std::vector<uint8_t>& Data)
+{
+    if (!ClientSocket) return false;
+
+    int32 BytesSent = 0;
+    const uint8* RawData = Data.data();
+    int32 DataSize = static_cast<int32>(Data.size());
+
+    bool bSuccess = ClientSocket->Send(RawData, DataSize, BytesSent);
+
+    return bSuccess && BytesSent == DataSize;
+}
+
 
 uint32 FTCPSocketListener::Run()
 {
