@@ -1,4 +1,5 @@
 #include "TCPSocketListener.h"
+#include "../QSM/QSM_VerifyAccount.hpp"
 
 FTCPSocketListener::FTCPSocketListener()
     : ClientSocket(nullptr), Thread(nullptr), bRunThread(true)
