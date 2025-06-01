@@ -38,7 +38,8 @@ enum_from_u32! {
         VERIFY_ACCOUNT = 8,
         ENTER_NEW_PAYER = 9,
         DELETE_PLAYER = 10,
-        END = 11
+        ALLOW_CONNECT_GAME = 11,
+        END = 12
     }
 }
 

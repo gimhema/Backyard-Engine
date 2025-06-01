@@ -2,6 +2,7 @@ use crate::get_tcp_server_instance;
 use crate::qsm::user_message::message_make_account::{self, MakeAccount};
 use crate::qsm::user_message::message_verify_account::{self, VerifyAccount};
 use crate::qsm::user_message::message_allow_connect::{self, AllowConnectGame};
+use crate::Event::event_handler::EventHeader;
 use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 
 use super::GameLogic::*;
@@ -40,6 +41,8 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
 
                 // 지정된 id를 세팅해서 AllowConnectGame 메세지에 할당한후 전송
 
+                let _message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
+
                 let _session_id = 0; // 서버가 지정
 
                 let _account_id = verify_account_message.userId.clone();
@@ -47,6 +50,7 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 let _conn_info = verify_account_message.connect_info.clone();
 
                 let mut _allow_connect_game = AllowConnectGame::new(
+                    _message_id,
                     _session_id, 
                     _pid_copy, 
                     _account_id, 
