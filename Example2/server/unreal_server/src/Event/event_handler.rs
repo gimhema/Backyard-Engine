@@ -39,7 +39,9 @@ enum_from_u32! {
         ENTER_NEW_PAYER = 9,
         DELETE_PLAYER = 10,
         ALLOW_CONNECT_GAME = 11,
-        END = 12
+        SERVER_RESPONSE = 12,
+        ENTER_PLAYER_TO_GAME = 13,
+        END = 14
     }
 }
 
