@@ -37,7 +37,8 @@ enum_from_u32! {
         MAKE_ACCOUNT = 7,
         VERIFY_ACCOUNT = 8,
         ENTER_NEW_PAYER = 9,
-        END = 10
+        DELETE_PLAYER = 10,
+        END = 11
     }
 }
 
