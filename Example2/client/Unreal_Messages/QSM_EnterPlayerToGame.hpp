@@ -1,14 +1,16 @@
 #pragma pack(push, 1)
 struct EnterPlayerToGame {
+    uint32_t mid;
     uint32_t pid;
     std::string accountId;
     std::string name;
     std::string connect_info;
 
-    EnterPlayerToGame(uint32_t pid, std::string accountId, std::string name, std::string connect_info) : pid(pid), accountId(accountId), name(name), connect_info(connect_info) {}
+    EnterPlayerToGame(uint32_t mid, uint32_t pid, std::string accountId, std::string name, std::string connect_info) : mid(mid), pid(pid), accountId(accountId), name(name), connect_info(connect_info) {}
 
     std::vector<uint8_t> serialize() const {
         std::vector<uint8_t> buffer;
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&mid), reinterpret_cast<const uint8_t*>(&mid + 1));
         buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&pid), reinterpret_cast<const uint8_t*>(&pid + 1));
         uint32_t accountId_length = accountId.size();
         buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&accountId_length), reinterpret_cast<const uint8_t*>(&accountId_length + 1));
@@ -24,6 +26,8 @@ struct EnterPlayerToGame {
 
     static EnterPlayerToGame deserialize(const std::vector<uint8_t>& buffer) {
         size_t offset = 0;
+        uint32_t mid = *reinterpret_cast<const uint32_t*>(buffer.data() + offset);
+        offset += sizeof(uint32_t);
         uint32_t pid = *reinterpret_cast<const uint32_t*>(buffer.data() + offset);
         offset += sizeof(uint32_t);
         uint32_t accountId_length = *reinterpret_cast<const uint32_t*>(buffer.data() + offset);
@@ -38,7 +42,7 @@ struct EnterPlayerToGame {
         offset += sizeof(uint32_t);
         std::string connect_info(buffer.begin() + offset, buffer.begin() + offset + connect_info_length);
         offset += connect_info_length;
-        return EnterPlayerToGame(pid, accountId, name, connect_info);
+        return EnterPlayerToGame(mid, pid, accountId, name, connect_info);
     }
 };
 #pragma pack(pop)
