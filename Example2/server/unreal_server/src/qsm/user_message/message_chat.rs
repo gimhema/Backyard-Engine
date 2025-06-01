@@ -3,12 +3,12 @@ use std::io;
 // 자동 생성된 구조체 및 관련 메서드
         #[repr(C)]
         #[derive(Debug, Clone)]
-        pub struct Chat {
+        pub struct ChatMessage {
            pub mid: u32,
    pub id: u32,
    pub content: String,}
     
-        impl Chat {
+        impl ChatMessage {
             pub fn new(mid: u32, id: u32, content: String) -> Self {
                 Self {
                     mid,
