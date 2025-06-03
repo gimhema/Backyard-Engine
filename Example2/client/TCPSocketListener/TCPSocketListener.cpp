@@ -44,6 +44,7 @@ bool FTCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
         return false;
     }
 
+    // VerifyAccount _respConnectMsg(QFunctionType::VERIFY_ACCOUNT, 0, "TESTID", "1234", "127.0.0.1:8080");
     VerifyAccount _respConnectMsg(8, 0, "TESTID", "1234", "127.0.0.1:8080");
     std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
     SendMessageBinary(_msgBuffer);  
