@@ -1,5 +1,6 @@
 #include "TCPSocketListener.h"
 #include "../QSM/QSM_VerifyAccount.hpp"
+#include "../QSM/QSM_MessageEnum.h"
 
 FTCPSocketListener::FTCPSocketListener()
     : ClientSocket(nullptr), Thread(nullptr), bRunThread(true)
@@ -43,11 +44,10 @@ bool FTCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
 //        // UE_LOG(LogTemp, Error, TEXT("서버에 연결할 수 없습니다."));
         return false;
     }
-
-    // VerifyAccount _respConnectMsg(QFunctionType::VERIFY_ACCOUNT, 0, "TESTID", "1234", "127.0.0.1:8080");
-    VerifyAccount _respConnectMsg(8, 0, "TESTID", "1234", "127.0.0.1:8080");
-    std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
-    SendMessageBinary(_msgBuffer);  
+    
+   VerifyAccount _respConnectMsg(static_cast<int>(QFunctionType::VERIFY_ACCOUNT), 0, "TESTID", "1234", "127.0.0.1:8080");
+   std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
+   SendMessageBinary(_msgBuffer);  
  
     // 수신용 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("TCPClientThread"), 0, TPri_BelowNormal);
