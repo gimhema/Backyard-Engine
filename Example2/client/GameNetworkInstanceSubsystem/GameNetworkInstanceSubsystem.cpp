@@ -22,6 +22,14 @@ void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageTy
 void UGameNetworkInstanceSubsystem::InitFunctionHandler()
 {
     this->RegisterHandler(
+        EServerMessageType::CHAT,
+        FMessageHandler::CreateRaw(Handler, &MyHandler::ChatMessage)
+    );
+    this->RegisterHandler(
+        EServerMessageType::NEW_PLAYER,
+        FMessageHandler::CreateRaw(Handler, &MyHandler::CreateNewPlayer)
+    );
+    this->RegisterHandler(
         EServerMessageType::PLAYER_MOVEMENT,
         FMessageHandler::CreateRaw(Handler, &MyHandler::HandleMove)
     );
