@@ -121,12 +121,14 @@ void FTCPSocketListener::ReceiveData()
     {
         if (BytesRead > 0)
         {
-            FString Received = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
-            // UMyServerMessageSubsystem* MsgSubsystem = GetGameInstance()->GetSubsystem<UMyServerMessageSubsystem>();
-            // if (MsgSubsystem)
-            // {
-            //     MsgSubsystem->DispatchMessage("Move", ReceivedData);
-            // }
+            // FString Received = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
+            BaseMessage base_message = BaseMessage::deserialize(Buffer);
+
+            UGameNetworkInstanceSubsystem* MsgSubsystem = GetGameInstance()->GetSubsystem<UGameNetworkInstanceSubsystem>();
+            if (MsgSubsystem)
+            {
+                MsgSubsystem->DispatchMessage(base_message.id, Buffer);
+            }
             // UE_LOG(LogTemp, Log, TEXT("서버로부터 수신된 메시지: %s"), *Received);
         }
     }
