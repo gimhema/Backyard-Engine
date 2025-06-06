@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameNetworkInstanceSubsystem.h"
+#include "../Unreal_Messages/QSM_BaseMessage.hpp"
 
 void UGameNetworkInstanceSubsystem::RegisterHandler(EServerMessageType MessageType, FMessageHandler Handler)
 {
@@ -22,8 +21,23 @@ void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageTy
 
 void UGameNetworkInstanceSubsystem::InitFunctionHandler()
 {
-    // this->RegisterHandler(
-    //     EServerMessageType::DEFAULT,
-    //     FMessageHandler::CreateRaw(Handler, &MyHandler::HandleMove)
-    // );
+    this->RegisterHandler(
+        EServerMessageType::PLAYER_MOVEMENT,
+        FMessageHandler::CreateRaw(Handler, &MyHandler::HandleMove)
+    );
+}
+
+void FMyHandler::ChatMessage(const TArray<uint8>& Payload)
+{
+
+}
+
+void FMyHandler::CreateNewPlayer(const TArray<uint8>& Payload)
+{
+
+}
+
+void FMyHandler::HandleMove(const TArray<uint8>& Payload)
+{
+
 }
