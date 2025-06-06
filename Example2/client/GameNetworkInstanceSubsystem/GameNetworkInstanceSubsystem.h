@@ -20,15 +20,6 @@ enum class EServerMessageType : uint8
 	PLAYER_MOVEMENT        UMETA(DisplayName = "PLAYER_MOVEMENT"),
 };
 
-class FMyHandler
-{
-public:
-	void ChatMessage(const TArray<uint8>& Payload);
-	void CreateNewPlayer(const TArray<uint8>& Payload);
-	void HandleMove(const TArray<uint8>& Payload);
-};
-
-
 UCLASS()
 class VOIDESCAPE_API UGameNetworkInstanceSubsystem : public UGameInstanceSubsystem
 {
@@ -41,4 +32,5 @@ public:
 
 private:
 	TMap<EServerMessageType, FMessageHandler> HandlerMap;
+
 };

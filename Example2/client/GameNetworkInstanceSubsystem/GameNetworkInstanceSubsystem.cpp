@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+
+
 #include "GameNetworkInstanceSubsystem.h"
-#include "../Unreal_Messages/QSM_BaseMessage.hpp"
 
 void UGameNetworkInstanceSubsystem::RegisterHandler(EServerMessageType MessageType, FMessageHandler Handler)
 {
@@ -9,43 +10,36 @@ void UGameNetworkInstanceSubsystem::RegisterHandler(EServerMessageType MessageTy
 
 void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageType, const TArray<uint8>& Payload)
 {
-    if (FMessageHandler* Handler = HandlerMap.Find(MessageType))
+    switch (MessageType)
     {
-        Handler->ExecuteIfBound(Payload);
-    }
-    else
-    {
-        // UE_LOG(LogTemp, Warning, TEXT("No handler for message type: %s"), *MessageType.ToString());
+        case EServerMessageType::DEFAULT:
+        {
+    
+        }
+        break;
+        case EServerMessageType::CHAT:
+        {
+
+        }
+        break;
+        case EServerMessageType::NEW_PLAYER:
+        {
+
+        }
+        break;
+        case EServerMessageType::PLAYER_MOVEMENT:
+        {
+
+        }
+        break;
+    break;
+    default:
+        break;
     }
 }
 
 void UGameNetworkInstanceSubsystem::InitFunctionHandler()
 {
-    this->RegisterHandler(
-        EServerMessageType::CHAT,
-        FMessageHandler::CreateRaw(Handler, &MyHandler::ChatMessage)
-    );
-    this->RegisterHandler(
-        EServerMessageType::NEW_PLAYER,
-        FMessageHandler::CreateRaw(Handler, &MyHandler::CreateNewPlayer)
-    );
-    this->RegisterHandler(
-        EServerMessageType::PLAYER_MOVEMENT,
-        FMessageHandler::CreateRaw(Handler, &MyHandler::HandleMove)
-    );
-}
-
-void FMyHandler::ChatMessage(const TArray<uint8>& Payload)
-{
 
 }
 
-void FMyHandler::CreateNewPlayer(const TArray<uint8>& Payload)
-{
-
-}
-
-void FMyHandler::HandleMove(const TArray<uint8>& Payload)
-{
-
-}
