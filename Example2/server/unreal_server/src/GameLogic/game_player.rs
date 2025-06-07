@@ -68,7 +68,6 @@ pub struct VECharcater
 {
     pub player_network_config : VEPlayerNetWorkStatus,
     pub player_personal_info : VEPlayerPersonalInfo,
-    transform : Transform
 }
 
 impl VECharcater {
@@ -76,7 +75,6 @@ impl VECharcater {
         return VECharcater { 
             player_network_config: VEPlayerNetWorkStatus::new_zero(),
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
-            transform: Transform::new_zero(),
             }
     }
 
@@ -96,8 +94,6 @@ impl VECharcater {
 
 pub struct VECharacterManager
 {
-    // index = session_id
-    // player_container : Vec<VECharcater>
     player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
     player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
     id_top : i64
