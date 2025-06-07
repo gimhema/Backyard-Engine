@@ -8,6 +8,11 @@ use super::game_geometry::*;
 use super::Network::server_common::*;
 use super::game_logic_main::*;
 
+use super::game_system_battle::*;
+use super::game_system_item::*;
+use super::game_system_status::*;
+use super::game_system_equipment::*;
+
 lazy_static! {
     static ref G_VE_CHARACTER_MANAGER_INSTANCE: Arc<RwLock<VECharacterManager>> = 
 Arc::new(RwLock::new(VECharacterManager::new()));
