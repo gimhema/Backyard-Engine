@@ -8,7 +8,7 @@ void UGameNetworkInstanceSubsystem::RegisterHandler(EServerMessageType MessageTy
     HandlerMap.Add(MessageType, Handler);
 }
 
-void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageType, const TArray<uint8>& Payload)
+void UGameNetworkInstanceSubsystem::DispatchMessage(EServerMessageType MessageType, std::vector<uint8_t>& Payload)
 {
     switch (MessageType)
     {

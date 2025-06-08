@@ -20,6 +20,14 @@ enum class EServerMessageType : uint8
 	PLAYER_MOVEMENT        UMETA(DisplayName = "PLAYER_MOVEMENT"),
 };
 
+//class FGameMessageFuncHandler
+//{
+//public:
+//	void ChatMessage(const TArray<uint8>& Payload);
+//	void CreateNewPlayer(const TArray<uint8>& Payload);
+//	void HandleMove(const TArray<uint8>& Payload);
+//};
+
 UCLASS()
 class VOIDESCAPE_API UGameNetworkInstanceSubsystem : public UGameInstanceSubsystem
 {
@@ -27,7 +35,7 @@ class VOIDESCAPE_API UGameNetworkInstanceSubsystem : public UGameInstanceSubsyst
 	
 public:
 	void RegisterHandler(EServerMessageType MessageType, FMessageHandler Handler);
-	void DispatchMessage(EServerMessageType MessageType, const TArray<uint8>& Payload);
+	void DispatchMessage(EServerMessageType MessageType, std::vector<uint8_t>& Payload);
 	void InitFunctionHandler();
 
 private:
