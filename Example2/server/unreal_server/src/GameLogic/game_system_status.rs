@@ -24,6 +24,10 @@ impl ActorStatus {
             stamina : 0
          }
     }
+
+    pub fn init(&mut self) {
+        
+    }
 }
 
 

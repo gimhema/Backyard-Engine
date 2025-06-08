@@ -9,5 +9,6 @@ pub mod game_system_item;
 pub mod game_system_equipment;
 pub mod game_system_status;
 pub mod game_npc;
+pub mod game_setting;
 
 use super::Network;
