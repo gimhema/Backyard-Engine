@@ -21,6 +21,7 @@ mod UserLogic;
 // Core Logic
 mod Core;
 use crate::GameLogic::game_logic_main::*;
+use crate::GameLogic::game_setting::*;
 use std::sync::Arc;
 use std::thread;
 use std::sync::Mutex;
@@ -33,6 +34,8 @@ fn main() {
     println!("Server Start");
 
     get_event_handler().write().unwrap().init_function_map();
+
+    GameConfig::init("");
 
     // Run UDP
     let unreliable_server_instance = Arc::clone(get_udp_server_instance());

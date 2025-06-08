@@ -5,7 +5,9 @@ use std::sync::OnceLock;
 pub struct GameConfig {
     pub max_players: u32,
     pub server_name: String,
-
+    pub init_health_point : i64,
+    pub init_ability_point : i64,
+    pub init_stamina_point : i64,
 }
 
 // 전역 싱글턴
@@ -18,7 +20,10 @@ impl GameConfig {
         // 지금은 더미 데이터 리턴
         GameConfig {
             max_players: 64,
-            server_name: "MyRustServer".to_string(),
+            server_name: "GameServer".to_string(),
+            init_health_point : 100,
+            init_ability_point : 100,
+            init_stamina_point : 100,
         }
     }
 
