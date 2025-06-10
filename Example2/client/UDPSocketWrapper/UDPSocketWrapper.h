@@ -21,7 +21,9 @@ private:
     TSharedPtr<FInternetAddr> RemoteAddress;
     FRunnableThread* Thread;
     bool bRunThread;
-    const int32 BufferSize = 2048; // 2KB 버퍼
+    const int32 BufferSize = 4096; // 2KB 버퍼
+
+    UGameInstance* GameInstance;
 
 public:
     FUDPSocketWrapper();
