@@ -81,7 +81,7 @@ void FUDPSocketWrapper::StopReceiving()
 
 uint32 FUDPSocketWrapper::Run()
 {
-    uint8 Buffer[2048];
+    std::vector<uint8_t> Buffer;
     int32 BytesRead = 0;
     TSharedPtr<FInternetAddr> Sender = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
@@ -90,17 +90,21 @@ uint32 FUDPSocketWrapper::Run()
         if (!UdpSocket) break;
 
         // 데이터 수신
-        if (UdpSocket->RecvFrom(Buffer, BufferSize, BytesRead, *Sender))
+        if (UdpSocket->RecvFrom(Buffer.data(), BufferSize, BytesRead, *Sender))
         {
             if (BytesRead > 0)
             {
-                FString ReceivedMessage = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
-                UE_LOG(LogTemp, Log, TEXT("UDP 메시지 수신: %s (%d bytes)"), *ReceivedMessage, BytesRead);
-                // UMyServerMessageSubsystem* MsgSubsystem = GetGameInstance()->GetSubsystem<UMyServerMessageSubsystem>();
-                // if (MsgSubsystem)
-                // {
-                //     MsgSubsystem->DispatchMessage("Move", ReceivedData);
-                // }
+                // FString Received = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
+                BaseMessage _recvMessage = BaseMessage::deserialize(Buffer);
+
+                EServerMessageType _msgType = static_cast<EServerMessageType>(_recvMessage.id);
+
+                UGameNetworkInstanceSubsystem* MsgSubsystem = GameInstance->GetSubsystem<UGameNetworkInstanceSubsystem>();
+                if (MsgSubsystem)
+                {
+                    MsgSubsystem->DispatchMessage(_msgType, Buffer);
+                }
+                // UE_LOG(LogTemp, Log, TEXT("서버로부터 수신된 메시지: %s"), *Received);
             }
         }
 
