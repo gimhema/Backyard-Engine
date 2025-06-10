@@ -2,10 +2,19 @@
 #include "QSM/QSM_ChatMessage.hpp"
 #include "QSM/QSM_NewPlayer.hpp"
 #include "QSM/QSM_PlayerMovement.hpp"
+#include "QSM/QSM_BaseMessage.h"
+#include "GameNetworkInstanceSubsystem.h"
+
 
 FUDPSocketWrapper::FUDPSocketWrapper()
     : UdpSocket(nullptr), Thread(nullptr), bRunThread(true)
 {
+    GameInstance = GEngine->GetWorld()->GetGameInstance();
+    if (!GameInstance)
+    {
+        // UE_LOG(LogTemp, Error, TEXT("게임 인스턴스를 찾을 수 없습니다."));
+    }
+
     ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
     if (!SocketSubsystem)
     {
@@ -36,11 +45,11 @@ FUDPSocketWrapper::FUDPSocketWrapper()
 
     if (!UdpSocket->Bind(*LocalAddress))
     {
-        UE_LOG(LogTemp, Error, TEXT("UDP 소켓 바인딩 실패!"));
+        // UE_LOG(LogTemp, Error, TEXT("UDP 소켓 바인딩 실패!"));
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("UDP 소켓이 포트 7777에서 실행 중"));
+    // UE_LOG(LogTemp, Log, TEXT("UDP 소켓이 포트 7777에서 실행 중"));
 
     // 수신을 위한 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("UDPReceiverThread"), 0, TPri_BelowNormal);
@@ -87,6 +96,11 @@ uint32 FUDPSocketWrapper::Run()
             {
                 FString ReceivedMessage = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer)));
                 UE_LOG(LogTemp, Log, TEXT("UDP 메시지 수신: %s (%d bytes)"), *ReceivedMessage, BytesRead);
+                // UMyServerMessageSubsystem* MsgSubsystem = GetGameInstance()->GetSubsystem<UMyServerMessageSubsystem>();
+                // if (MsgSubsystem)
+                // {
+                //     MsgSubsystem->DispatchMessage("Move", ReceivedData);
+                // }
             }
         }
 
