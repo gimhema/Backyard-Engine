@@ -92,6 +92,10 @@ impl VECharcater {
         self.set_player_ip_addr(_addr);
     }
 
+    pub fn init(&mut self) {
+        self.player_status.init();
+    }
+
 }
 
 pub struct VECharacterManager

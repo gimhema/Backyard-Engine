@@ -25,6 +25,7 @@ pub fn CallBack_CreateNewPlayer(buffer: &[u8])
             let mut _new_character = VECharcater::new_zero();
             
             _new_character.set_player_name(_name);
+            _new_character.init();
             
             get_ve_char_manager_instance().write().unwrap().new_character(_new_character);
 
