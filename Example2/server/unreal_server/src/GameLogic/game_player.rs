@@ -68,6 +68,7 @@ pub struct VECharcater
 {
     pub player_network_config : VEPlayerNetWorkStatus,
     pub player_personal_info : VEPlayerPersonalInfo,
+    pub player_status : ActorStatus
 }
 
 impl VECharcater {
@@ -75,6 +76,7 @@ impl VECharcater {
         return VECharcater { 
             player_network_config: VEPlayerNetWorkStatus::new_zero(),
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
+            player_status : ActorStatus::new_zero(),
             }
     }
 

@@ -12,6 +12,7 @@ pub enum ActorStatusMode
     DEATH = 2
 }
 
+#[derive(Debug, Clone)]
 pub struct ActorStatus
 {
     actor_mode : ActorStatusMode,
