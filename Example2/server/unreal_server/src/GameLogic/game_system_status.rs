@@ -4,6 +4,7 @@ use super::game_setting::*;
 // let cfg = GameConfig::get();
 // println!("Server: {}, Max Players: {}", cfg.server_name, cfg.max_players);
 
+#[derive(Debug, Clone)]
 pub enum ActorStatusMode 
 {
     IDLE = 0,
@@ -54,6 +55,23 @@ impl ActorStatus {
     pub fn set_actor_mode(&mut self, val : ActorStatusMode) {
         self.actor_mode = val;
     }
+
+    pub fn get_health_point(&self) -> i64 {
+        return self.health_point
+    }
+
+    pub fn get_ability_point(&self) -> i64 {
+        return self.ability_point
+    }
+
+    pub fn get_stamina(&self) -> i64 {
+        return self.stamina
+    }
+
+    pub fn get_actor_mode(&self) -> ActorStatusMode {
+        return self.actor_mode.clone()
+    }
+
 }
 
 
