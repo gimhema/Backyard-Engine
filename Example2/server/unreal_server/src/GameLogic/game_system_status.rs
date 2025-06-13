@@ -13,7 +13,7 @@ pub enum ActorStatusMode
 
 pub struct ActorStatus
 {
-    alive : ActorStatusMode,
+    actot_mode : ActorStatusMode,
     health_point : i64,
     ability_point : i64,
     stamina : i64
@@ -22,7 +22,7 @@ pub struct ActorStatus
 impl ActorStatus {
     pub fn new_zero() -> Self {
         return ActorStatus { 
-            alive : ActorStatusMode::IDLE,
+            actot_mode : ActorStatusMode::IDLE,
             health_point : 0,
             ability_point : 0,
             stamina : 0
@@ -36,7 +36,23 @@ impl ActorStatus {
         self.health_point = cfg.init_health_point;
         self.ability_point = cfg.init_ability_point;
         self.stamina = cfg.init_stamina_point;
-        self.alive = ActorStatusMode::ALIVE;
+        self.actot_mode = ActorStatusMode::ALIVE;
+    }
+
+    pub fn set_health_point(&mut self, val : i64) {
+        self.health_point = val;
+    }
+
+    pub fn set_ability_point(&mut self, val : i64) {
+        self.ability_point = val;
+    }
+
+    pub fn set_stamina(&mut self, val : i64) {
+        self.stamina = val;
+    }
+
+    pub fn set_actor_mode(&mut self, val : ActorStatusMode) {
+        self.actot_mode = val;
     }
 }
 
