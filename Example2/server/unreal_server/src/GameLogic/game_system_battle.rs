@@ -17,14 +17,22 @@ pub mod battle_interface
 
     pub fn damage_common_action(target_id : i64, damage : i64) 
     {
-        let mut reduced_damage = calc_endurance(target_id, damage);
+        let mut total_damage = damage;
 
-        hit_process(target_id, reduced_damage);        
+        total_damage = calc_endurance(target_id, total_damage.clone());
+        total_damage = calc_status_effect(target_id, total_damage.clone());
+
+        hit_process(target_id, total_damage);        
     }
 
     pub fn calc_endurance(target_id : i64, damage : i64) -> i64
     {
         // id를 통해 캐릭터의 방어력을 검사하고 데미지를 감쇠
+        return 0
+    }
+
+    pub fn calc_status_effect(target_id : i64, damage : i64) -> i64
+    {
         return 0
     }
 
