@@ -1,5 +1,7 @@
+use std::collections::HashMap;
 
 
+#[derive(Debug, Clone)]
 pub enum ArmorEquipPosition
 {
     HEAD = 0,
@@ -8,6 +10,7 @@ pub enum ArmorEquipPosition
     HAND = 3
 }
 
+#[derive(Debug, Clone)]
 pub enum WeaponEquipPosition
 {
     MAIN = 0,
@@ -15,11 +18,13 @@ pub enum WeaponEquipPosition
     SUB2 = 2
 }
 
+#[derive(Debug, Clone)]
 pub struct Armor
 {
 
 }
 
+#[derive(Debug, Clone)]
 pub struct Weapon
 {
 
@@ -28,12 +33,16 @@ pub struct Weapon
 #[derive(Debug, Clone)]
 pub struct PlayerEquipment
 {
-
+    armor_sockets : HashMap<ArmorEquipPosition, Armor>,
+    weapon_sockets : HashMap<WeaponEquipPosition, Weapon>
 }
 
 impl PlayerEquipment
 {
     pub fn new() -> Self {
-        return PlayerEquipment{}
+        return PlayerEquipment{
+            armor_sockets : HashMap::new(),
+            weapon_sockets : HashMap::new()
+        }
     }
 }
