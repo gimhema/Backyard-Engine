@@ -23,7 +23,8 @@ pub enum WeaponEquipPosition
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Armor
 {
-
+    armor_unique : i64,
+    armor_position : ArmorEquipPosition
 }
 
 impl Armor {
@@ -35,12 +36,17 @@ impl Armor {
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Weapon
 {
-
+    weapon_unique : i64,
+    weapon_position : WeaponEquipPosition
 }
 
 impl Weapon {
     pub fn new() -> Self {
         return Weapon {  }
+    }
+
+    pub fn create_empty_weapon_at_position(position : WeaponEquipPosition) -> Self {
+
     }
 }
 
