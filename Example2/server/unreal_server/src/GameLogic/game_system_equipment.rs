@@ -47,6 +47,10 @@ impl PlayerEquipment
             weapon_sockets : HashMap::new()
         }
     }
+
+    pub fn init(&mut self) {
+        
+    }
 }
 
 impl VECharcater {
@@ -54,5 +58,5 @@ impl VECharcater {
 }
 
 impl VECharacterManager {
-    
+
 }

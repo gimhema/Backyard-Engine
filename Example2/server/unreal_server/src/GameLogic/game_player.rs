@@ -96,6 +96,7 @@ impl VECharcater {
 
     pub fn init(&mut self) {
         self.player_status.init();
+        self.player_equipment.init();
     }
 
 }
