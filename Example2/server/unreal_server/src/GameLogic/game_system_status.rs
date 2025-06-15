@@ -1,4 +1,6 @@
 
+use crate::GameLogic::game_player::{VECharacterManager, VECharcater};
+
 use super::game_setting::*;
 
 // let cfg = GameConfig::get();
@@ -76,3 +78,42 @@ impl ActorStatus {
 }
 
 
+// Character Method Status Action Implementation
+impl VECharcater {
+    pub fn set_character_health(&mut self, val : i64) {
+        self.player_status.set_health_point(val);
+    }
+
+    pub fn set_character_ability_point(&mut self, val : i64) {
+        self.player_status.set_ability_point(val);
+    }
+
+    pub fn set_character_stamina(&mut self, val : i64) {
+        self.player_status.set_stamina(val);
+    }
+
+    pub fn set_character_mode(&mut self, val : ActorStatusMode) {
+        self.player_status.set_actor_mode(val);
+    }
+
+    pub fn get_character_health(&self) -> i64 {
+        return self.player_status.get_health_point()
+    }
+
+    pub fn get_character_ability_point(&self) -> i64 {
+        return self.player_status.get_ability_point()
+    }
+
+    pub fn get_character_stamina(&self) -> i64 {
+        return self.player_status.get_stamina()
+    }
+
+    pub fn get_character_mode(&self) -> ActorStatusMode {
+        return self.player_status.get_actor_mode()
+    }
+}
+
+// Character Manager Method Status Action Implementation
+impl VECharacterManager {
+
+}
