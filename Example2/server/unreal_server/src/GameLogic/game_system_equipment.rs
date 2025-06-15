@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::GameLogic::game_player::{VECharacterManager, VECharcater};
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum ArmorEquipPosition
 {
     HEAD = 0,
@@ -12,7 +12,7 @@ pub enum ArmorEquipPosition
     HAND = 3
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum WeaponEquipPosition
 {
     MAIN = 0,
@@ -20,16 +20,28 @@ pub enum WeaponEquipPosition
     SUB2 = 2
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Armor
 {
 
 }
 
-#[derive(Debug, Clone)]
+impl Armor {
+    pub fn new() -> Self {
+        return Armor {  }
+    }
+}
+
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Weapon
 {
 
+}
+
+impl Weapon {
+    pub fn new() -> Self {
+        return Weapon {  }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -49,8 +61,15 @@ impl PlayerEquipment
     }
 
     pub fn init(&mut self) {
-        
+        self.armor_sockets.insert(ArmorEquipPosition::HEAD, Armor::new());
+        self.armor_sockets.insert(ArmorEquipPosition::BODY, Armor::new());
+        self.armor_sockets.insert(ArmorEquipPosition::HAND, Armor::new());
+        self.armor_sockets.insert(ArmorEquipPosition::FOOT, Armor::new());
+        self.weapon_sockets.insert(WeaponEquipPosition::MAIN, Weapon::new());
+        self.weapon_sockets.insert(WeaponEquipPosition::SUB1, Weapon::new());
+        self.weapon_sockets.insert(WeaponEquipPosition::SUB2, Weapon::new());
     }
+
 }
 
 impl VECharcater {
