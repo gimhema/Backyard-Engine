@@ -23,44 +23,44 @@ pub enum WeaponEquipPosition
 }
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
-pub struct Armor
+pub struct ArmorSocket
 {
     armor_unique : i64,
     armor_position : ArmorEquipPosition
 }
 
-impl Armor {
+impl ArmorSocket {
     pub fn new() -> Self {
-        return Armor { armor_unique : 0, armor_position : ArmorEquipPosition::DEFAULT }
+        return ArmorSocket { armor_unique : 0, armor_position : ArmorEquipPosition::DEFAULT }
     }
 
     pub fn create_empty_armomr_at_position(position : ArmorEquipPosition) -> Self {
-        return Armor { armor_unique: 0, armor_position: position }
+        return ArmorSocket { armor_unique: 0, armor_position: position }
     }
 }
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
-pub struct Weapon
+pub struct WeaponSocket
 {
     weapon_unique : i64,
     weapon_position : WeaponEquipPosition
 }
 
-impl Weapon {
+impl WeaponSocket {
     pub fn new() -> Self {
-        return Weapon { weapon_unique : 0, weapon_position : WeaponEquipPosition::DEFAULT }
+        return WeaponSocket { weapon_unique : 0, weapon_position : WeaponEquipPosition::DEFAULT }
     }
 
     pub fn create_empty_weapon_at_position(position : WeaponEquipPosition) -> Self {
-        return Weapon { weapon_unique: 0, weapon_position: WeaponEquipPosition::DEFAULT }
+        return WeaponSocket { weapon_unique: 0, weapon_position: WeaponEquipPosition::DEFAULT }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct PlayerEquipment
 {
-    armor_sockets : HashMap<ArmorEquipPosition, Armor>,
-    weapon_sockets : HashMap<WeaponEquipPosition, Weapon>
+    armor_sockets : HashMap<ArmorEquipPosition, ArmorSocket>,
+    weapon_sockets : HashMap<WeaponEquipPosition, WeaponSocket>
 }
 
 impl PlayerEquipment
@@ -74,25 +74,25 @@ impl PlayerEquipment
 
     pub fn init(&mut self) {
         self.armor_sockets.insert(ArmorEquipPosition::HEAD,
-             Armor::create_empty_armomr_at_position(ArmorEquipPosition::HEAD));
+             ArmorSocket::create_empty_armomr_at_position(ArmorEquipPosition::HEAD));
         
         self.armor_sockets.insert(ArmorEquipPosition::BODY,
-             Armor::create_empty_armomr_at_position(ArmorEquipPosition::BODY));
+             ArmorSocket::create_empty_armomr_at_position(ArmorEquipPosition::BODY));
         
         self.armor_sockets.insert(ArmorEquipPosition::HAND,
-             Armor::create_empty_armomr_at_position(ArmorEquipPosition::HAND));
+             ArmorSocket::create_empty_armomr_at_position(ArmorEquipPosition::HAND));
         
         self.armor_sockets.insert(ArmorEquipPosition::FOOT,
-             Armor::create_empty_armomr_at_position(ArmorEquipPosition::FOOT));
+             ArmorSocket::create_empty_armomr_at_position(ArmorEquipPosition::FOOT));
         
         self.weapon_sockets.insert(WeaponEquipPosition::MAIN,
-             Weapon::create_empty_weapon_at_position(WeaponEquipPosition::MAIN));
+             WeaponSocket::create_empty_weapon_at_position(WeaponEquipPosition::MAIN));
         
         self.weapon_sockets.insert(WeaponEquipPosition::SUB1,
-             Weapon::create_empty_weapon_at_position(WeaponEquipPosition::SUB1));
+             WeaponSocket::create_empty_weapon_at_position(WeaponEquipPosition::SUB1));
         
         self.weapon_sockets.insert(WeaponEquipPosition::SUB2,
-             Weapon::create_empty_weapon_at_position(WeaponEquipPosition::SUB2));
+             WeaponSocket::create_empty_weapon_at_position(WeaponEquipPosition::SUB2));
     }
 
 }
