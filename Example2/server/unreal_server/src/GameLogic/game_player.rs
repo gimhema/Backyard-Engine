@@ -102,9 +102,9 @@ impl VECharcater {
 
 pub struct VECharacterManager
 {
-    player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
-    player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
-    id_top : i64
+    pub player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
+    pub player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
+    pub id_top : i64
 }
 
 impl VECharacterManager
