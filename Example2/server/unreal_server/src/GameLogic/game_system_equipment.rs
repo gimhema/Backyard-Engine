@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::GameLogic::game_player::{VECharacterManager, VECharcater};
+
 
 #[derive(Debug, Clone)]
 pub enum ArmorEquipPosition
@@ -45,4 +47,12 @@ impl PlayerEquipment
             weapon_sockets : HashMap::new()
         }
     }
+}
+
+impl VECharcater {
+
+}
+
+impl VECharacterManager {
+    
 }
