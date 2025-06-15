@@ -10,5 +10,6 @@ pub mod game_system_equipment;
 pub mod game_system_status;
 pub mod game_npc;
 pub mod game_setting;
+pub mod game_tables;
 
 use super::Network;
