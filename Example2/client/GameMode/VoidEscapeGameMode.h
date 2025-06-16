@@ -17,6 +17,8 @@ public:
 	AVoidEscapeGameMode();
 
 public:
+	FUDPSocketWrapper* UDPSocketWrapper;
+	FTCPSocketListener* TCPSocketListener;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Network")
