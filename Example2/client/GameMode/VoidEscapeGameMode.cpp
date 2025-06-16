@@ -15,7 +15,17 @@ AVoidEscapeGameMode::AVoidEscapeGameMode()
 
 
 void AVoidEscapeGameMode::InitNetwork()
+{// Set up TCP and UDP connections
+	SetUpTCPConnection();
+	SetUpUDPConnection();
+}
+
+void AVoidEscapeGameMode::SetUpTCPConnection()
 {
-	udpSocketWrapper = new FUDPSocketWrapper();
-	tcpSocketWrapper = new FTCPSocketListener();
+	
+}
+
+void AVoidEscapeGameMode::SetUpUDPConnection()
+{
+
 }
