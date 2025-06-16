@@ -14,7 +14,10 @@ FUDPSocketWrapper::FUDPSocketWrapper()
     {
         // UE_LOG(LogTemp, Error, TEXT("게임 인스턴스를 찾을 수 없습니다."));
     }
+}
 
+void FUDPSocketWrapper::SetUpUDPSocket()
+{
     ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
     if (!SocketSubsystem)
     {
@@ -54,6 +57,8 @@ FUDPSocketWrapper::FUDPSocketWrapper()
     // 수신을 위한 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("UDPReceiverThread"), 0, TPri_BelowNormal);
 }
+
+
 
 FUDPSocketWrapper::~FUDPSocketWrapper()
 {
