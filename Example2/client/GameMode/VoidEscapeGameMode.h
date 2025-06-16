@@ -17,11 +17,15 @@ public:
 	AVoidEscapeGameMode();
 
 public:
-	FUDPSocketWrapper* udpSocketWrapper;
-	FTCPSocketListener* tcpSocketWrapper;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Network")
 	void InitNetwork();
+
+public:
+
+	void SetUpTCPConnection();
+	void SetUpUDPConnection();
 };
 
 
