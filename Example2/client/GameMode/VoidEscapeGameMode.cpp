@@ -4,6 +4,7 @@
 #include "VoidEscapeCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
+
 AVoidEscapeGameMode::AVoidEscapeGameMode()
 	: Super()
 {
