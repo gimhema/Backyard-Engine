@@ -16,7 +16,7 @@ FUDPSocketWrapper::FUDPSocketWrapper()
     }
 }
 
-void FUDPSocketWrapper::SetUpUDPSocket()
+void FUDPSocketWrapper::SetUpUDPSocket(const FString& IP, int32 Port)
 {
     ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
     if (!SocketSubsystem)
@@ -43,8 +43,8 @@ void FUDPSocketWrapper::SetUpUDPSocket()
     // 바인딩할 주소 생성
     TSharedPtr<FInternetAddr> LocalAddress = SocketSubsystem->CreateInternetAddr();
     bool bIsValid;
-    LocalAddress->SetIp(TEXT("0.0.0.0"), bIsValid);
-    LocalAddress->SetPort(7777);
+    LocalAddress->SetIp(*IP, bIsValid);
+    LocalAddress->SetPort(Port);
 
     if (!UdpSocket->Bind(*LocalAddress))
     {

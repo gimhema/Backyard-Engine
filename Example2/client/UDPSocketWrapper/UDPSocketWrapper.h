@@ -29,7 +29,7 @@ public:
     FUDPSocketWrapper();
     virtual ~FUDPSocketWrapper();
 
-    void SetUpUDPSocket();
+    void SetUpUDPSocket(const FString& IP, int32 Port);
     void SendMessage(const FString& Message, const FString& TargetIP, int32 TargetPort);
     void StopReceiving();
 

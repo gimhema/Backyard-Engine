@@ -48,7 +48,7 @@ void AVoidEscapeGameMode::SetUpUDPConnection()
 {
 	if (UDPSocketWrapper != nullptr)
 	{
-		UDPSocketWrapper->SetUpUDPSocket();
+		UDPSocketWrapper->SetUpUDPSocket("127.0.0.1", 8081);
 	}
 	else
 	{
