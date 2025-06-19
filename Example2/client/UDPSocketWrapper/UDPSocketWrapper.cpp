@@ -143,3 +143,19 @@ void FUDPSocketWrapper::SendMessage(const FString& Message, const FString& Targe
 
     UE_LOG(LogTemp, Log, TEXT("UDP 메시지 전송: %s (%d bytes)"), *Message, BytesSent);
 }
+
+void FUDPSocketWrapper::SendMessageBinary(const std::vector<uint8_t>& Data)
+{
+    if (!UdpSocket) return;
+	TSharedPtr<FInternetAddr> TargetAddress = RemoteAddress; // 이미 설정된 원격 주소 사용
+	if (!TargetAddress.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("원격 주소가 설정되지 않았습니다."));
+		return;
+	}
+	int32 BytesSent = 0;
+	const uint8* RawData = Data.data();
+	int32 DataSize = static_cast<int32>(Data.size());
+	bool bSuccess = UdpSocket->SendTo(RawData, DataSize, BytesSent, *TargetAddress);
+//	return bSuccess && BytesSent == DataSize;
+}
