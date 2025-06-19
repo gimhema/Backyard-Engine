@@ -40,6 +40,16 @@ public:
 	void SendTCPSpin();
 	void SendUDPSpin();
 
+	void PushMessageToTCPQueue(const std::vector<uint8_t>& Message)
+	{
+		TCPMessageQueue.push(Message);
+	}
+
+	void PushMessageToUDPQueue(const std::vector<uint8_t>& Message)
+	{
+		UDPMessageQueue.push(Message);
+	}
+
 public:
 	virtual void Tick(float DeltaTime) override;
 };
