@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "UDPSocketWrapper.h"
 #include "TCPSocketListener.h"
+#include "Containers/CircularQueue.h"
+#include <vector>
+#include <queue>
 #include "VoidEscapeGameMode.generated.h"
 
 UCLASS(minimalapi)
@@ -20,14 +23,25 @@ public:
 	FUDPSocketWrapper* UDPSocketWrapper;
 	FTCPSocketListener* TCPSocketListener;
 
+	std::queue<std::vector<uint8_t>> TCPMessageQueue;
+	std::queue<std::vector<uint8_t>> UDPMessageQueue;
+	// TCircularQueue<std::vector<uint8_t>> TCPMessageQueue;
+	// TCircularQueue<std::vector<uint8_t>> UDPMessageQueue;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Network")
 	void InitNetwork();
 
 public:
-
 	void SetUpTCPConnection();
 	void SetUpUDPConnection();
+
+public:
+	void SendTCPSpin();
+	void SendUDPSpin();
+
+public:
+	virtual void Tick(float DeltaTime) override;
 };
 
 

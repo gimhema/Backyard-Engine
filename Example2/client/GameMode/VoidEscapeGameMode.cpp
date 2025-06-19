@@ -55,3 +55,55 @@ void AVoidEscapeGameMode::SetUpUDPConnection()
 		// UE_LOG(LogTemp, Error, TEXT("UDP Socket Wrapper is not initialized!"));
 	}
 }
+void AVoidEscapeGameMode::SendTCPSpin()
+{
+	if (TCPSocketListener != nullptr)
+	{
+		if (!TCPMessageQueue.empty())
+		{
+			std::vector<uint8_t> Message = TCPMessageQueue.front();
+
+			TCPSocketListener->SendMessageBinary(Message);
+
+			TCPMessageQueue.pop(); // Remove the message after sending
+		}
+		else
+		{
+			// UE_LOG(LogTemp, Warning, TEXT("TCP Message Queue is empty!"));
+		}
+	}
+	else
+	{
+		// UE_LOG(LogTemp, Error, TEXT("TCP Socket Listener is not initialized!"));
+	}
+}
+void AVoidEscapeGameMode::SendUDPSpin()
+{
+	if (UDPSocketWrapper != nullptr)
+	{
+		if (!UDPMessageQueue.empty())
+		{
+			std::vector<uint8_t> Message = UDPMessageQueue.front();
+
+			UDPSocketWrapper->SendMessageBinary(Message);
+
+			UDPMessageQueue.pop(); // Remove the message after sending
+
+		}
+		else
+		{
+			// UE_LOG(LogTemp, Warning, TEXT("UDP Message Queue is empty!"));
+		}
+	}
+	else
+	{
+		// UE_LOG(LogTemp, Error, TEXT("UDP Socket Wrapper is not initialized!"));
+	}
+}
+void AVoidEscapeGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// Example of sending messages
+	SendTCPSpin();
+	SendUDPSpin();
+}
