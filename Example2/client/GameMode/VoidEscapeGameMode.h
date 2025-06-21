@@ -25,8 +25,15 @@ public:
 
 	std::queue<std::vector<uint8_t>> TCPMessageQueue;
 	std::queue<std::vector<uint8_t>> UDPMessageQueue;
-	// TCircularQueue<std::vector<uint8_t>> TCPMessageQueue;
-	// TCircularQueue<std::vector<uint8_t>> UDPMessageQueue;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
+	FString ServerIP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
+	int32 TCPPort;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
+	int32 UDPPort;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Network")
