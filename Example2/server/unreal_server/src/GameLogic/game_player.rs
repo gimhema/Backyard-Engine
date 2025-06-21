@@ -99,6 +99,25 @@ impl VECharcater {
         self.player_equipment.init();
     }
 
+    pub fn get_total_health_point(&mut self) -> i64 {
+        let mut _total_health_point = 0;
+        // 기본 체력 계산
+
+        // 장비 보너스 합산
+
+        return _total_health_point
+    }
+
+    pub fn get_total_ability_point(&mut self) -> i64 {
+        let mut _total_ability_point = 0;
+
+        // 기본 어빌리티 포인트 계산
+        
+        // 장비 보너스 합산
+
+        return _total_ability_point
+    }
+
 }
 
 pub struct VECharacterManager

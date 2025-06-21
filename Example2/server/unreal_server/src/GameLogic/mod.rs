@@ -11,5 +11,6 @@ pub mod game_system_status;
 pub mod game_npc;
 pub mod game_setting;
 pub mod game_tables;
+pub mod game_parameta_action_logic;
 
 use super::Network;
