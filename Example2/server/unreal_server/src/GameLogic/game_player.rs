@@ -102,18 +102,6 @@ impl VECharcater {
         self.player_equipment.init();
     }
 
-    pub fn get_total_health_point(self) -> i64 {
-        return self.player_parameta.get_total_health_point()
-    }
-
-    pub fn get_total_ability_point(self) -> i64 {
-        return self.player_parameta.get_total_ability_point()
-    }
-
-    pub fn get_total_stamina_pont(self) -> i64 {
-        return self.player_parameta.get_total_stamina_point()
-    }
-
 }
 
 pub struct VECharacterManager

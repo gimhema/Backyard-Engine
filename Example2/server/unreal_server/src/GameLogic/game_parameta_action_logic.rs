@@ -20,10 +20,6 @@ impl ActorParameta
         return ActorParameta { total_health_point: 0, total_ability_point: 0, total_stamina_point: 0 }
     }
 
-    pub fn update_parameta(&mut self) {
-
-    }
-
     pub fn get_total_health_point(self) -> i64 {
         return self.total_health_point.clone()
     }
@@ -34,6 +30,78 @@ impl ActorParameta
 
     pub fn get_total_stamina_point(self) -> i64 {
         return self.total_stamina_point.clone()
+    }
+
+    pub fn set_total_health_point(&mut self, val : i64) {
+        self.total_health_point = val;
+    }
+
+    pub fn set_total_ability_point(&mut self, val : i64) {
+        self.total_ability_point = val;
+    }
+
+    pub fn set_total_stamina_point(&mut self, val : i64) {
+        self.total_ability_point = val;
+    }
+
+    pub fn reset_health_point(&mut self) {
+        // 파라미터 업데이트 시 수치 중첩을 방지하기위한 리셋
+        self.total_health_point = 0;
+    }
+
+    pub fn reset_ability_point(&mut self) {
+        // 파라미터 업데이트 시 수치 중첩을 방지하기위한 리셋
+        self.total_ability_point = 0;
+    }
+
+    pub fn reset_stamina_point(&mut self) {
+        // 파라미터 업데이트 시 수치 중첩을 방지하기위한 리셋
+        self.total_stamina_point = 0;
+    }
+}
+
+impl VECharcater 
+{
+    pub fn get_total_health_point(self) -> i64 {
+        return self.player_parameta.get_total_health_point()
+    }
+
+    pub fn get_total_ability_point(self) -> i64 {
+        return self.player_parameta.get_total_ability_point()
+    }
+
+    pub fn get_total_stamina_pont(self) -> i64 {
+        return self.player_parameta.get_total_stamina_point()
+    }
+
+    pub fn update_parameta(&mut self) {
+        // 장비 교체시 호출
+
+        // 전부 리셋
+        self.player_parameta.reset_health_point();
+        self.player_parameta.reset_ability_point();
+        self.player_parameta.reset_stamina_point();
+        
+        // 체력 합산
+        self.calc_total_health_point();
+
+        // 어빌리티 포인트 합산
+        self.calc_total_ability_point();
+
+        // 스테미너 합산
+        self.calc_total_stamina_point();
+    }
+
+    pub fn calc_total_health_point(&mut self) {
+
+    }
+
+    pub fn calc_total_ability_point(&mut self) {
+
+    }
+    
+    pub fn calc_total_stamina_point(&mut self) {
+
     }
 }
 
