@@ -173,7 +173,7 @@ impl VECharacterManager {
         } else {
             eprintln!("Character not found for get_character_health, id={}", id);
         }
-        0
+        return 0
     }
 
     pub fn get_character_ability_point(&self, id: i64) -> i64 {
@@ -186,7 +186,7 @@ impl VECharacterManager {
         } else {
             eprintln!("Character not found for get_character_ability_point, id={}", id);
         }
-        0
+        return 0
     }
 
     pub fn get_character_stamina(&self, id: i64) -> i64 {
@@ -199,7 +199,7 @@ impl VECharacterManager {
         } else {
             eprintln!("Character not found for get_character_stamina, id={}", id);
         }
-        0
+        return 0
     }
 
     pub fn get_character_mode(&self, id: i64) -> ActorStatusMode {
@@ -212,6 +212,6 @@ impl VECharacterManager {
         } else {
             eprintln!("Character not found for get_character_mode, id={}", id);
         }
-        ActorStatusMode::IDLE
+        return ActorStatusMode::IDLE
     }
 }
