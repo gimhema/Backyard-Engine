@@ -36,7 +36,8 @@ void AVoidEscapeGameMode::SetUpTCPConnection()
 {
 	if (TCPSocketListener != nullptr)
 	{
-		TCPSocketListener->ConnectToServer("127.0.0.1", 8080);
+		// 8080
+		TCPSocketListener->ConnectToServer(ServerIP, TCPPort);
 	}
 	else
 	{
@@ -48,7 +49,8 @@ void AVoidEscapeGameMode::SetUpUDPConnection()
 {
 	if (UDPSocketWrapper != nullptr)
 	{
-		UDPSocketWrapper->SetUpUDPSocket("127.0.0.1", 8081);
+		// 8081
+		UDPSocketWrapper->SetUpUDPSocket(ServerIP, UDPPort);
 	}
 	else
 	{
