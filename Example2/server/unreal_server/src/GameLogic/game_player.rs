@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use crate::qsm::user_event::event_delete_player::RequestDeletePlayer;
+use crate::GameLogic::game_parameta_action_logic::ActorParameta;
 
 use super::game_geometry::*;
 use super::Network::server_common::*;
@@ -69,7 +70,8 @@ pub struct VECharcater
     pub player_network_config : VEPlayerNetWorkStatus,
     pub player_personal_info : VEPlayerPersonalInfo,
     pub player_status : ActorStatus,
-    pub player_equipment : PlayerEquipment
+    pub player_equipment : PlayerEquipment,
+    pub player_parameta : ActorParameta
 }
 
 impl VECharcater {
@@ -79,6 +81,7 @@ impl VECharcater {
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
             player_status : ActorStatus::new_zero(),
             player_equipment : PlayerEquipment::new(),
+            player_parameta : ActorParameta::new_zero()
             }
     }
 
@@ -99,23 +102,16 @@ impl VECharcater {
         self.player_equipment.init();
     }
 
-    pub fn get_total_health_point(&mut self) -> i64 {
-        let mut _total_health_point = 0;
-        // 기본 체력 계산
-
-        // 장비 보너스 합산
-
-        return _total_health_point
+    pub fn get_total_health_point(self) -> i64 {
+        return self.player_parameta.get_total_health_point()
     }
 
-    pub fn get_total_ability_point(&mut self) -> i64 {
-        let mut _total_ability_point = 0;
+    pub fn get_total_ability_point(self) -> i64 {
+        return self.player_parameta.get_total_ability_point()
+    }
 
-        // 기본 어빌리티 포인트 계산
-        
-        // 장비 보너스 합산
-
-        return _total_ability_point
+    pub fn get_total_stamina_pont(self) -> i64 {
+        return self.player_parameta.get_total_stamina_point()
     }
 
 }
