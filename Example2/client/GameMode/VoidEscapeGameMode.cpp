@@ -12,6 +12,13 @@ AVoidEscapeGameMode::AVoidEscapeGameMode()
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 
+
+}
+
+
+void AVoidEscapeGameMode::InitNetwork()
+{// Set up TCP and UDP connections
+
 	if (UDPSocketWrapper == nullptr)
 	{
 		// Create a new instance of the UDP socket wrapper
@@ -23,11 +30,7 @@ AVoidEscapeGameMode::AVoidEscapeGameMode()
 		// Create a new instance of the TCP socket listener
 		TCPSocketListener = new FTCPSocketListener();
 	}
-}
 
-
-void AVoidEscapeGameMode::InitNetwork()
-{// Set up TCP and UDP connections
 	SetUpTCPConnection();
 	SetUpUDPConnection();
 }
