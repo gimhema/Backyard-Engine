@@ -93,15 +93,21 @@ impl VECharcater
     }
 
     pub fn calc_total_health_point(&mut self) {
+        let mut _total_health_point = 0;
 
+        self.player_parameta.set_total_health_point(_total_health_point);
     }
 
     pub fn calc_total_ability_point(&mut self) {
+        let mut _total_ability_point = 0;
 
+        self.player_parameta.set_total_ability_point(_total_ability_point);
     }
     
     pub fn calc_total_stamina_point(&mut self) {
+        let mut _total_stamina_point = 0;
 
+        self.player_parameta.set_total_stamina_point(_total_stamina_point);
     }
 }
 
