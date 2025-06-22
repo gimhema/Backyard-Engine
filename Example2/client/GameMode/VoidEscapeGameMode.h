@@ -37,6 +37,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Network")
+	void InitGameInstance();
+
+	UFUNCTION(BlueprintCallable, Category = "Network")
 	void InitNetwork();
 
 public:

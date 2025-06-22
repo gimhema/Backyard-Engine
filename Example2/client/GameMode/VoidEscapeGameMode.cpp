@@ -15,21 +15,28 @@ AVoidEscapeGameMode::AVoidEscapeGameMode()
 
 }
 
-
-void AVoidEscapeGameMode::InitNetwork()
-{// Set up TCP and UDP connections
-
+void AVoidEscapeGameMode::InitGameInstance()
+{
 	if (UDPSocketWrapper == nullptr)
 	{
 		// Create a new instance of the UDP socket wrapper
 		UDPSocketWrapper = new FUDPSocketWrapper();
+		UDPSocketWrapper->SetGameInstance();
 	}
 
 	if (TCPSocketListener == nullptr)
 	{
 		// Create a new instance of the TCP socket listener
 		TCPSocketListener = new FTCPSocketListener();
+		TCPSocketListener->SetGameInstance();
 	}
+}
+
+
+void AVoidEscapeGameMode::InitNetwork()
+{// Set up TCP and UDP connections
+
+	
 
 	SetUpTCPConnection();
 	SetUpUDPConnection();
