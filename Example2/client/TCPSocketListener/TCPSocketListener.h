@@ -19,10 +19,13 @@ private:
     FThreadSafeBool bRunThread;
     const int32 BufferSize = 4096;
 
+    UGameInstance* GameInstance;
 
 public:
     FTCPSocketListener();
     virtual ~FTCPSocketListener();
+
+    void SetGameInstance();
 
     /** 서버에 연결 시도 */
     bool ConnectToServer(const FString& IP, int32 Port);
