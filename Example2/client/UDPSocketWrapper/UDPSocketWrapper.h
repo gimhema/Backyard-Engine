@@ -29,6 +29,8 @@ public:
     FUDPSocketWrapper();
     virtual ~FUDPSocketWrapper();
 
+    void SetGameInstance();
+
     void SetUpUDPSocket(const FString& IP, int32 Port);
     void SendMessage(const FString& Message, const FString& TargetIP, int32 TargetPort);
     void SendMessageBinary(const std::vector<uint8_t>& Data);

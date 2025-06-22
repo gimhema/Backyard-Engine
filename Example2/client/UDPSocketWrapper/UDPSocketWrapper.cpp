@@ -9,9 +9,18 @@
 FUDPSocketWrapper::FUDPSocketWrapper()
     : UdpSocket(nullptr), Thread(nullptr), bRunThread(true)
 {
-    GameInstance = GEngine->GetWorld()->GetGameInstance();
     if (!GameInstance)
     {
+        GameInstance = GEngine->GetWorld()->GetGameInstance();
+        // UE_LOG(LogTemp, Error, TEXT("게임 인스턴스를 찾을 수 없습니다."));
+    }
+}
+
+void FUDPSocketWrapper::SetGameInstance()
+{
+    if (!GameInstance)
+    {
+        GameInstance = GEngine->GetWorld()->GetGameInstance();
         // UE_LOG(LogTemp, Error, TEXT("게임 인스턴스를 찾을 수 없습니다."));
     }
 }
