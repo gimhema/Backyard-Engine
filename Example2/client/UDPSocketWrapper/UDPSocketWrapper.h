@@ -36,6 +36,8 @@ public:
     void SendMessageBinary(const std::vector<uint8_t>& Data);
     void StopReceiving();
 
+    void PrintOnScreenMessage(const FString& Message, float Duration = 2.0f, FColor TextColor = FColor::White);
+
 private:
     virtual uint32 Run() override;
 };

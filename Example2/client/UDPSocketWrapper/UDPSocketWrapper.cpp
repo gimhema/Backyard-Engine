@@ -65,6 +65,8 @@ void FUDPSocketWrapper::SetUpUDPSocket(const FString& IP, int32 Port)
 
     // 수신을 위한 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("UDPReceiverThread"), 0, TPri_BelowNormal);
+
+    
 }
 
 
@@ -167,4 +169,12 @@ void FUDPSocketWrapper::SendMessageBinary(const std::vector<uint8_t>& Data)
 	int32 DataSize = static_cast<int32>(Data.size());
 	bool bSuccess = UdpSocket->SendTo(RawData, DataSize, BytesSent, *TargetAddress);
 //	return bSuccess && BytesSent == DataSize;
+}
+
+void FUDPSocketWrapper::PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor)
+{
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, Duration, TextColor, Message);
+    }
 }
