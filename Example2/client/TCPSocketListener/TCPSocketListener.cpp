@@ -62,6 +62,8 @@ bool FTCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
    std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
    SendMessageBinary(_msgBuffer);  
  
+   PrintOnScreenMessage(TEXT("SetUp TCP Socket Completed."), 5.0f, FColor::Green);
+
     // 수신용 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("TCPClientThread"), 0, TPri_BelowNormal);
 
