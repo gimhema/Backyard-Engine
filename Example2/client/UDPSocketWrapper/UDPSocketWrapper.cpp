@@ -63,6 +63,8 @@ void FUDPSocketWrapper::SetUpUDPSocket(const FString& IP, int32 Port)
 
     // UE_LOG(LogTemp, Log, TEXT("UDP 소켓이 포트 7777에서 실행 중"));
 
+	PrintOnScreenMessage(TEXT("SetUp UDP Socket Completed."), 5.0f, FColor::Green);
+
     // 수신을 위한 스레드 시작
     Thread = FRunnableThread::Create(this, TEXT("UDPReceiverThread"), 0, TPri_BelowNormal);
 
