@@ -38,6 +38,8 @@ public:
     /** 연결 종료 및 정리 */
     void Disconnect();
 
+    void PrintOnScreenMessage(const FString& Message, float Duration = 2.0f, FColor TextColor = FColor::White);
+
 private:
     /** 메시지 수신 스레드 진입점 */
     virtual uint32 Run() override;

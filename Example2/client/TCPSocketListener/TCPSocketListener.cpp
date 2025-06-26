@@ -151,3 +151,10 @@ void FTCPSocketListener::ReceiveData()
     // UE_LOG(LogTemp, Warning, TEXT("서버와의 연결이 끊어졌습니다."));
 }
 
+void FTCPSocketListener::PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor)
+{
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, Duration, TextColor, Message);
+    }
+}
