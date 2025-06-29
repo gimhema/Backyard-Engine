@@ -28,6 +28,9 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             let _player_name = verify_account_message.userName.clone();
             let _conn = verify_account_message.connect_info.clone();
 
+            println!("CallBack_VerifyAccount : Account ID : {}, PassWord : {}, Player Name : {}, Conn: {}",
+        _accountId.clone(), _password.clone(), _player_name.clone(), _conn.clone());
+
             let mut server = get_tcp_server_instance().write().unwrap();
             let mut _pid = server.get_pid_by_connection(_conn.clone());
             let mut _pid_copy = _pid.unwrap().clone() as u32;
