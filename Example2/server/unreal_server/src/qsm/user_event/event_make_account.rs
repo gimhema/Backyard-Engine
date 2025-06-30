@@ -67,6 +67,7 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                      _send_msg);
 
                 // 클라이언트는 검증 메세지를 받은 뒤 캐릭터 선택/생성 화면으로 진입
+                println!("Send Message To Target");
             }
 
         }
