@@ -9,6 +9,10 @@ lazy_static!{
     static ref G_UDP_CONNECTION_HANDLER: Arc<RwLock<datagram_handler>> = Arc::new(RwLock::new(datagram_handler::new()));
 }
 
+pub fn get_udp_connection_instance() -> &'static Arc<RwLock<datagram_handler>> {
+    &G_UDP_CONNECTION_HANDLER
+}
+
 pub struct connection_datagram
 {
     token: Token,

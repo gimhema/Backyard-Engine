@@ -11,6 +11,10 @@ lazy_static!{
         static ref G_TCP_CONNECTION_HANDLER: Arc<RwLock<stream_handler>> = Arc::new(RwLock::new(stream_handler::new()));
 }
 
+pub fn get_tcp_connection_instance() -> &'static Arc<RwLock<stream_handler>> {
+    &G_TCP_CONNECTION_HANDLER
+}
+
 pub trait connection_handle {
     fn new() -> Self;
     fn get_id_set_clone(&mut self) -> HashSet<i64>;
