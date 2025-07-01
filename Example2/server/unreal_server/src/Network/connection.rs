@@ -5,6 +5,11 @@ use mio::Token;
 use std::io::{self, Read, Write};
 use std::net::SocketAddr;
 use std::net::IpAddr;
+use std::sync::{RwLock, Arc, RwLockReadGuard};
+
+lazy_static!{
+        static ref G_TCP_CONNECTION_HANDLER: Arc<RwLock<stream_handler>> = Arc::new(RwLock::new(stream_handler::new()));
+}
 
 pub trait connection_handle {
     fn new() -> Self;
@@ -14,9 +19,6 @@ pub trait connection_handle {
     fn update_id_sum(&mut self);
     fn send(&mut self, _token :Token, _message : String);
 
-//    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>;
-//    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>;
-//    fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token);
 }
 
 

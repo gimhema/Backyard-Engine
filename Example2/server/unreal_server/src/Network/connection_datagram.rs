@@ -4,6 +4,10 @@ use std::collections::HashSet;
 use mio::net::{UdpSocket, TcpStream};
 use mio::Token;
 use super::connection::*;
+use std::sync::{RwLock, Arc, RwLockReadGuard};
+lazy_static!{
+    static ref G_UDP_CONNECTION_HANDLER: Arc<RwLock<datagram_handler>> = Arc::new(RwLock::new(datagram_handler::new()));
+}
 
 pub struct connection_datagram
 {
