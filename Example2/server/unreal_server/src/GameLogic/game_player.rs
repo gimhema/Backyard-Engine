@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use crate::qsm::user_event::event_delete_player::RequestDeletePlayer;
 use crate::GameLogic::game_parameta_action_logic::ActorParameta;
+use crate::Network::connection::get_tcp_connection_instance;
 
 use super::game_geometry::*;
 use super::Network::server_common::*;
@@ -135,7 +136,8 @@ impl VECharacterManager
         // let _new_id = self.id_top.clone();
 
         // _char_arc.get_mut().unwrap().
-        let _new_id = get_connection_handler().read().unwrap().get_connection_id_top();
+        // let _new_id = get_connection_handler().read().unwrap().get_connection_id_top();
+        let _new_id = get_tcp_connection_instance().read().unwrap().get_id_top();
 
         self.player_container_vec.push(Arc::clone(&_char_arc));
         self.player_container_search_map.insert(_new_id, Arc::clone(&_char_arc));

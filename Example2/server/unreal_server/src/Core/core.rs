@@ -3,7 +3,7 @@ use super::Core;
 use super::Network::server::get_tcp_server_instance;
 use super::Network::message_queue::get_callback_msg_queue_instance;
 use super::Network::server_common::get_user_connection_info;
-use super::Network::server_common::get_connection_handler;
+// use super::Network::server_common::get_connection_handler;
 
 use std::thread;
 use std::sync::Arc;
@@ -29,7 +29,7 @@ pub fn SpawnWorkerServerRun() {
                 let mut _targetToken = _game_msg.get_token();
                 let mut _send_msg = _game_msg.get_message();
 
-                get_connection_handler().write().unwrap().send_message_to_stream(_targetToken, _send_msg);
+//                get_connection_handler().write().unwrap().send_message_to_stream(_targetToken, _send_msg);
                 println!("Completed Send Message . . .");
             }
         }
