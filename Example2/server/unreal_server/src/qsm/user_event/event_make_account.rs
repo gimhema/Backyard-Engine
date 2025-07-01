@@ -31,9 +31,15 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             println!("CallBack_VerifyAccount : Account ID : {}, PassWord : {}, Player Name : {}, Conn: {}",
         _accountId.clone(), _password.clone(), _player_name.clone(), _conn.clone());
 
+        let mut _pid_copy = 0;
+        {
             let mut server = get_tcp_server_instance().write().unwrap();
+            println!("Step 1");
             let mut _pid = server.get_pid_by_connection(_conn.clone());
-            let mut _pid_copy = _pid.unwrap().clone() as u32;
+            println!("Step 2");
+            _pid_copy = _pid.unwrap().clone() as u32;
+            println!("Step 3");
+        }
 
             if (true == get_tcp_server_instance().write().unwrap().is_exist_connection(_conn)) 
             {
@@ -67,7 +73,6 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                      _send_msg);
 
                 // 클라이언트는 검증 메세지를 받은 뒤 캐릭터 선택/생성 화면으로 진입
-                println!("Send Message To Target");
             }
 
         }

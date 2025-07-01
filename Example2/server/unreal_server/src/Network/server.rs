@@ -21,7 +21,7 @@ use super::Event::Event::*;
 use super::GameLogic::game_player::*;
 
 const SERVER: Token = Token(0);
-const SERVER_TICK: u64 = 1000;
+const SERVER_TICK: u64 = 10;
 const TCP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8080";
 
 lazy_static! {
@@ -29,6 +29,7 @@ lazy_static! {
 }
 
 pub fn get_tcp_server_instance() -> &'static Arc<RwLock<server_stream>> {
+    println!("Get TCP Server Lock");
     &G_SERVER_INSTANCE
 }
 
