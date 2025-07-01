@@ -24,7 +24,7 @@ pub fn get_udp_server_instance() -> &'static Arc<RwLock<server_datagram>> {
 }
 
 pub struct server_datagram {
-    connectionHandler : datagram_handler,
+//    connectionHandler : datagram_handler,
     socket: UdpSocket,
     poll: Poll,
     clients: HashMap<Token, SocketAddr>,
@@ -47,7 +47,7 @@ impl server_datagram {
         let mut _connectionHandler = datagram_handler::new();
 
         server_datagram {
-            connectionHandler: _connectionHandler,
+//            connectionHandler: _connectionHandler,
             socket,
             poll,
             clients: HashMap::new(),
@@ -93,29 +93,29 @@ impl server_datagram {
         }
     }
 
-    pub fn get_id_list(&mut self) -> HashSet<i64> {
-        self.connectionHandler.get_id_set_clone()
-    }
+//     pub fn get_id_list(&mut self) -> HashSet<i64> {
+//         self.connectionHandler.get_id_set_clone()
+//     }
 
-    pub fn remove_connection(&mut self, token : Token) 
-    {
-        self.connectionHandler.del_connection(token);
-    }
-//
-    pub fn add_new_connect(&mut self, _udpSocket : UdpSocket, _token: Token) 
-    {
-        self.connectionHandler.new_connection(_udpSocket, _token);
-    }
-//
-    pub fn get_user_connetions_by_token(&mut self, token: Token) -> Option<&mut UdpSocket>
-    {
-        self.connectionHandler.get_connetion_by_token(token)
-    }
-//
-    pub fn get_user_connection_by_id(&mut self, id : i64) -> Option<&mut UdpSocket>
-    {
-        self.connectionHandler.get_connection_by_id(id)
-    }
+//     pub fn remove_connection(&mut self, token : Token) 
+//     {
+//         self.connectionHandler.del_connection(token);
+//     }
+// //
+//     pub fn add_new_connect(&mut self, _udpSocket : UdpSocket, _token: Token) 
+//     {
+//         self.connectionHandler.new_connection(_udpSocket, _token);
+//     }
+// //
+//     pub fn get_user_connetions_by_token(&mut self, token: Token) -> Option<&mut UdpSocket>
+//     {
+//         self.connectionHandler.get_connetion_by_token(token)
+//     }
+// //
+//     pub fn get_user_connection_by_id(&mut self, id : i64) -> Option<&mut UdpSocket>
+//     {
+//         self.connectionHandler.get_connection_by_id(id)
+//     }
 }
 
 /*
