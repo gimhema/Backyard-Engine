@@ -23,7 +23,7 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
 
             // push_command_to_game_logic(Command::Move { entity_id: sender, loc_x: loc_x, loc_y: loc_y, loc_z : loc_z, roll : roll, pitch : pitch, yaw : yaw });
              
-            get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
+//            get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);
