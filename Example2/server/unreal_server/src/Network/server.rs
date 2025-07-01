@@ -122,7 +122,8 @@ impl server_stream {
                         println!("Add New Player");
                         let mut sendConnect = connection;
                         
-                        get_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
+                        // get_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
+                        get_tcp_connection_instance().write().unwrap().new_connection(sendConnect, token);
                         get_user_connection_info().write().unwrap().push(token);
 
                         println!("SendGamePacket End");
@@ -130,8 +131,9 @@ impl server_stream {
                     token => {
 
                         let done = {
-                            let mut handler = get_connection_handler().write().unwrap();
-                            if let Some(connection) = handler.get_tcp_connection_by_token(token) {
+                            // let mut handler = get_connection_handler().write().unwrap();
+                            let mut handler = get_tcp_connection_instance().write().unwrap();
+                            if let Some(connection) = handler.get_connetion_by_token(token) {
                                 println!("Handle Connection Event");
                                 handle_connection_event(poll.registry(), connection, event)?
                             } else {
@@ -144,12 +146,13 @@ impl server_stream {
                        if done {
                                 println!("Disconn search . . .");
                                 if let Some(mut connection)  = 
-                                get_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
+                                // get_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
+                                get_tcp_connection_instance().write().unwrap().get_connetion_by_token(token)
                                 {
                                     println!("User Disconnected . . 1");
                                     poll.registry().deregister(connection);
 
-                                    let _taget_id = get_connection_handler().write().unwrap().get_tcp_connection_id_by_token(token);
+                                    let _taget_id = get_tcp_connection_instance().write().unwrap().get_id_by_token(token);
                                     
                                     if let Some(id) = _taget_id {
                                         get_ve_char_manager_instance().write().unwrap().delete_characeter(id);
@@ -158,7 +161,7 @@ impl server_stream {
                                         eprintln!("Failed to find target id for token: {:?}", token);
                                     }
                                     
-                                    get_connection_handler().write().unwrap().del_tcp_connection(token);
+                                    get_tcp_connection_instance().write().unwrap().del_connection(token);
 
                                 }
                             }

@@ -21,9 +21,9 @@ pub fn get_common_logic_instance() -> &'static Arc<RwLock<server_extend_common>>
     &G_GAME_COMMON_LOGIC_INSTANCE
 }
 
-pub fn get_connection_handler() -> &'static Arc<RwLock<server_common_connetion_handler>> {
-    &G_CONNECTION_HANLDER_INSTANCE
-}
+// pub fn get_connection_handler() -> &'static Arc<RwLock<server_common_connetion_handler>> {
+//     &G_CONNECTION_HANLDER_INSTANCE
+// }
 
 pub fn get_user_connection_info() -> &'static Arc<RwLock<user_connect_info>> {
     &G_USER_CONN_INFO_INSTANCE
