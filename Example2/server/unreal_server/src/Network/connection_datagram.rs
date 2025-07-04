@@ -75,7 +75,15 @@ impl connection_handle for datagram_handler {
     }
 
     fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>) {
-        
+        self.tokenIdMap.get(&target).and_then(|token| {
+            if let Some(connection) = self.connections.get_mut(token) {
+                // 메시지를 전송
+                connection.udpSocket.send(&msg_byte).unwrap();
+                Some(())
+            } else {
+                None
+            }
+        });
     }
 
 }
