@@ -5,6 +5,9 @@ use crate::qsm::user_message::message_allow_connect::{self, AllowConnectGame};
 use crate::Event::event_handler::EventHeader;
 use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 
+use crate::Network::connection::get_tcp_connection_instance;
+use crate::Network::connection::connection_handle;
+
 use super::GameLogic::*;
 
 pub fn CallBack_MakeAccount(buffer: &[u8])
@@ -31,49 +34,34 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             println!("CallBack_VerifyAccount : Account ID : {}, PassWord : {}, Player Name : {}, Conn: {}",
         _accountId.clone(), _password.clone(), _player_name.clone(), _conn.clone());
 
-        // let mut _pid_copy = 0;
-        // {
-        //     let mut server = get_tcp_server_instance().write().unwrap();
-        //     println!("Step 1");
-        //     let mut _pid = server.get_pid_by_connection(_conn.clone());
-        //     println!("Step 2");
-        //     _pid_copy = _pid.unwrap().clone() as u32;
-        //     println!("Step 3");
-        // }
+            let mut _pid = get_tcp_connection_instance().write().unwrap().get_id_by_connection(_conn.clone()).unwrap();
+            
+            if(true == get_tcp_connection_instance().write().unwrap().is_exist_connection_by_address(_conn.clone()))
+            {
+                let message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
+                let session_id = 0; // 서버가 지정
+                let _account_id = verify_account_message.userId.clone();
+                let _player_name = verify_account_message.userName.clone();
+                let _conn_info = verify_account_message.connect_info.clone();
 
-        //     if (true == get_tcp_server_instance().write().unwrap().is_exist_connection(_conn)) 
-        //     {
-        //         // 클라이언트에게 답장 회신
-        //         // 아직 id 검증 로직은 넣지말고
+                let mut _allow_connect_game = AllowConnectGame::new(
+                    message_id,
+                    session_id, 
+                    _pid.clone() as u32,
+                    _account_id, 
+                    _player_name, 
+                    _conn_info);
 
-        //         // 클라는 답장을 받으면 캐릭터 생성뷰로 진입한다.
+                let mut _send_msg = _allow_connect_game.serialize();
+                get_tcp_connection_instance().write().unwrap().send_message_byte_to_target(
+                    _pid.clone() as i64,
+                    _send_msg);
 
-        //         // 지정된 id를 세팅해서 AllowConnectGame 메세지에 할당한후 전송
-
-        //         let _message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
-
-        //         let _session_id = 0; // 서버가 지정
-
-        //         let _account_id = verify_account_message.userId.clone();
-        //         let _player_name = verify_account_message.userName.clone();
-        //         let _conn_info = verify_account_message.connect_info.clone();
-
-        //         let mut _allow_connect_game = AllowConnectGame::new(
-        //             _message_id,
-        //             _session_id, 
-        //             _pid_copy, 
-        //             _account_id, 
-        //             _player_name, 
-        //             _conn_info);
-
-        //         let mut _send_msg = _allow_connect_game.serialize();
-
-        //         get_tcp_server_instance().write().unwrap().send_message_byte_to_target(
-        //             _pid_copy as i64,
-        //              _send_msg);
-
-        //         // 클라이언트는 검증 메세지를 받은 뒤 캐릭터 선택/생성 화면으로 진입
-        //     }
+            }
+            else
+            {
+                println!("Connection not found for address: {}", _conn);
+            }
 
         }
         Err(e) => {
