@@ -169,11 +169,18 @@ impl stream_handler {
     }
 
     pub fn get_id_by_connection(&mut self, _addr : String) -> Option<i64> {
+
+        println!("Get ID by Connection : {}", _addr);
+
         if let Ok(target_ip) = _addr.parse::<IpAddr>() {
             for connection in self.connections.values_mut() {
                 if let Ok(peer_addr) = connection.tcpStream.peer_addr() {
                     if peer_addr.ip() == target_ip {
+                        println!("Found connection with ID: {}", connection.id);
                         return Some(connection.id)
+                    }
+                    else {
+                        println!("Not Found Connection with ID: {}", connection.id);
                     }
                 }
             }
