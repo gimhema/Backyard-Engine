@@ -1,4 +1,3 @@
-
 use crate::Event::event_handler::EventHeader;
 
 use super::Network;
@@ -43,7 +42,6 @@ pub fn get_tcp_server_instance() -> &'static Arc<RwLock<server_stream>> {
 */
 
 pub struct server_stream {
-//    connectionHandler: stream_handler,
     numUser: i64,
     step: i64,
     common_info : server_common_info
@@ -52,27 +50,22 @@ pub struct server_stream {
 impl server_stream {
 
     pub fn new() -> Self {
-        let mut _connectionHandler = stream_handler::new();
-
         let mut _common_info = server_common_info::new();
 
         server_stream {
-//            connectionHandler: _connectionHandler,
             numUser: 0,
             step: 0,
             common_info : _common_info
         }
     }
 
-    pub fn run(&mut self) -> io::Result<()>  {
+    pub fn run(&mut self) -> io::Result<()> {
         env_logger::init();
 
-        let mut userCount: i64 = 0;
         let mut poll = Poll::new()?;
         let mut events = Events::with_capacity(128);
 
         let mut server = TcpListener::bind(TCP_SERVER_CONNECT_INFO.parse().unwrap())?;
-        // let mut server = TcpListener::bind("127.0.0.1:8080".parse().unwrap())?;
     
         // Register the server with poll we can receive events for it.
         poll.registry().register(&mut server, SERVER, Interest::READABLE | Interest::WRITABLE)?;
@@ -81,12 +74,9 @@ impl server_stream {
 
         let mut unique_token = Token(SERVER.0 + 1);
 
-
         loop {
-            // println!("Set Poll Step : {}", self.step);
             poll.poll(&mut events, Some(Duration::from_millis(SERVER_TICK)))?;
     
-            // println!("Iterate Event For Loop");
             for event in events.iter() {
                 if event.token() == Token(0) && event.is_writable() {
                     println!("Writeable Event . . .");
@@ -94,20 +84,12 @@ impl server_stream {
     
                 match event.token() {
                     SERVER => loop {
-                        // Received an event for the TCP server socket, which
-                        // indicates we can accept an connection.
                         let (mut connection, address) = match server.accept() {
-                            Ok((connection, address)) =>  (connection, address),
+                            Ok((connection, address)) => (connection, address),
                             Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                                // If we get a `WouldBlock` error we know our
-                                // listener has no more incoming connections queued,
-                                // so we can return to polling and wait for some
-                                // more.
                                 break;
                             }
                             Err(e) => {
-                                // If it was any other kind of error, something went
-                                // wrong and we terminate with an error.
                                 return Err(e);
                             }
                         };
@@ -120,115 +102,106 @@ impl server_stream {
                             Interest::READABLE.add(Interest::WRITABLE),
                         )?;
                         println!("Add New Player");
-                        let mut sendConnect = connection;
                         
-                        // get_connection_handler().write().unwrap().new_tcp_connection(sendConnect, token);
-                        get_tcp_connection_instance().write().unwrap().new_connection(sendConnect, token);
+                        // 새 연결을 추가할 때 락을 획득합니다.
+                        get_tcp_connection_instance().write().unwrap().new_connection(connection, token);
                         get_user_connection_info().write().unwrap().push(token);
 
                         println!("SendGamePacket End");
                     },
                     token => {
+                        // handle_connection_event 함수가 이제 Token을 인자로 받도록 변경되었으므로,
+                        // 이 스코프 내에서 락을 잡고 해제하는 로직이 필요 없어집니다.
+                        // 대신, handle_connection_event 내부에서 락을 잡습니다.
+                        let done = handle_connection_event(poll.registry(), token, event)?;
 
-                        let done = {
-                            // let mut handler = get_connection_handler().write().unwrap();
+                        if done {
+                            println!("Disconn search . . .");
+                            // 연결 해제 시에도 락을 획득하여 사용합니다.
                             let mut handler = get_tcp_connection_instance().write().unwrap();
                             if let Some(connection) = handler.get_connetion_by_token(token) {
-                                println!("Handle Connection Event");
-                                handle_connection_event(poll.registry(), connection, event)?
-                            } else {
-                                // Sporadic events happen, we can safely ignore them.
-                                false
-                            }
-                        };
+                                println!("User Disconnected . . 1");
+                                // deregister는 TcpStream에 대한 참조가 필요하므로,
+                                // handler 락을 잡은 상태에서 호출하는 것이 올바릅니다.
+                                poll.registry().deregister(connection)?;
 
-
-                       if done {
-                                println!("Disconn search . . .");
-                                if let Some(mut connection)  = 
-                                // get_connection_handler().write().unwrap().get_tcp_connection_by_token(token)
-                                get_tcp_connection_instance().write().unwrap().get_connetion_by_token(token)
-                                {
-                                    println!("User Disconnected . . 1");
-                                    poll.registry().deregister(connection);
-
-                                    let _taget_id = get_tcp_connection_instance().write().unwrap().get_id_by_token(token);
-                                    
-                                    if let Some(id) = _taget_id {
-                                        get_ve_char_manager_instance().write().unwrap().delete_characeter(id);
-                                    } else {
-                                        // 로그를 남기거나, 에러 처리를 할 수 있어요.
-                                        eprintln!("Failed to find target id for token: {:?}", token);
-                                    }
-                                    
-                                    get_tcp_connection_instance().write().unwrap().del_connection(token);
-
+                                let _target_id = handler.get_id_by_token(token);
+                                
+                                if let Some(id) = _target_id {
+                                    get_ve_char_manager_instance().write().unwrap().delete_characeter(id);
+                                } else {
+                                    eprintln!("Failed to find target id for token: {:?}", token);
                                 }
+                                
+                                handler.del_connection(token);
                             }
+                            // handler 락은 이 스코프를 벗어나면서 자동으로 해제됩니다.
+                        }
                     }
                 }
-                // thread::sleep(Duration::from_secs(1));
             }
-            // self.step += 1;
-            // println!("server run...")
         }
-
     }
-
 }
 
 fn handle_connection_event(
     registry: &Registry,
-    connection: &mut TcpStream,
+    token: Token, // Token만 전달하여 connection_handler 락을 외부에서 관리하도록 합니다.
     event: &Event,
 ) -> io::Result<bool> {
     println!("Handle Connection Event Start . . ");
 
-    if event.is_readable() {
-        let mut connection_closed = false;
-        let mut received_data = vec![0; 4096];
-        let mut bytes_read = 0;
-        // We can (maybe) read from the connection.
-        loop {
-            match connection.read(&mut received_data[bytes_read..]) {
-                Ok(0) => {
-                    // Reading 0 bytes means the other side has closed the
-                    // connection or is done writing, then so are we.
-                    connection_closed = true;
-                    break;
-                }
-                Ok(n) => {
-                    bytes_read += n;
-                    if bytes_read == received_data.len() {
-                        received_data.resize(received_data.len() + 1024, 0);
+    // 중요한 변경: 여기서 connection_handler 락을 획득하고, 메시지 읽기 직후 해제합니다.
+    let mut connection_handler = get_tcp_connection_instance().write().unwrap();
+    let mut connection_closed = false;
+    let mut received_data = vec![0; 4096];
+    let mut bytes_read = 0;
+
+    // 해당 토큰의 TcpStream을 가져옵니다.
+    let connection_stream_obj_option = connection_handler.connections.get_mut(&token);
+
+    if let Some(connection_stream_obj) = connection_stream_obj_option {
+        let connection = &mut connection_stream_obj.tcpStream;
+
+        if event.is_readable() {
+            loop {
+                match connection.read(&mut received_data[bytes_read..]) {
+                    Ok(0) => {
+                        connection_closed = true;
+                        break;
                     }
+                    Ok(n) => {
+                        bytes_read += n;
+                        if bytes_read == received_data.len() {
+                            received_data.resize(received_data.len() + 1024, 0);
+                        }
+                    }
+                    Err(ref err) if would_block(err) => break,
+                    Err(ref err) if interrupted(err) => continue,
+                    Err(err) => return Err(err),
                 }
-                // Would block "errors" are the OS's way of saying that the
-                // connection is not actually ready to perform this I/O operation.
-                Err(ref err) if would_block(err) => break,
-                Err(ref err) if interrupted(err) => continue,
-                // Other errors we'll consider fatal.
-                Err(err) => return Err(err),
             }
         }
-
-        if bytes_read != 0 {
-
-            let received_data = &received_data[..bytes_read];
-            if let Ok(str_buf) = from_utf8(received_data) {
-
-                EventHeader::action(received_data);
-                
-            } else {
-                println!("Received (none UTF-8) data: {:?}", received_data);
-            }
-        }
-
-        if connection_closed {
-            println!("Connection closed");
-            return Ok(true);
-        }
+    } else {
+        eprintln!("Connection not found for token: {:?}", token);
+        return Ok(true); // 연결이 없으므로 닫힌 것으로 간주합니다.
     }
+    
+    // 이 시점에서 `connection_handler` 락은 자동으로 해제됩니다 (함수 스코프를 벗어남).
+    // 만약 읽은 데이터가 있다면, 락이 해제된 상태에서 메시지 처리 함수를 호출합니다.
+    if bytes_read != 0 {
+        let received_data_slice = &received_data[..bytes_read];
+        // 여기서 EventHeader::action이 G_TCP_CONNECTION_HANDLER 락을 잡지 않도록 합니다.
+        // handle_quicksot_message가 이 버퍼를 받아 처리할 것입니다.
+        EventHeader::action(received_data_slice); // `handle_quicksot_message`를 직접 호출할 수도 있습니다.
+        println!("Event Actio End");
+    }
+
+    if connection_closed {
+        println!("Connection closed");
+        return Ok(true);
+    }
+    
     println!("Handle Connection Event End . . ");
     Ok(false)
 }

@@ -3,15 +3,15 @@ use std::collections::HashSet;
 use mio::net::TcpStream;
 use mio::Token;
 use std::io::{self, Read, Write};
-use std::net::SocketAddr;
-use std::net::IpAddr;
+use std::net::IpAddr; // SocketAddr 대신 IpAddr만 사용하는 경우
 use std::sync::{RwLock, Arc, RwLockReadGuard};
 
 lazy_static!{
-        static ref G_TCP_CONNECTION_HANDLER: Arc<RwLock<stream_handler>> = Arc::new(RwLock::new(stream_handler::new()));
+    static ref G_TCP_CONNECTION_HANDLER: Arc<RwLock<stream_handler>> = Arc::new(RwLock::new(stream_handler::new()));
 }
 
 pub fn get_tcp_connection_instance() -> &'static Arc<RwLock<stream_handler>> {
+    println!("LOCK TCP CONNECTION HANDLE");
     &G_TCP_CONNECTION_HANDLER
 }
 
@@ -29,46 +29,46 @@ pub trait connection_handle {
 
 pub struct connection_stream
 {
-    token: Token,
-    id: i64,
-    tcpStream: TcpStream
+    pub token: Token,
+    pub id: i64,
+    pub tcpStream: TcpStream,
+    pub peer_ip: Option<IpAddr>, 
 }
 
 impl connection_stream {
     pub fn new(_token: Token, _id: i64, _stream: TcpStream) -> Self {
+        let peer_ip = _stream.peer_addr().ok().map(|addr| addr.ip());
         connection_stream {
             token : _token,
             id : _id,
-            tcpStream : _stream
+            tcpStream : _stream,
+            peer_ip, // 캐시된 IP 주소 저장
         }
     }
 
     pub fn write(&mut self, _message : String) {
-        // self.tcpStream.write(_message.as_byte());
-
         let serialized_msg = _message.as_bytes();
-
-        self.tcpStream.write(serialized_msg);
+        // write 결과에 대한 에러 처리 추가 (optional)
+        if let Err(e) = self.tcpStream.write(serialized_msg) {
+            eprintln!("Failed to write to TCP stream for token {:?}: {}", self.token, e);
+        }
     }
 }
 
 pub struct stream_handler {
-    id_sum : i64,
-    connections: HashMap<Token, connection_stream>,
-    tokenIdMap: HashMap<i64, Token>,
-    idSet : HashSet<i64>
+    pub id_sum : i64,
+    pub connections: HashMap<Token, connection_stream>,
+    pub tokenIdMap: HashMap<i64, Token>,
+    pub idSet : HashSet<i64>
 }
 
 impl connection_handle for stream_handler {
     fn new() -> Self {
-        let mut _connetions = HashMap::new();
-        let mut _tokenID = HashMap::new();
-        let mut _idSet = HashSet::new();
         stream_handler{
             id_sum : 0,
-            connections : _connetions,
-            tokenIdMap : _tokenID,
-            idSet : _idSet
+            connections : HashMap::new(),
+            tokenIdMap : HashMap::new(),
+            idSet : HashSet::new()
         }
     }
 
@@ -78,15 +78,18 @@ impl connection_handle for stream_handler {
     }
 
     fn del_connection(&mut self, token : Token) {
-        let mut id = self.connections.get(&token).unwrap().id;
-
-        self.connections.remove(&token);
-        self.tokenIdMap.remove(&id);
-        self.idSet.remove(&id);
+        // remove가 Option을 반환하므로 안전하게 처리
+        if let Some(conn_stream) = self.connections.remove(&token) {
+            self.tokenIdMap.remove(&conn_stream.id);
+            self.idSet.remove(&conn_stream.id);
+            println!("Connection for token {:?} and ID {} deleted.", token, conn_stream.id);
+        } else {
+            eprintln!("Attempted to delete non-existent connection for token: {:?}", token);
+        }
     }
 
     fn get_current_id_sum(&mut self) -> i64 {
-        self.id_sum.clone()
+        self.id_sum
     }
 
     fn update_id_sum(&mut self) {
@@ -94,28 +97,26 @@ impl connection_handle for stream_handler {
     }
 
     fn send(&mut self, _token: Token, _message: String) {
-        // Connection을 맵에서 가져옴
         if let Some(connection) = self.connections.get_mut(&_token) {
-            // 메시지를 전송
-            println!("Write Message Complemeted :{:?}", _message.clone());
+            println!("Write Message Completed :{:?}", _message.clone());
             connection.write(_message);
-            
         } else {
-            // 연결이 없는 경우 처리 (예: 로그 남기기)
             eprintln!("No connection found for token: {:?}", _token);
         }
     }
 
     fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>) {
-        self.tokenIdMap.get(&target).and_then(|token| {
+        if let Some(token) = self.tokenIdMap.get(&target) {
             if let Some(connection) = self.connections.get_mut(token) {
-                // 메시지를 전송
-                connection.tcpStream.write(&msg_byte).unwrap();
-                Some(())
+                if let Err(e) = connection.tcpStream.write(&msg_byte) {
+                    eprintln!("Failed to send message to target {:?} (token {:?}): {}", target, token, e);
+                }
             } else {
-                None
+                eprintln!("No connection found for target ID {} (token {:?})", target, token);
             }
-        });
+        } else {
+            eprintln!("No token found for target ID {}", target);
+        }
     }
 
     fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>) {
@@ -125,15 +126,15 @@ impl connection_handle for stream_handler {
             }
         }
     }
-    
 }
 
 impl stream_handler {
-    pub fn is_exist_connection_by_address(&mut self, _addr: String) -> bool {
+    // is_exist_connection_by_address 메서드 최적화
+    pub fn is_exist_connection_by_address(&self, _addr: String) -> bool {
         if let Ok(target_ip) = _addr.parse::<IpAddr>() {
-            for connection in self.connections.values_mut() {
-                if let Ok(peer_addr) = connection.tcpStream.peer_addr() {
-                    if peer_addr.ip() == target_ip {
+            for connection in self.connections.values() { // read-only access
+                if let Some(cached_ip) = connection.peer_ip {
+                    if cached_ip == target_ip {
                         return true;
                     }
                 }
@@ -142,45 +143,31 @@ impl stream_handler {
         false
     }
 
-    pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
-    {
-        let mut _token = self.tokenIdMap.get(&id);
-
-        if let Some(connection) = self.connections.get_mut(_token.unwrap()) {
-            Some(&mut connection.tcpStream)
-        } else {
-            None
-        }   
+    pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream> {
+        self.tokenIdMap.get(&id).and_then(|token| {
+            self.connections.get_mut(token).map(|conn_stream| &mut conn_stream.tcpStream)
+        })
     }
 
-    pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
-    {
-        if let Some(connection) = self.connections.get_mut(&token) {
-            Some(&mut connection.tcpStream)
-        } else {
-            None
-        }
+    pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream> {
+        self.connections.get_mut(&token).map(|conn_stream| &mut conn_stream.tcpStream)
     }
 
     pub fn get_id_by_token(&self, token: Token) -> Option<i64> {
-        self.tokenIdMap.iter()
-            .find(|(_, &val)| val == token)
-            .map(|(&key, _)| key)
+        // HashMap의 values()를 순회하여 찾도록 변경 (tokenIdMap 사용)
+        self.connections.get(&token).map(|conn_stream| conn_stream.id)
     }
 
-    pub fn get_id_by_connection(&mut self, _addr : String) -> Option<i64> {
-
-        println!("Get ID by Connection : {}", _addr);
+    // get_id_by_connection 메서드 최적화 및 불필요한 로그 제거
+    pub fn get_id_by_connection (&self, _addr : String) -> Option<i64> {
+        // println!("Get ID by Connection : {}", _addr); // 이 로그는 너무 자주 출력될 수 있습니다.
 
         if let Ok(target_ip) = _addr.parse::<IpAddr>() {
-            for connection in self.connections.values_mut() {
-                if let Ok(peer_addr) = connection.tcpStream.peer_addr() {
-                    if peer_addr.ip() == target_ip {
-                        println!("Found connection with ID: {}", connection.id);
+            for connection in self.connections.values() { // read-only access
+                if let Some(cached_ip) = connection.peer_ip {
+                    if cached_ip == target_ip {
+                        // println!("Found connection with ID: {}", connection.id); // 찾았을 때만 로그
                         return Some(connection.id)
-                    }
-                    else {
-                        println!("Not Found Connection with ID: {}", connection.id);
                     }
                 }
             }
@@ -188,10 +175,7 @@ impl stream_handler {
         None
     }
     
-
-    pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
-    {
-        // Id 처리 로직 필요함
+    pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token) {
         let _id_top = self.get_current_id_sum();
         let _new_connection = connection_stream::new(_token, _id_top, _tcpStream);
 
@@ -203,6 +187,6 @@ impl stream_handler {
     }
 
     pub fn get_id_top(&self) -> i64 {
-        return self.id_sum
+        self.id_sum
     }
 }

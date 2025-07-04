@@ -1,4 +1,4 @@
-use qsm::qsm::get_event_handler;
+// use qsm::qsm::get_event_handler;
 use Network::server_datagram::get_udp_server_instance;
 use Network::server::get_tcp_server_instance;
 
@@ -33,7 +33,7 @@ use std::time::{Duration, Instant};
 fn main() {
     println!("Server Start");
 
-    get_event_handler().write().unwrap().init_function_map();
+    // get_event_handler().write().unwrap().init_function_map();
 
     GameConfig::init("");
 
