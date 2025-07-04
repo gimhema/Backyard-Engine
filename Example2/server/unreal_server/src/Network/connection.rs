@@ -23,6 +23,7 @@ pub trait connection_handle {
     fn update_id_sum(&mut self);
     fn send(&mut self, _token :Token, _message : String);
     fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>);
+    fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>);
 }
 
 
@@ -115,6 +116,14 @@ impl connection_handle for stream_handler {
                 None
             }
         });
+    }
+
+    fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>) {
+        for connection in self.connections.values_mut() {
+            if let Err(e) = connection.tcpStream.write(&msg_byte) {
+                eprintln!("Failed to send message to connection: {:?}", e);
+            }
+        }
     }
     
 }

@@ -86,6 +86,14 @@ impl connection_handle for datagram_handler {
         });
     }
 
+    fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>) {
+        for connection in self.connections.values_mut() {
+            if let Err(e) = connection.udpSocket.send(&msg_byte) {
+                eprintln!("Failed to send message to connection: {:?}", e);
+            }
+        }
+    }
+
 }
 
 impl datagram_handler {
