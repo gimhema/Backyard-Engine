@@ -22,7 +22,7 @@ pub trait connection_handle {
     fn get_current_id_sum(&mut self) -> i64;
     fn update_id_sum(&mut self);
     fn send(&mut self, _token :Token, _message : String);
-
+    fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>);
 }
 
 
@@ -105,6 +105,9 @@ impl connection_handle for stream_handler {
         }
     }
 
+    fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>) {
+        
+    }
     
 }
 

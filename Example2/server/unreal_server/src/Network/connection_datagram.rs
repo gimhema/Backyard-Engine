@@ -74,6 +74,10 @@ impl connection_handle for datagram_handler {
         // Send to udp connection . . .
     }
 
+    fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>) {
+        
+    }
+
 }
 
 impl datagram_handler {
@@ -110,4 +114,6 @@ impl datagram_handler {
 
         self.update_id_sum();
     }
+
+    
 }
