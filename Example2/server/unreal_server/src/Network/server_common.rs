@@ -1,7 +1,7 @@
 use mio::net::{TcpStream, UdpSocket};
 use mio::Token;
 use std::vec::Vec;
-use std::collections::{HashSet};
+use std::collections::{HashMap, HashSet};
 use std::sync::{RwLock, Arc};
 use super::connection::stream_handler;
 use super::connection_datagram::datagram_handler;
@@ -156,12 +156,43 @@ impl server_common_connetion_handler {
 
 
 pub struct user_connect_info {
-    user_token_vec : Vec<Token>
+    user_token_vec : Vec<Token>,
+    id_token_map : HashMap<i64, Token>,
+    ip_token_map : HashMap<String, Token>
 }
 
 impl user_connect_info {
     pub fn new() -> Self {
-        return user_connect_info{ user_token_vec : Vec::new() }
+        return user_connect_info{ 
+            user_token_vec : Vec::new(),
+            id_token_map : HashMap::new(),
+            ip_token_map : HashMap::new() 
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.user_token_vec.clear();
+        self.id_token_map.clear();
+        self.ip_token_map.clear();
+    }
+
+    pub fn insert(&mut self, id: i64, token: Token, ip_address: String) {
+        self.id_token_map.insert(id, token);
+        self.ip_token_map.insert(ip_address, token);
+    }
+
+    pub fn get_token_by_id(&self, id: i64) -> Option<Token> {
+        if let Some(&token) = self.id_token_map.get(&id) {
+            return Some(token);
+        }
+        None
+    }
+
+    pub fn get_token_by_ip(&self, ip_address: &str) -> Option<Token> {
+        if let Some(&token) = self.ip_token_map.get(ip_address) {
+            return Some(token);
+        }
+        None
     }
 
     pub fn push(&mut self, new_token : Token) {

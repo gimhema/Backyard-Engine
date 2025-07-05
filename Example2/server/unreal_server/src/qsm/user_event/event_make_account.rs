@@ -35,7 +35,7 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 _account_id, _password, _player_name, _conn_info);
 
             // 여기에 단 한 번만 락을 획득합니다.
-            // let mut connection_handler = get_tcp_connection_instance().write().unwrap();
+            let connection_handler = get_tcp_connection_instance().read().unwrap();
 
             println!("Step 1: Acquired connection_handler lock.");
 
