@@ -6,6 +6,7 @@ use crate::Event::event_handler::EventHeader;
 use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 
 use crate::Network::connection::get_tcp_connection_instance;
+use crate::Network::message_queue::get_callback_msg_queue_instance;
 use crate::Network::server_common::get_user_connection_info;
 use crate::Network::connection::connection_handle;
 
@@ -52,40 +53,25 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             }
             let _pid = _send_id.unwrap();
 
-            // // 연결 존재 여부 확인
-            // if connection_handler.is_exist_connection_by_address(_conn_info.clone()) {
-            //     println!("Step 2: Connection exists.");
                 
-            //     // _pid를 안전하게 얻기
-            //     let _pid = match connection_handler.get_id_by_connection(_conn_info.clone()) {
-            //         Some(id) => id,
-            //         None => {
-            //             eprintln!("Failed to get ID by connection for address: {}. Aborting verify account.", _conn_info);
-            //             // 이 경우, 연결은 있지만 ID를 찾지 못한 것이므로, 추가적인 처리가 필요할 수 있습니다.
-            //             // 예를 들어, 해당 연결을 끊거나, 오류 메시지를 클라이언트에 보낼 수 있습니다.
-            //             return; 
-            //         }
-            //     };
+            let message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
+            let session_id = 0; 
                 
-            //     let message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
-            //     let session_id = 0; 
-                
-            //     let mut _allow_connect_game = AllowConnectGame::new(
-            //         message_id,
-            //         session_id, 
-            //         _pid as u32,
-            //         _account_id, 
-            //         _player_name, 
-            //         _conn_info);
+            let mut _allow_connect_game = AllowConnectGame::new(
+                message_id,
+                session_id, 
+                _pid as u32,
+                _account_id, 
+                _player_name, 
+                _conn_info);
 
-            //     println!("Step 3: Prepared AllowConnectGame message.");
+            println!("Step 3: Prepared AllowConnectGame message.");
 
-            //     let _send_msg = _allow_connect_game.serialize();
+            let _send_msg = _allow_connect_game.serialize();
                 
             //     // 메시지 전송
-            //     connection_handler.send_message_byte_to_target(
-            //         _pid,
-            //         _send_msg);
+            get_callback_msg_queue_instance().write().unwrap()
+                .push_message(_send_token.unwrap(), _send_msg);
 
             //     println!("Step 4: Sent AllowConnectGame message to target.");
             // } else {

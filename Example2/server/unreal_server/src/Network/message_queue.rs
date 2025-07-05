@@ -19,19 +19,19 @@ pub fn get_update_msg_queue_instance() -> &'static Arc<RwLock<message_queue_hand
 
 pub struct game_message {
     token : Token,
-    message : String
+    message : Vec<u8>
 }
 
 impl game_message {
-    pub fn new(_token : Token, _message : String) -> Self {
-        return game_message{token :_token, message : _message}
+    pub fn new(token : Token, message : Vec<u8>) -> Self {
+        game_message { token, message }
     }
 
     pub fn get_token(&self) -> Token {
         return self.token.clone()
     }
 
-    pub fn get_message(&self) -> String {
+    pub fn get_message(&self) -> Vec<u8> {
         return self.message.clone()
     }
 }
@@ -47,6 +47,11 @@ impl message_queue_handler {
 
     pub fn clear(&mut self) {
         self.message_queue.clear();
+    }
+
+    pub fn push_message(&mut self, token : Token, message : Vec<u8>) {
+        let new_message = game_message::new(token, message);
+        self.push(new_message);
     }
 
     pub fn push(&mut self, message : game_message) {

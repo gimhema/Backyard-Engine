@@ -50,11 +50,13 @@ impl connection_stream {
         }
     }
 
-    pub fn write(&mut self, _message : String) {
-        let serialized_msg = _message.as_bytes();
+    pub fn write(&mut self, _message : Vec<u8>) {
+//        let serialized_msg = _message.as_bytes();
         // write 결과에 대한 에러 처리 추가 (optional)
-        if let Err(e) = self.tcpStream.write(serialized_msg) {
-            eprintln!("Failed to write to TCP stream for token {:?}: {}", self.token, e);
+        if let Err(e) = self.tcpStream.write(&_message) {
+            eprintln!("Failed to write message to stream: {}", e);
+        } else {
+            println!("Write Message Completed :{:?}", _message);
         }
     }
 }
@@ -103,7 +105,7 @@ impl connection_handle for stream_handler {
     fn send(&mut self, _token: Token, _message: String) {
         if let Some(connection) = self.connections.get_mut(&_token) {
             println!("Write Message Completed :{:?}", _message.clone());
-            connection.write(_message);
+
         } else {
             eprintln!("No connection found for token: {:?}", _token);
         }
@@ -221,4 +223,4 @@ impl stream_handler {
     pub fn get_id_top(&self) -> i64 {
         self.id_sum
     }
-}
+}  
