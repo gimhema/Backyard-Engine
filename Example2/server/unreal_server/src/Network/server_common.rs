@@ -181,8 +181,6 @@ impl user_connect_info {
         self.user_token_vec.push(token);
         self.id_token_map.insert(id, token);
         self.ip_token_map.insert(ip_address, token);
-
-
     }
 
     pub fn del_connect_info(&mut self, id: i64, token: Token, ip_address: String) {
@@ -208,6 +206,24 @@ impl user_connect_info {
     pub fn get_token(&self, idx: usize) -> Option<Token> {
         if let Some(&value) = self.user_token_vec.get(idx) {
             return Some(value);
+        }
+        None
+    }
+
+    pub fn find_id_by_token(&self, token: Token) -> Option<i64> {
+        for (id, t) in &self.id_token_map {
+            if *t == token {
+                return Some(*id);
+            }
+        }
+        None
+    }
+
+    pub fn find_ip_by_token(&self, token: Token) -> Option<String> {
+        for (ip, t) in &self.ip_token_map {
+            if *t == token {
+                return Some(ip.clone());
+            }
         }
         None
     }

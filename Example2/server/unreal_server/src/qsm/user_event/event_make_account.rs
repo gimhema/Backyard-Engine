@@ -6,6 +6,7 @@ use crate::Event::event_handler::EventHeader;
 use crate::GameLogic::game_player::{get_ve_char_manager_instance, VECharcater};
 
 use crate::Network::connection::get_tcp_connection_instance;
+use crate::Network::server_common::get_user_connection_info;
 use crate::Network::connection::connection_handle;
 
 use super::GameLogic::*;
@@ -35,9 +36,21 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
                 _account_id, _password, _player_name, _conn_info);
 
             // 여기에 단 한 번만 락을 획득합니다.
-            let connection_handler = get_tcp_connection_instance().read().unwrap();
+            let connection_info = get_user_connection_info().read().unwrap();
 
             println!("Step 1: Acquired connection_handler lock.");
+            
+            let _send_token = connection_info.get_token_by_ip(&_conn_info.clone());
+            if _send_token.is_none() {
+                eprintln!("No connection found for address: {}", _conn_info);
+                return; // 연결이 없는 경우, 함수 종료
+            }
+            let _send_id = connection_info.find_id_by_token(_send_token.unwrap());
+            if _send_id.is_none() {
+                eprintln!("No ID found for token: {:?}", _send_token);
+                return; 
+            }
+            let _pid = _send_id.unwrap();
 
             // // 연결 존재 여부 확인
             // if connection_handler.is_exist_connection_by_address(_conn_info.clone()) {
