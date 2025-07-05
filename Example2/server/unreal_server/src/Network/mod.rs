@@ -6,6 +6,7 @@ pub mod connection_datagram;
 pub mod serverinfo;
 pub mod server_common;
 pub mod message_queue;
+pub mod new_server;
 
 use super::Event;
 use super::Crypto;

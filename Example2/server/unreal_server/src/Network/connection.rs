@@ -14,7 +14,7 @@ lazy_static!{
 }
 
 pub fn get_tcp_connection_instance() -> &'static Arc<RwLock<stream_handler>> {
-    println!("LOCK TCP CONNECTION HANDLE");
+    println!("LOCK TCP CONNECTION");
     &G_TCP_CONNECTION_HANDLER
 }
 
@@ -56,7 +56,7 @@ impl connection_stream {
         if let Err(e) = self.tcpStream.write(&_message) {
             eprintln!("Failed to write message to stream: {}", e);
         } else {
-            println!("Write Message Completed :{:?}", _message);
+            println!("Write Message Completed");
         }
     }
 }
@@ -139,6 +139,7 @@ impl connection_handle for stream_handler {
         let mut msg_queue = get_callback_msg_queue_instance().write().unwrap();
         
         while !msg_queue.empty() {
+            println!("Wait Message Queue . . .");
             let message = msg_queue.pop();
             if let Some(connection) = self.connections.get_mut(&message.get_token()) {
                 connection.write(message.get_message());

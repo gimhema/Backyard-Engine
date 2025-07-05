@@ -13,7 +13,7 @@ use std::time::Duration;
 
 const SERVER_TOKEN: Token = Token(0);
 const UDP_SERVER_TICK: u64 = 1000;
-const UDP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8081";
+const UDP_SERVER_CONNECT_INFO : &str = "127.0.0.1:8082";
 
 lazy_static! {
     static ref G_SERVER_DATAGRAM_INSTANCE: Arc<RwLock<server_datagram>> = Arc::new(RwLock::new(server_datagram::new()));
