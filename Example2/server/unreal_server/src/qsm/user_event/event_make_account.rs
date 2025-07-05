@@ -73,12 +73,7 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             get_callback_msg_queue_instance().write().unwrap()
                 .push_message(_send_token.unwrap(), _send_msg);
 
-            //     println!("Step 4: Sent AllowConnectGame message to target.");
-            // } else {
-            //     println!("Connection not found for address: {}", _conn_info);
-            //     // 연결이 없는 경우에 대한 추가적인 처리 (예: 에러 로그, 클라이언트에 거부 메시지)
-            // }
-            // `connection_handler` 변수가 이 함수의 스코프를 벗어나면서 락이 자동으로 해제됩니다.
+            println!("Step 4: Sent AllowConnectGame message to target.");
         }
         Err(e) => {
             eprintln!("Failed to deserialize VerifyAccount: {}", e);
