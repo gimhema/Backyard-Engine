@@ -5,6 +5,7 @@ use mio::Token;
 use std::io::{self, Read, Write};
 use std::net::IpAddr; // SocketAddr 대신 IpAddr만 사용하는 경우
 use std::sync::{RwLock, Arc, RwLockReadGuard};
+use super::message_queue::*;
 
 lazy_static!{
     static ref G_TCP_CONNECTION_HANDLER: Arc<RwLock<stream_handler>> = Arc::new(RwLock::new(stream_handler::new()));
@@ -22,8 +23,9 @@ pub trait connection_handle {
     fn get_current_id_sum(&mut self) -> i64;
     fn update_id_sum(&mut self);
     fn send(&mut self, _token :Token, _message : String);
-    fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>);
-    fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>);
+    fn send_message_byte_to_target(&mut self, target : i64, msg_byte : Vec<u8>); // depracated
+    fn send_message_byte_to_all(&mut self, msg_byte : Vec<u8>); // depracated
+    fn message_queue_process(&mut self);
 }
 
 
@@ -123,6 +125,21 @@ impl connection_handle for stream_handler {
         for connection in self.connections.values_mut() {
             if let Err(e) = connection.tcpStream.write(&msg_byte) {
                 eprintln!("Failed to send message to connection: {:?}", e);
+            }
+        }
+    }
+
+    fn message_queue_process(&mut self) {
+        // 메시지 큐 처리 로직을 여기에 구현합니다.
+        // 예시로, 메시지 큐에서 메시지를 꺼내서 각 연결에 전송하는 로직을 추가할 수 있습니다.
+        let mut msg_queue = get_callback_msg_queue_instance().write().unwrap();
+        
+        while !msg_queue.empty() {
+            let message = msg_queue.pop();
+            if let Some(connection) = self.connections.get_mut(&message.get_token()) {
+                connection.write(message.get_message());
+            } else {
+                eprintln!("No connection found for token: {:?}", message.get_token());
             }
         }
     }

@@ -5,6 +5,7 @@ use mio::net::{UdpSocket, TcpStream};
 use mio::Token;
 use super::connection::*;
 use std::sync::{RwLock, Arc, RwLockReadGuard};
+use super::message_queue::*;
 lazy_static!{
     static ref G_UDP_CONNECTION_HANDLER: Arc<RwLock<datagram_handler>> = Arc::new(RwLock::new(datagram_handler::new()));
 }
@@ -92,6 +93,11 @@ impl connection_handle for datagram_handler {
                 eprintln!("Failed to send message to connection: {:?}", e);
             }
         }
+    }
+
+    fn message_queue_process(&mut self) {
+        // 메시지 큐 처리 로직이 필요합니다.
+        // 현재는 구현되어 있지 않습니다.
     }
 
 }
