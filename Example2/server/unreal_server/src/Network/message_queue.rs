@@ -45,6 +45,10 @@ impl message_queue_handler {
         message_queue_handler{message_queue : VecDeque::new()}
     }
 
+    pub fn clear(&mut self) {
+        self.message_queue.clear();
+    }
+
     pub fn push(&mut self, message : game_message) {
         self.message_queue.push_back(message)
     }

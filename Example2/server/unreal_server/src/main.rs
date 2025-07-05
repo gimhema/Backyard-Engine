@@ -27,7 +27,7 @@ use std::thread;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 // use tokio::time::Duration;
-
+use crate::Network::message_queue::*;
 
 
 fn main() {
@@ -37,6 +37,8 @@ fn main() {
 
     GameConfig::init("");
 
+    get_callback_msg_queue_instance().write().unwrap().clear();
+        
     // Run UDP
     let unreliable_server_instance = Arc::clone(get_udp_server_instance());
     let udp_thread = thread::spawn(move || {
