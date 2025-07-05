@@ -5,6 +5,8 @@ use mio::Token;
 use std::io::{self, Read, Write};
 use std::net::IpAddr; // SocketAddr 대신 IpAddr만 사용하는 경우
 use std::sync::{RwLock, Arc, RwLockReadGuard};
+use crate::Network::server_common::get_user_connection_info;
+
 use super::message_queue::*;
 
 lazy_static!{
@@ -195,12 +197,25 @@ impl stream_handler {
     pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token) {
         let _id_top = self.get_current_id_sum();
         let _new_connection = connection_stream::new(_token, _id_top, _tcpStream);
+        let _peer_ip = _new_connection.peer_ip.clone();
 
         self.connections.insert(_token, _new_connection);
         self.tokenIdMap.insert(_id_top, _token);
         self.idSet.insert(_id_top);
 
         self.update_id_sum();
+
+        get_user_connection_info()
+            .write()
+            .unwrap()
+            .new_connect_info(
+                _id_top,
+                 _token,
+                 _peer_ip
+                    .map(|ip| ip.to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
+        );
+
     }
 
     pub fn get_id_top(&self) -> i64 {

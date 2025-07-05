@@ -177,9 +177,12 @@ impl user_connect_info {
     }
 
     pub fn new_connect_info(&mut self, id: i64, token: Token, ip_address: String) {
+        println!("New connection info added: id = {}, token = {:?}, ip_address = {}", id, token, ip_address.clone());
         self.user_token_vec.push(token);
         self.id_token_map.insert(id, token);
         self.ip_token_map.insert(ip_address, token);
+
+
     }
 
     pub fn del_connect_info(&mut self, id: i64, token: Token, ip_address: String) {
