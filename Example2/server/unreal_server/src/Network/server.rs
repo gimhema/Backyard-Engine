@@ -105,7 +105,7 @@ impl server_stream {
                         
                         // 새 연결을 추가할 때 락을 획득합니다.
                         get_tcp_connection_instance().write().unwrap().new_connection(connection, token);
-                        get_user_connection_info().write().unwrap().push(token);
+                        // get_user_connection_info().write().unwrap().push(token);
 
                         println!("SendGamePacket End");
                     },

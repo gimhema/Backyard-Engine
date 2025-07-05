@@ -176,9 +176,16 @@ impl user_connect_info {
         self.ip_token_map.clear();
     }
 
-    pub fn insert(&mut self, id: i64, token: Token, ip_address: String) {
+    pub fn new_connect_info(&mut self, id: i64, token: Token, ip_address: String) {
+        self.user_token_vec.push(token);
         self.id_token_map.insert(id, token);
         self.ip_token_map.insert(ip_address, token);
+    }
+
+    pub fn del_connect_info(&mut self, id: i64, token: Token, ip_address: String) {
+        self.user_token_vec.retain(|&t| t != token);
+        self.id_token_map.remove(&id);
+        self.ip_token_map.remove(&ip_address);
     }
 
     pub fn get_token_by_id(&self, id: i64) -> Option<Token> {
@@ -193,10 +200,6 @@ impl user_connect_info {
             return Some(token);
         }
         None
-    }
-
-    pub fn push(&mut self, new_token : Token) {
-        self.user_token_vec.push(new_token);
     }
 
     pub fn get_token(&self, idx: usize) -> Option<Token> {
