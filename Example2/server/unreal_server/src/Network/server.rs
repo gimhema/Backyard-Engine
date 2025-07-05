@@ -137,6 +137,9 @@ impl server_stream {
                             }
                             // handler 락은 이 스코프를 벗어나면서 자동으로 해제됩니다.
                         }
+                        // 메시지 큐 처리
+                        let mut connection_handler = get_tcp_connection_instance().write().unwrap();
+                        connection_handler.message_queue_process();
                     }
                 }
             }
