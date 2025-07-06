@@ -8,6 +8,9 @@ use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
+use crate::qsm::qsm::GLOBAL_MESSAGE_TX_QUEUE;
+
+use std::time::{Instant};
 
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
@@ -15,7 +18,7 @@ const SERVER_UDP_TOKEN: Token = Token(1);
 const CLIENT_TOKEN_START: Token = Token(2); // 클라이언트 토큰은 2부터 시작
 
 // --- 메시지를 전송할 Lock-Free 큐 타입 정의 ---
-type SharedMessageQueue = Arc<ArrayQueue<MessageToSend>>;
+pub type SharedMessageQueue = Arc<ArrayQueue<MessageToSend>>;
 
 // --- 전송할 메시지 유형 정의 ---
 #[derive(Debug)]
@@ -36,6 +39,8 @@ pub struct Server {
     pub message_tx_queue: SharedMessageQueue,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
+    last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
+    ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 }
 
 // --- 클라이언트 연결 구조체 ---
@@ -61,15 +66,21 @@ impl Server {
         let mut udp_socket = UdpSocket::bind(udp_socket_addr)?;
         poll.registry().register(&mut udp_socket, SERVER_UDP_TOKEN, Interest::READABLE)?;
 
-        Ok(Server {
+        let message_queue_for_server = GLOBAL_MESSAGE_TX_QUEUE.clone();
+
+        let server = Server {
             poll,
             tcp_listener,
             udp_socket,
             clients: HashMap::new(),
             next_client_token: CLIENT_TOKEN_START,
-            message_tx_queue: Arc::new(ArrayQueue::new(1024)), // 큐 크기 설정 (예시: 1024)
+            message_tx_queue: message_queue_for_server, // Assign the cloned Arc here
             client_groups: Arc::new(Mutex::new(HashMap::new())),
-        })
+            last_ping_time: Instant::now(), // 서버 시작 시 현재 시간으로 초기화
+            ping_interval: Duration::from_secs(5), // 5초마다 Ping 전송 (원하는 값으로 조정 가능)
+        };
+
+        Ok(server)
     }
 
     // --- 서버 시작 및 이벤트 루프 ---
@@ -82,6 +93,26 @@ impl Server {
 
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
+
+
+            // --- 추가된 부분: 주기적인 Ping 전송 확인 ---
+                                    if self.last_ping_time.elapsed() >= self.ping_interval {
+                                        println!("Sending periodic Ping to all connected clients...");
+                                        let ping_message_data = "Ping".as_bytes().to_vec(); // "Ping" 문자열을 바이트 벡터로 변환
+
+                                        // `send_message_to_token`이 메시지 길이 프리픽스를 붙이므로, 여기서는 raw "Ping"만 보냄.
+                                        // 큐에 메시지를 넣어 비동기적으로 처리하도록 합니다.
+                                        if let Err(_) = self.send_message(MessageToSend::Broadcast(ping_message_data)) {
+                                            eprintln!("Failed to queue ping broadcast message.");
+                                        }
+                                        self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
+                                    }
+
+                                    // ... (기존 이벤트 처리 루프와 클라이언트 액션 처리) ...
+
+                                    // 서버 내부 메시지 큐 처리 (여기서 Ping 메시지도 전송됨)
+                                    self.process_outgoing_messages()?;
+
 
             // 이벤트 처리 중 clients 맵을 직접 수정할 수 없으므로,
             // 수정할 내용을 기록한 후 루프 밖에서 일괄 처리합니다.
@@ -100,6 +131,10 @@ impl Server {
 
                                     // 클라이언트 스트림 등록 (읽기 및 쓰기 관심)
                                     self.poll.registry().register(&mut stream, token, Interest::READABLE | Interest::WRITABLE)?;
+
+                                    
+
+                                    println!("Create new player conn info : {:?}", token.clone());
 
                                     self.clients.insert(token, ClientConnection {
                                         stream,
@@ -354,6 +389,7 @@ impl ClientConnection {
         if !buffer.is_empty() {
             println!("Received message from client {}: {:?}", client.addr, String::from_utf8_lossy(&buffer));
             // TODO: 수신된 메시지 처리 로직 (예: 게임 로직으로 전달, 파싱 등)
+            
             EventHeader::action(&buffer);
         }
         Ok(false) // 연결 유지

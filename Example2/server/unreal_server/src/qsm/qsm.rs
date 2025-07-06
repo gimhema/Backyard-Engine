@@ -13,6 +13,13 @@ use super::user_event::event_make_account::CallBack_MakeAccount;
 use super::user_event::event_make_account::CallBack_VerifyAccount;
 use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
 
+use lazy_static::lazy_static;
+use crate::Network::server::{MessageToSend, SharedMessageQueue}; // 경로를 실제에 맞게 수정하세요.
+use crossbeam_queue::ArrayQueue;
+
+lazy_static! {
+    pub static ref GLOBAL_MESSAGE_TX_QUEUE: Arc<ArrayQueue<MessageToSend>> = Arc::new(ArrayQueue::new(1024));
+}
 
 #[repr(packed)]
 pub struct BaseMessage {

@@ -11,4 +11,8 @@ use crate::qsm::qsm::*;
 
 
 
-
+impl Server {
+    pub fn handle_recv_message(&mut self) {
+        
+    }
+}

@@ -33,7 +33,8 @@ use mio::Token;
 // // --- 메인 함수 ---
 fn main() -> io::Result<()> {
     // 서버 인스턴스 생성
-    let mut server = Server::new("127.0.0.1:8080", "127.0.0.1:8081")?;
+    let mut server = Server::new("127.0.0.1:8080", "127.0.0.1:8082")?;
+
 
     // 서버 시작
     server.start()?;
