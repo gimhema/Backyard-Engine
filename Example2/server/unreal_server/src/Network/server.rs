@@ -25,23 +25,23 @@ pub enum MessageToSend {
 
 // --- 서버 구조체 ---
 pub struct Server {
-    poll: Poll,
-    tcp_listener: TcpListener,
-    udp_socket: UdpSocket,
-    clients: HashMap<Token, ClientConnection>,
-    next_client_token: Token,
+    pub poll: Poll,
+    pub tcp_listener: TcpListener,
+    pub udp_socket: UdpSocket,
+    pub clients: HashMap<Token, ClientConnection>,
+    pub next_client_token: Token,
     // 외부에서 메시지를 서버로 보낼 수 있는 큐 (Lock-Free)
-    message_tx_queue: SharedMessageQueue,
+    pub message_tx_queue: SharedMessageQueue,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
-    client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
+    pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
 }
 
 // --- 클라이언트 연결 구조체 ---
 pub struct ClientConnection {
-    stream: TcpStream,
-    addr: SocketAddr,
-    write_queue: Arc<Mutex<Vec<u8>>>,
-    is_udp_client: bool, // UDP 클라이언트인지 여부 (TCP와 UDP 연결을 구분)
+    pub stream: TcpStream,
+    pub addr: SocketAddr,
+    pub write_queue: Arc<Mutex<Vec<u8>>>,
+    pub is_udp_client: bool, // UDP 클라이언트인지 여부 (TCP와 UDP 연결을 구분)
 }
 
 impl Server {
@@ -390,58 +390,3 @@ enum ClientAction {
     Reregister,
 }
 
-// // --- 메인 함수 ---
-// fn main() -> io::Result<()> {
-//     // 서버 인스턴스 생성
-//     let mut server = Server::new("127.0.0.1:8080", "127.0.0.1:8081")?;
-
-//     // 메시지 송신 예시를 위한 Arc 클론 (다른 스레드에서 호출될 수 있다고 가정)
-//     let message_sender_arc = Arc::clone(&server.message_tx_queue);
-//     let client_group_manager_arc = Arc::clone(&server.client_groups);
-
-//     // 가상의 관리 스레드: 메시지 전송 및 그룹 관리 시뮬레이션
-//     std::thread::spawn(move || {
-//         std::thread::sleep(Duration::from_secs(5)); // 서버 시작 대기
-
-//         println!("\n--- Sending test messages ---");
-
-//         // 예시: 클라이언트 그룹에 토큰 추가 (실제 클라이언트 연결 후 호출되어야 함)
-//         // 주의: 이 토큰(Token(2))은 실제 클라이언트가 연결되기 전에는 유효하지 않을 수 있습니다.
-//         // 테스트를 위해 클라이언트 연결 후 이 부분을 실행하는 것을 권장합니다.
-//         let token_for_group = Token(2); // 가상의 클라이언트 토큰
-//         let group_name = "gamers".to_string();
-//         let mut groups = client_group_manager_arc.lock().unwrap();
-//         groups.entry(group_name.clone()).or_insert_with(Vec::new).push(token_for_group);
-//         drop(groups); // 락 해제
-//         println!("Token({:?}) added to '{}' group (example)", token_for_group.0, group_name);
-
-
-//         // 단일 메시지 전송 (예시 토큰 2번 클라이언트에게)
-//         // send_message 함수는 Lock-Free이므로 안전하게 호출 가능
-//         let msg = MessageToSend::Single(token_for_group, "Hello Client 2!".as_bytes().to_vec());
-//         if let Err(_) = message_sender_arc.push(msg) { // push는 이제 TrySendError를 반환하지만, 우리는 성공/실패 여부만 알면 됩니다.
-//             eprintln!("Failed to push single message to queue.");
-//         }
-//         std::thread::sleep(Duration::from_millis(500));
-
-//         // 그룹 메시지 전송
-//         let group_msg = MessageToSend::Group(group_name, "Message to Gamers!".as_bytes().to_vec());
-//         if let Err(_) = message_sender_arc.push(group_msg) {
-//             eprintln!("Failed to push group message to queue.");
-//         }
-//         std::thread::sleep(Duration::from_millis(500));
-
-//         // 브로드캐스트 메시지 전송
-//         let broadcast_msg = MessageToSend::Broadcast("Hello All Clients!".as_bytes().to_vec());
-//         if let Err(_) = message_sender_arc.push(broadcast_msg) {
-//             eprintln!("Failed to push broadcast message to queue.");
-//         }
-
-//         std::thread::sleep(Duration::from_secs(5)); // 추가 메시지 전송 대기
-//     });
-
-//     // 서버 시작
-//     server.start()?;
-
-//     Ok(())
-// }
