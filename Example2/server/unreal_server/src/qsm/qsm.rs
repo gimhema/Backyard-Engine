@@ -14,46 +14,6 @@ use super::user_event::event_make_account::CallBack_VerifyAccount;
 use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
 
 
-// G_EVENT_HANDLER와 event_handler 구조체는 더 이상 필요 없으므로 제거하거나,
-// 다른 용도로 사용될 경우를 대비해 유지할 수 있습니다.
-// 여기서는 `handle_quicksot_message`가 독립적으로 동작하도록 변경하므로,
-// G_EVENT_HANDLER와 event_handler는 사용되지 않습니다.
-// 만약 다른 곳에서 여전히 `event_handler` 인스턴스가 필요하다면,
-// 이 부분은 유지하되 `init_function_map` 내부의 `function_map` 사용을 제거해야 합니다.
-
-/*
-// 필요 없어진 코드 (주석 처리 또는 제거)
-lazy_static! {
-    static ref G_EVENT_HANDLER: Arc<RwLock<event_handler>> = Arc::new(RwLock::new(event_handler::new()));
-}
-
-pub fn get_event_handler() -> &'static Arc<RwLock<event_handler>> {
-    &G_EVENT_HANDLER
-}
-
-pub struct event_handler {
-    // function_map: HashMap<u32, Box<dyn Fn(&[u8]) + Send + Sync>>, // 더 이상 필요 없음
-}
-
-impl event_handler {
-    pub fn new() -> Self {
-        event_handler {
-            // function_map: HashMap::new(), // 더 이상 필요 없음
-        }
-    }
-
-    pub fn init_function_map(&mut self) {
-        // 이 함수는 이제 비어 있거나 제거됩니다.
-        // 콜백 함수 호출 로직이 handle_quicksot_message로 이동했기 때문입니다.
-    }
-
-    pub fn call_func(&self, fid: u32, buffer: &[u8]) {
-        // 이 함수도 더 이상 사용되지 않습니다.
-    }
-}
-*/
-
-
 #[repr(packed)]
 pub struct BaseMessage {
     id: u32,  // 메시지 타입을 나타냄

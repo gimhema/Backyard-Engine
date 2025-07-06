@@ -36,42 +36,23 @@ pub fn CallBack_VerifyAccount(buffer: &[u8])
             println!("CallBack_VerifyAccount : Account ID : {}, PassWord : {}, Player Name : {}, Conn: {}",
                 _account_id, _password, _player_name, _conn_info);
 
-            // 여기에 단 한 번만 락을 획득합니다.
-            let connection_info = get_user_connection_info().read().unwrap();
-
             println!("Step 1: Acquired connection_handler lock.");
-            
-            let _send_token = connection_info.get_token_by_ip(&_conn_info.clone());
-            if _send_token.is_none() {
-                eprintln!("No connection found for address: {}", _conn_info);
-                return; // 연결이 없는 경우, 함수 종료
-            }
-            let _send_id = connection_info.find_id_by_token(_send_token.unwrap());
-            if _send_id.is_none() {
-                eprintln!("No ID found for token: {:?}", _send_token);
-                return; 
-            }
-            let _pid = _send_id.unwrap();
-
-                
-            let message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
-            let session_id = 0; 
-                
-            let mut _allow_connect_game = AllowConnectGame::new(
-                message_id,
-                session_id, 
-                _pid as u32,
-                _account_id, 
-                _player_name, 
-                _conn_info);
+                    
+            // let message_id = EventHeader::ALLOW_CONNECT_GAME as u32;
+            // let session_id = 0; 
+            //     
+            // let mut _allow_connect_game = AllowConnectGame::new(
+            //     message_id,
+            //     session_id, 
+            //     _pid as u32,
+            //     _account_id, 
+            //     _player_name, 
+            //     _conn_info);
+// 
+            //     
+            // let _send_msg = _allow_connect_game.serialize();
 
             println!("Step 3: Prepared AllowConnectGame message.");
-
-            let _send_msg = _allow_connect_game.serialize();
-                
-            //     // 메시지 전송
-            get_callback_msg_queue_instance().write().unwrap()
-                .push_message(_send_token.unwrap(), _send_msg);
 
             println!("Step 4: Sent AllowConnectGame message to target.");
         }
