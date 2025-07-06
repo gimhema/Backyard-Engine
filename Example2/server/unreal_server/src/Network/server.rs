@@ -6,6 +6,8 @@ use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
+use crate::qsm::*;
+use crate::Event::event_handler::EventHeader;
 
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
@@ -352,6 +354,7 @@ impl ClientConnection {
         if !buffer.is_empty() {
             println!("Received message from client {}: {:?}", client.addr, String::from_utf8_lossy(&buffer));
             // TODO: 수신된 메시지 처리 로직 (예: 게임 로직으로 전달, 파싱 등)
+            EventHeader::action(&buffer);
         }
         Ok(false) // 연결 유지
     }
