@@ -1,6 +1,5 @@
 use super::Core;
 
-use super::Network::server::get_tcp_server_instance;
 use super::Network::message_queue::get_callback_msg_queue_instance;
 use super::Network::server_common::get_user_connection_info;
 // use super::Network::server_common::get_connection_handler;
@@ -9,12 +8,6 @@ use std::thread;
 use std::sync::Arc;
 use std::time::Duration;
 
-pub fn SpawnWorkerMessageAction() {
-    let server_instance = Arc::clone(get_tcp_server_instance());
-    thread::spawn(move || {
-        get_tcp_server_instance().write().unwrap().run();
-    });
-}
 
 pub fn SpawnWorkerServerRun() {
     thread::spawn(move || {
@@ -42,7 +35,6 @@ pub fn MainLogic() {
 
     SpawnWorkerServerRun();
 
-    SpawnWorkerMessageAction();
 
     loop {
         thread::sleep(Duration::from_secs(1));
