@@ -242,7 +242,6 @@ impl Server {
     }
 
     // --- Lock-Free 메시지 송신 함수 (외부에서 호출 가능) ---
-    // TrySendError를 직접 반환하지 않고, push가 실패하면 Err(())를 반환합니다.
     pub fn send_message(&self, message: MessageToSend) -> Result<(), ()> {
         if let Err(e) = self.message_tx_queue.push(message) {
             eprintln!("Failed to push message to queue: {:?}", e);
