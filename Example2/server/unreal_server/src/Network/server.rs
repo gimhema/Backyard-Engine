@@ -91,22 +91,19 @@ impl Server {
 
 
             // --- 추가된 부분: 주기적인 Ping 전송 확인 ---
-                                    if self.last_ping_time.elapsed() >= self.ping_interval {
-                                        println!("Sending periodic Ping to all connected clients...");
-                                        let ping_message_data = "Ping".as_bytes().to_vec(); // "Ping" 문자열을 바이트 벡터로 변환
-
-                                        // `send_message_to_token`이 메시지 길이 프리픽스를 붙이므로, 여기서는 raw "Ping"만 보냄.
-                                        // 큐에 메시지를 넣어 비동기적으로 처리하도록 합니다.
-                                        if let Err(_) = self.send_message(MessageToSend::Broadcast(ping_message_data)) {
-                                            eprintln!("Failed to queue ping broadcast message.");
-                                        }
-                                        self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
-                                    }
-
-                                    // ... (기존 이벤트 처리 루프와 클라이언트 액션 처리) ...
-
-                                    // 서버 내부 메시지 큐 처리 (여기서 Ping 메시지도 전송됨)
-                                    self.process_outgoing_messages()?;
+            if self.last_ping_time.elapsed() >= self.ping_interval {
+                println!("Sending periodic Ping to all connected clients...");
+                let ping_message_data = "Ping".as_bytes().to_vec(); // "Ping" 문자열을 바이트 벡터로 변환
+                // `send_message_to_token`이 메시지 길이 프리픽스를 붙이므로, 여기서는 raw "Ping"만 보냄.
+                // 큐에 메시지를 넣어 비동기적으로 처리하도록 합니다.
+                if let Err(_) = self.send_message(MessageToSend::Broadcast(ping_message_data)) {
+                    eprintln!("Failed to queue ping broadcast message.");
+                }
+                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
+            }
+            // ... (기존 이벤트 처리 루프와 클라이언트 액션 처리) ...
+            // 서버 내부 메시지 큐 처리 (여기서 Ping 메시지도 전송됨)
+            self.process_outgoing_messages()?;
 
 
             // 이벤트 처리 중 clients 맵을 직접 수정할 수 없으므로,

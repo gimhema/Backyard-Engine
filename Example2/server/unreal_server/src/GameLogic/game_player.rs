@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use crate::qsm::user_event::event_delete_player::RequestDeletePlayer;
 use crate::GameLogic::game_parameta_action_logic::ActorParameta;
-// use crate::Network::connection::get_tcp_connection_instance;
+use mio::Token;
 
 use super::game_geometry::*;
 use super::Network::server_common::*;
@@ -29,7 +29,7 @@ pub fn get_ve_char_manager_instance() -> &'static Arc<RwLock<VECharacterManager>
 pub struct VEPlayerNetWorkStatus
 {
     session_id : i64,
-    ip_addr : String
+    net_token : Token
 }
 
 #[derive(Debug, Clone)]
@@ -53,15 +53,20 @@ impl VEPlayerPersonalInfo
 impl VEPlayerNetWorkStatus
 {
     pub fn new_zero() -> VEPlayerNetWorkStatus {
-        return VEPlayerNetWorkStatus { session_id: 0, ip_addr: "".to_string() }
+        return VEPlayerNetWorkStatus { session_id: 0, net_token: Token(0) }
     }
 
-    pub fn set_pid(&mut self, _id : i64) {
+    pub fn init(&mut self, _session_id: i64, _token: Token) {
+        self.session_id = _session_id;
+        self.net_token = _token;
+    }
+
+    pub fn set_net_token(&mut self, _token : Token) {
+        self.net_token = _token;
+    }
+
+    pub fn set_sessionid(&mut self, _id : i64) {
         self.session_id = _id;
-    }
-
-    pub fn set_ip_addr(&mut self, _addr : String) {
-        self.ip_addr = _addr;
     }
 }
 
@@ -109,7 +114,7 @@ pub struct VECharacterManager
 {
     pub player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
     pub player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
-    pub id_top : i64
+//    pub id_top : i64
 }
 
 impl VECharacterManager
@@ -121,12 +126,7 @@ impl VECharacterManager
         return VECharacterManager { 
             player_container_vec: vec, 
             player_container_search_map: map,
-            id_top : 0
          }
-    }
-
-    pub fn increase_id_top(&mut self) {
-        self.id_top += 1;
     }
 
     pub fn new_character(&mut self, _new_char : VECharcater) {
@@ -134,8 +134,6 @@ impl VECharacterManager
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
         self.player_container_vec.push(Arc::clone(&_char_arc));
-
-        self.increase_id_top();
     }
 
     pub fn delete_characeter(&mut self, _target_id: i64) {
