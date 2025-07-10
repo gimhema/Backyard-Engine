@@ -26,10 +26,23 @@ pub fn get_ve_char_manager_instance() -> &'static Arc<RwLock<VECharacterManager>
 }
 
 #[derive(Debug, Clone)]
+pub enum GameNetStatus
+{
+    // 연결된 상태, 게임에 진입하기를 기다리는 중
+    CONNECTED = 0,
+    // 게임 서버에 연결되었으며 인게임에 진입하기전 유저가 세팅중인상태
+    // 예를들면 캐릭터를 선택중이거나 어떤 월드에 접속하고자하는지 등
+    IDLE = 1,
+    // 게임 서버에 연결되어 실질적으로 플레이중인 상태
+    ACTIVE = 2,
+}
+
+#[derive(Debug, Clone)]
 pub struct VEPlayerNetWorkStatus
 {
     session_id : i64,
-    net_token : Token
+    net_token : Token,
+    net_status : GameNetStatus,
 }
 
 #[derive(Debug, Clone)]
@@ -53,12 +66,16 @@ impl VEPlayerPersonalInfo
 impl VEPlayerNetWorkStatus
 {
     pub fn new_zero() -> VEPlayerNetWorkStatus {
-        return VEPlayerNetWorkStatus { session_id: 0, net_token: Token(0) }
+        return VEPlayerNetWorkStatus { session_id: 0, net_token: Token(0), net_status: GameNetStatus::CONNECTED }
     }
 
     pub fn init(&mut self, _session_id: i64, _token: Token) {
         self.session_id = _session_id;
         self.net_token = _token;
+    }
+
+    pub fn set_net_status(&mut self, _status : GameNetStatus) {
+        self.net_status = _status;
     }
 
     pub fn set_net_token(&mut self, _token : Token) {
