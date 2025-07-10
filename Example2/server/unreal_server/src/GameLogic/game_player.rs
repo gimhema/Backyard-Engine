@@ -112,7 +112,7 @@ impl VECharcater {
 
 pub struct VECharacterManager
 {
-    pub player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
+//    pub player_container_vec : Vec<Arc<Mutex<VECharcater>>>,
     pub player_container_search_map : HashMap<i64, Arc<Mutex<VECharcater>>>,
 //    pub id_top : i64
 }
@@ -120,11 +120,11 @@ pub struct VECharacterManager
 impl VECharacterManager
 {
     pub fn new() -> VECharacterManager {
-        let mut vec: Vec<Arc<Mutex<VECharcater>>> = Vec::new();
+//        let mut vec: Vec<Arc<Mutex<VECharcater>>> = Vec::new();
         let mut map: HashMap<i64, Arc<Mutex<VECharcater>>> = HashMap::new();
 
         return VECharacterManager { 
-            player_container_vec: vec, 
+//            player_container_vec: vec, 
             player_container_search_map: map,
          }
     }
@@ -133,16 +133,16 @@ impl VECharacterManager
         
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
-        self.player_container_vec.push(Arc::clone(&_char_arc));
+//        self.player_container_vec.push(Arc::clone(&_char_arc));
     }
 
     pub fn delete_characeter(&mut self, _target_id: i64) {
         if let Some(target_arc) = self.player_container_search_map.remove(&_target_id) {
             // vec에서 해당 Arc를 제거
             push_command_to_game_logic(Command::Delete { entity_id: _target_id.clone() as u32 });
-            self.player_container_vec.retain(|item| {
-                !Arc::ptr_eq(item, &target_arc)
-            });
+//            self.player_container_vec.retain(|item| {
+//                !Arc::ptr_eq(item, &target_arc)
+//            });
 
             RequestDeletePlayer(_target_id);
 

@@ -9,6 +9,7 @@ use crossbeam_queue::ArrayQueue;
 use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::GLOBAL_MESSAGE_TX_QUEUE;
+use crate::GameLogic::game_player::VECharacterManager;
 
 use super::connection::*;
 
@@ -43,6 +44,9 @@ pub struct Server {
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
     ping_interval: Duration, // Ping 전송 주기 (예: 5초)
+
+    // Game Play Logic
+    pub game_character_manager: Arc<Mutex<VECharacterManager>>
 }
 
 
@@ -73,6 +77,7 @@ impl Server {
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(), // 서버 시작 시 현재 시간으로 초기화
             ping_interval: Duration::from_secs(5), // 5초마다 Ping 전송 (원하는 값으로 조정 가능)
+            game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
         };
 
         Ok(server)
