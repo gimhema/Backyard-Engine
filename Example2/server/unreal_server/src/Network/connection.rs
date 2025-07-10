@@ -5,6 +5,8 @@ use mio::Token;
 use std::io::{self, Read, Write};
 use std::net::IpAddr; // SocketAddr 대신 IpAddr만 사용하는 경우
 use std::sync::{RwLock, Arc, RwLockReadGuard};
+use std::net::SocketAddr;
+use std::sync::{Mutex};
 
 // --- 클라이언트 연결 구조체 ---
 pub struct ClientConnection {

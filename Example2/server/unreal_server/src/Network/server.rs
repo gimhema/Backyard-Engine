@@ -10,7 +10,7 @@ use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::GLOBAL_MESSAGE_TX_QUEUE;
 
-use super::connection;
+use super::connection::*;
 
 use std::time::{Instant};
 
@@ -45,13 +45,6 @@ pub struct Server {
     ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 }
 
-// --- 클라이언트 연결 구조체 ---
-// pub struct ClientConnection {
-//     pub stream: TcpStream,
-//     pub addr: SocketAddr,
-//     pub write_queue: Arc<Mutex<Vec<u8>>>,
-//     pub is_udp_client: bool, // UDP 클라이언트인지 여부 (TCP와 UDP 연결을 구분)
-// }
 
 impl Server {
     // --- 서버 인스턴스 생성 ---
