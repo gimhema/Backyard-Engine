@@ -13,7 +13,7 @@ use crate::Network::message_queue::get_callback_msg_queue_instance;
 use super::GameLogic::*;
 
 use crate::qsm::qsm::GLOBAL_MESSAGE_TX_QUEUE; // 전역 큐 임포트
-use crate::Network::server::{MessageToSend}; // Token과 MessageToSend 임포트
+use crate::Network::connection::{MessageToSend}; // Token과 MessageToSend 임포트
 use mio::Token;
 
 pub fn CallBack_MakeAccount(buffer: &[u8])

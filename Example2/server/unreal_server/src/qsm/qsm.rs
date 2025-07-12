@@ -14,7 +14,7 @@ use super::user_event::event_make_account::CallBack_VerifyAccount;
 use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
 
 use lazy_static::lazy_static;
-use crate::Network::server::{MessageToSend, SharedTcpMessageQueue}; // 경로를 실제에 맞게 수정하세요.
+use crate::Network::connection::{MessageToSend}; // 경로를 실제에 맞게 수정하세요.
 use crossbeam_queue::ArrayQueue;
 
 lazy_static! {
