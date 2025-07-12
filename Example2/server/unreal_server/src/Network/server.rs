@@ -99,15 +99,31 @@ pub fn start(&mut self) -> io::Result<()> {
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
 
-            // 주기적인 Ping 전송 (TCP 브로드캐스트)
-            // if self.last_ping_time.elapsed() >= self.ping_interval {
-            //     println!("Sending periodic Ping to all connected TCP clients...");
-            //     let ping_message_data = "Ping".as_bytes().to_vec();
-            //     if let Err(_) = self.send_tcp_message(MessageToSend::Broadcast(ping_message_data)) {
-            //         eprintln!("Failed to queue ping broadcast message.");
-            //     }
-            //     self.last_ping_time = Instant::now();
-            // }
+// --- 주기적인 UDP Ping 전송 확인 ---
+            if self.last_ping_time.elapsed() >= self.ping_interval {
+                println!("Sending periodic UDP Ping to all connected clients (where UDP address is known)...");
+                let ping_message_data = "UDP_Ping".as_bytes().to_vec(); // "UDP_Ping" 문자열을 바이트 벡터로 변환
+
+                // 현재 연결된 모든 클라이언트에게 UDP Ping 메시지를 큐에 추가
+                // 이때, ClientConnection에 저장된 UDP 주소를 사용합니다.
+                let clients_for_udp_ping: Vec<(Token, SocketAddr)> = self.clients.iter()
+                    .filter_map(|(&token, client)| {
+                        // is_udp_client가 true이고 udp_addr이 Some인 경우에만 핑을 보냅니다.
+                        if client.is_udp_client && client.udp_addr.is_some() {
+                            Some((token, client.udp_addr.unwrap())) // unwrap()은 Some임을 확인했으므로 안전
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                for (token, target_udp_addr) in clients_for_udp_ping {
+                    if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
+                        eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
+                    }
+                }
+                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
+            }
 
             // --- TCP 메시지 큐 처리 ---
             self.process_outgoing_tcp_messages()?; // 함수 이름 변경
@@ -134,10 +150,10 @@ pub fn start(&mut self) -> io::Result<()> {
 
                                     self.clients.insert(token, ClientConnection {
                                         stream,
-                                        addr, // 이 addr은 TCP 주소
+                                        addr, // TCP 주소
                                         write_queue: Arc::new(Mutex::new(Vec::new())),
                                         is_udp_client: false, // 초기에는 UDP 클라이언트 아님
-                                        // TODO: 필요하다면 여기에 UDP 주소를 저장할 필드 추가
+                                        udp_addr: None, // 초기에는 UDP 주소 없음
                                     });
                                 }
                                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
@@ -274,6 +290,16 @@ pub fn start(&mut self) -> io::Result<()> {
             }
         }
         Ok(())
+    }
+
+    // --- UDP 메시지 송신 함수 (외부에서 호출 가능) ---
+    pub fn send_udp_message(&self, target_addr: SocketAddr, data: Vec<u8>) -> Result<(), ()> {
+        if let Err(e) = self.udp_message_tx_queue.push((target_addr, data)) {
+            eprintln!("Failed to push UDP message to queue: {:?}", e);
+            Err(())
+        } else {
+            Ok(())
+        }
     }
 
     // --- UDP 클라이언트 대상 메시지 전송 (UDP 전용) ---

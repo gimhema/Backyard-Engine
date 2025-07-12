@@ -9,9 +9,11 @@ use std::net::SocketAddr;
 use std::sync::{Mutex};
 
 // --- 클라이언트 연결 구조체 ---
+// --- 클라이언트 연결 구조체 ---
 pub struct ClientConnection {
     pub stream: TcpStream,
-    pub addr: SocketAddr,
+    pub addr: SocketAddr, // 이 addr은 TCP 주소
     pub write_queue: Arc<Mutex<Vec<u8>>>,
-    pub is_udp_client: bool, // UDP 클라이언트인지 여부 (TCP와 UDP 연결을 구분)
+    pub is_udp_client: bool, // 클라이언트가 UDP 통신을 지원하는지 여부
+    pub udp_addr: Option<SocketAddr>, // 클라이언트의 UDP 수신 주소를 저장할 필드 (새로 추가)
 }
