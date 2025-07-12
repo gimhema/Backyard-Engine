@@ -266,6 +266,21 @@ impl Server {
         Ok(())
     }
 
+    // --- UDP 클라이언트 대상 메시지 전송 (UDP 전용) ---
+    fn send_udp_message_to_token(&self, token: Token, addr: SocketAddr, data: Vec<u8>) -> io::Result<()> {
+        match self.udp_socket.send_to(&data, addr) {
+            Ok(n) => {
+                println!("Sent {} bytes UDP message to client {:?} ({})", n, token, addr);
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error sending UDP message to client {:?} ({}): {}", token, addr, e);
+                Err(e)
+            }
+        }
+    }
+
+
     // --- 단일 소켓 대상 메시지 전송 ---
     fn send_message_to_token(&mut self, token: Token, data: Vec<u8>) -> io::Result<()> {
         if let Some(client) = self.clients.get_mut(&token) {
