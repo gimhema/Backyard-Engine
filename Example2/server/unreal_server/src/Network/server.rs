@@ -21,7 +21,10 @@ const SERVER_UDP_TOKEN: Token = Token(1);
 const CLIENT_TOKEN_START: Token = Token(2); // 클라이언트 토큰은 2부터 시작
 
 // --- 메시지를 전송할 Lock-Free 큐 타입 정의 ---
-pub type SharedMessageQueue = Arc<ArrayQueue<MessageToSend>>;
+pub type SharedTcpMessageQueue = Arc<ArrayQueue<MessageToSend>>;
+
+pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Vec<u8>)>>; // (대상 주소, 데이터) 튜플 저장
+
 
 // --- 전송할 메시지 유형 정의 ---
 #[derive(Debug)]
@@ -38,8 +41,8 @@ pub struct Server {
     pub udp_socket: UdpSocket,
     pub clients: HashMap<Token, ClientConnection>,
     pub next_client_token: Token,
-    // 외부에서 메시지를 서버로 보낼 수 있는 큐 (Lock-Free)
-    pub message_tx_queue: SharedMessageQueue,
+    pub tcp_message_tx_queue: SharedTcpMessageQueue,
+    pub udp_message_tx_queue: SharedUdpMessageQueue,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
@@ -52,20 +55,21 @@ pub struct Server {
 
 impl Server {
     // --- 서버 인스턴스 생성 ---
-    pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
+pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
         let poll = Poll::new()?;
 
-        // TCP 리스너 설정 및 등록
         let tcp_listener_addr: SocketAddr = tcp_addr.parse().expect("Invalid TCP address");
         let mut tcp_listener = TcpListener::bind(tcp_listener_addr)?;
         poll.registry().register(&mut tcp_listener, SERVER_TCP_TOKEN, Interest::READABLE)?;
 
-        // UDP 소켓 설정 및 등록
         let udp_socket_addr: SocketAddr = udp_addr.parse().expect("Invalid UDP address");
         let mut udp_socket = UdpSocket::bind(udp_socket_addr)?;
         poll.registry().register(&mut udp_socket, SERVER_UDP_TOKEN, Interest::READABLE)?;
 
-        let message_queue_for_server = GLOBAL_MESSAGE_TX_QUEUE.clone();
+        // TCP 메시지 큐 초기화 (기존 GLOBAL_MESSAGE_TX_QUEUE 사용)
+        let tcp_queue_for_server = GLOBAL_MESSAGE_TX_QUEUE.clone();
+        // UDP 메시지 큐 초기화 (새로운 큐 생성)
+        let udp_queue_for_server = Arc::new(ArrayQueue::new(1024)); // 적절한 용량 설정
 
         let server = Server {
             poll,
@@ -73,10 +77,11 @@ impl Server {
             udp_socket,
             clients: HashMap::new(),
             next_client_token: CLIENT_TOKEN_START,
-            message_tx_queue: message_queue_for_server, // Assign the cloned Arc here
+            tcp_message_tx_queue: tcp_queue_for_server,
+            udp_message_tx_queue: udp_queue_for_server, // 새 큐 할당
             client_groups: Arc::new(Mutex::new(HashMap::new())),
-            last_ping_time: Instant::now(), // 서버 시작 시 현재 시간으로 초기화
-            ping_interval: Duration::from_secs(5), // 5초마다 Ping 전송 (원하는 값으로 조정 가능)
+            last_ping_time: Instant::now(),
+            ping_interval: Duration::from_secs(5),
             game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
         };
 
@@ -84,7 +89,7 @@ impl Server {
     }
 
     // --- 서버 시작 및 이벤트 루프 ---
-    pub fn start(&mut self) -> io::Result<()> {
+pub fn start(&mut self) -> io::Result<()> {
         let mut events = Events::with_capacity(1024);
 
         println!("Server started. Listening on TCP {} and UDP {}",
@@ -94,31 +99,28 @@ impl Server {
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
 
+            // 주기적인 Ping 전송 (TCP 브로드캐스트)
+            // if self.last_ping_time.elapsed() >= self.ping_interval {
+            //     println!("Sending periodic Ping to all connected TCP clients...");
+            //     let ping_message_data = "Ping".as_bytes().to_vec();
+            //     if let Err(_) = self.send_tcp_message(MessageToSend::Broadcast(ping_message_data)) {
+            //         eprintln!("Failed to queue ping broadcast message.");
+            //     }
+            //     self.last_ping_time = Instant::now();
+            // }
 
-            // --- 추가된 부분: 주기적인 Ping 전송 확인 ---
-            if self.last_ping_time.elapsed() >= self.ping_interval {
-                println!("Sending periodic Ping to all connected clients...");
-                let ping_message_data = "Ping".as_bytes().to_vec(); // "Ping" 문자열을 바이트 벡터로 변환
-                // `send_message_to_token`이 메시지 길이 프리픽스를 붙이므로, 여기서는 raw "Ping"만 보냄.
-                // 큐에 메시지를 넣어 비동기적으로 처리하도록 합니다.
-                if let Err(_) = self.send_message(MessageToSend::Broadcast(ping_message_data)) {
-                    eprintln!("Failed to queue ping broadcast message.");
-                }
-                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
-            }
-            // ... (기존 이벤트 처리 루프와 클라이언트 액션 처리) ...
-            // 서버 내부 메시지 큐 처리 (여기서 Ping 메시지도 전송됨)
-            self.process_outgoing_messages()?;
+            // --- TCP 메시지 큐 처리 ---
+            self.process_outgoing_tcp_messages()?; // 함수 이름 변경
+            // --- UDP 메시지 큐 처리 (새로 추가) ---
+            self.process_outgoing_udp_messages()?;
 
 
-            // 이벤트 처리 중 clients 맵을 직접 수정할 수 없으므로,
-            // 수정할 내용을 기록한 후 루프 밖에서 일괄 처리합니다.
             let mut actions_to_perform: Vec<(Token, ClientAction)> = Vec::new();
 
             for event in events.iter() {
                 match event.token() {
                     SERVER_TCP_TOKEN => {
-                        // 새로운 TCP 연결 수락
+                        // ... TCP 연결 수락 로직은 동일 ...
                         loop {
                             match self.tcp_listener.accept() {
                                 Ok((mut stream, addr)) => {
@@ -126,22 +128,19 @@ impl Server {
                                     let token = self.next_client_token;
                                     self.next_client_token.0 += 1;
 
-                                    // 클라이언트 스트림 등록 (읽기 및 쓰기 관심)
                                     self.poll.registry().register(&mut stream, token, Interest::READABLE | Interest::WRITABLE)?;
-
-                                    
 
                                     println!("Create new player conn info : {:?}", token.clone());
 
                                     self.clients.insert(token, ClientConnection {
                                         stream,
-                                        addr,
+                                        addr, // 이 addr은 TCP 주소
                                         write_queue: Arc::new(Mutex::new(Vec::new())),
-                                        is_udp_client: false,
+                                        is_udp_client: false, // 초기에는 UDP 클라이언트 아님
+                                        // TODO: 필요하다면 여기에 UDP 주소를 저장할 필드 추가
                                     });
                                 }
                                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                                    // 더 이상 대기 중인 연결이 없음
                                     break;
                                 }
                                 Err(e) => {
@@ -152,13 +151,19 @@ impl Server {
                         }
                     }
                     SERVER_UDP_TOKEN => {
-                        // UDP 메시지 수신
-                        let mut buf = [0; 65507]; // UDP 최대 페이로드 크기
+                        // UDP 메시지 수신 (이벤트 기반)
+                        let mut buf = [0; 65507];
                         match self.udp_socket.recv_from(&mut buf) {
                             Ok((len, addr)) => {
                                 println!("Received UDP message from {}: {:?}", addr, &buf[..len]);
-                                // TODO: UDP 클라이언트는 TCP와 별개로 관리하거나, 연결된 TCP 클라이언트와 맵핑 필요
-                                // UDP 메시지 처리 로직 추가
+                                // TODO: 수신된 UDP 메시지 처리 로직
+                                // 이 부분에서 `addr` (발신자 UDP 주소)를 기반으로
+                                // 클라이언트의 `ClientConnection` 정보를 업데이트하거나
+                                // 새로운 UDP 클라이언트 정보를 생성해야 할 수 있습니다.
+                                // 예를 들어, TCP 클라이언트가 자신의 UDP 주소를 서버에 알리면,
+                                // 해당 TCP 클라이언트의 ClientConnection에 UDP 주소를 저장하고
+                                // `is_udp_client = true`로 설정합니다.
+                                EventHeader::action(&buf[..len]); // 수신된 UDP 메시지 처리
                             }
                             Err(e) => {
                                 eprintln!("Error receiving UDP message: {}", e);
@@ -166,10 +171,10 @@ impl Server {
                         }
                     }
                     token if token.0 >= CLIENT_TOKEN_START.0 => {
-                        // 클라이언트 소켓 이벤트 처리
+                        // 클라이언트 소켓 이벤트 처리 (TCP 전용)
                         if let Some(client) = self.clients.get_mut(&token) {
                             if event.is_readable() {
-                                match ClientConnection::handle_read_event(client) { // `self` 없이 호출
+                                match ClientConnection::handle_read_event(client) {
                                     Ok(disconnected) => {
                                         if disconnected {
                                             actions_to_perform.push((token, ClientAction::Disconnect));
@@ -185,12 +190,12 @@ impl Server {
                             }
 
                             if event.is_writable() {
-                                match ClientConnection::handle_write_event(client) { // `self` 없이 호출
+                                match ClientConnection::handle_write_event(client) {
                                     Ok(queue_empty) => {
                                         if queue_empty {
                                             actions_to_perform.push((token, ClientAction::Reregister));
                                         } else {
-                                            actions_to_perform.push((token, ClientAction::Reregister)); // 아직 보낼 데이터가 있으므로 WRITABLE 유지
+                                            actions_to_perform.push((token, ClientAction::Reregister));
                                         }
                                     }
                                     Err(e) => {
@@ -207,7 +212,7 @@ impl Server {
                 }
             }
 
-            // 이벤트 처리 후, 클라이언트 연결 상태 변경 작업 일괄 수행
+            // ... (클라이언트 액션 처리 로직은 동일) ...
             for (token, action) in actions_to_perform {
                 match action {
                     ClientAction::Disconnect => {
@@ -216,6 +221,7 @@ impl Server {
                                 eprintln!("Error deregistering stream for client {:?}: {}", token, e);
                             }
                             println!("Client disconnected (action): {}", removed_client.addr);
+                            // TODO: 클라이언트 그룹에서 제거하는 로직 추가 필요
                         }
                     }
                     ClientAction::Reregister => {
@@ -232,34 +238,38 @@ impl Server {
                     }
                 }
             }
-
-            // 서버 내부 메시지 큐 처리 (Lock-Free 큐에서 메시지를 가져와 전송)
-            self.process_outgoing_messages()?;
         }
     }
 
-    // --- Lock-Free 메시지 송신 함수 (외부에서 호출 가능) ---
-    pub fn send_message(&self, message: MessageToSend) -> Result<(), ()> {
-        if let Err(e) = self.message_tx_queue.push(message) {
-            eprintln!("Failed to push message to queue: {:?}", e);
-            Err(()) // 큐에 메시지를 넣지 못했음을 알림
-        } else {
-            Ok(())
-        }
-    }
-
-    // --- 서버 내부 메시지 큐 처리 및 실제 전송 수행 ---
-    fn process_outgoing_messages(&mut self) -> io::Result<()> {
-        while let Some(msg) = self.message_tx_queue.pop() {
+ // --- 서버 내부 TCP 메시지 큐 처리 및 실제 전송 수행 ---
+    // 이름 변경: process_outgoing_tcp_messages로 명확화
+    fn process_outgoing_tcp_messages(&mut self) -> io::Result<()> {
+        while let Some(msg) = self.tcp_message_tx_queue.pop() {
             match msg {
                 MessageToSend::Single(token, data) => {
-                    self.send_message_to_token(token, data)?;
+                    self.send_tcp_data_to_token(token, data)?; // 함수 이름 변경
                 }
                 MessageToSend::Group(group_name, data) => {
-                    self.send_message_to_group(&group_name, data)?;
+                    self.send_tcp_data_to_group(&group_name, data)?; // 함수 이름 변경
                 }
                 MessageToSend::Broadcast(data) => {
-                    self.broadcast_message(data)?;
+                    self.broadcast_tcp_message(data)?; // 함수 이름 변경
+                }
+            }
+        }
+        Ok(())
+    }
+
+    // --- 서버 내부 UDP 메시지 큐 처리 및 실제 전송 수행 (새로 추가) ---
+    fn process_outgoing_udp_messages(&mut self) -> io::Result<()> {
+        while let Some((target_addr, data)) = self.udp_message_tx_queue.pop() {
+            match self.udp_socket.send_to(&data, target_addr) {
+                Ok(n) => {
+                    println!("Sent {} bytes UDP message to {} from queue.", n, target_addr);
+                }
+                Err(e) => {
+                    eprintln!("Error sending UDP message to {} from queue: {}", target_addr, e);
+                    // 개별 UDP 전송 오류는 루프를 중단하지 않습니다.
                 }
             }
         }
@@ -280,60 +290,61 @@ impl Server {
         }
     }
 
-
-    // --- 단일 소켓 대상 메시지 전송 ---
-    fn send_message_to_token(&mut self, token: Token, data: Vec<u8>) -> io::Result<()> {
-        if let Some(client) = self.clients.get_mut(&token) {
-            if client.is_udp_client {
-                // TODO: UDP 클라이언트 전송 로직 구현 (주소 관리가 필요)
-                println!("Attempted to send UDP message to token {:?}, but UDP client address not fully managed.", token);
-                Ok(())
-            } else {
-                let mut write_queue = client.write_queue.lock().unwrap();
-                write_queue.extend_from_slice(&data);
-                // 중요: 메시지를 큐에 넣었으므로, WRITABLE 이벤트 관심을 다시 등록하여
-                // 다음 poll 루프에서 쓰기 이벤트를 받을 수 있도록 합니다.
-                self.poll.registry().reregister(&mut client.stream, token, Interest::READABLE | Interest::WRITABLE)?;
-                Ok(())
-            }
+// --- TCP 메시지 송신 함수 (외부에서 호출 가능) ---
+    pub fn send_tcp_message(&self, message: MessageToSend) -> Result<(), ()> {
+        if let Err(e) = self.tcp_message_tx_queue.push(message) {
+            eprintln!("Failed to push TCP message to queue: {:?}", e);
+            Err(())
         } else {
-            eprintln!("Attempted to send message to non-existent client with token: {:?}", token);
-            Ok(()) // 클라이언트가 이미 끊겼을 수 있으므로 에러가 아닌 경우도 있음
+            Ok(())
         }
     }
 
-    // --- 특정 그룹 소켓 대상 메시지 전송 ---
-    fn send_message_to_group(&mut self, group_name: &str, data: Vec<u8>) -> io::Result<()> {
+
+// --- 단일 TCP 소켓 대상 메시지 전송 (TCP 전용) ---
+    // 함수 이름 변경: send_tcp_data_to_token
+    fn send_tcp_data_to_token(&mut self, token: Token, data: Vec<u8>) -> io::Result<()> {
+        if let Some(client) = self.clients.get_mut(&token) {
+            let mut write_queue = client.write_queue.lock().unwrap();
+            write_queue.extend_from_slice(&data);
+            self.poll.registry().reregister(&mut client.stream, token, Interest::READABLE | Interest::WRITABLE)?;
+            Ok(())
+        } else {
+            eprintln!("Attempted to send TCP message to non-existent client with token: {:?}", token);
+            Ok(())
+        }
+    }
+
+    // --- 특정 그룹 TCP 소켓 대상 메시지 전송 ---
+    // 함수 이름 변경: send_tcp_data_to_group
+    fn send_tcp_data_to_group(&mut self, group_name: &str, data: Vec<u8>) -> io::Result<()> {
         let client_groups_lock = self.client_groups.lock().unwrap();
-        // 그룹에 속한 토큰 리스트를 복사하여 락 해제 후 안전하게 순회
         let tokens_to_send: Vec<Token> = client_groups_lock
             .get(group_name)
-            .cloned() // Option<Vec<Token>>을 clone
-            .unwrap_or_else(Vec::new); // 없으면 빈 Vec 반환
-        drop(client_groups_lock); // client_groups_lock 해제
+            .cloned()
+            .unwrap_or_else(Vec::new);
+        drop(client_groups_lock);
 
         for &token in tokens_to_send.iter() {
-            // Lock-Free 큐에 메시지 푸시
-            // `send_message`를 사용하도록 변경하여 오류 처리 로직을 중앙화
-            if let Err(_) = self.send_message(MessageToSend::Single(token, data.clone())) {
-                eprintln!("Failed to queue group message for token {:?}.", token);
+            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
+            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
+                eprintln!("Failed to queue group TCP message for token {:?}.", token);
             }
         }
         if tokens_to_send.is_empty() {
-             println!("Group '{}' not found or is empty for sending message.", group_name);
+             println!("Group '{}' not found or is empty for sending TCP message.", group_name);
         }
         Ok(())
     }
 
-    // --- 전체 소켓 대상 메시지 전송 (브로드캐스트) ---
-    fn broadcast_message(&mut self, data: Vec<u8>) -> io::Result<()> {
-        // 현재 연결된 모든 클라이언트의 토큰 리스트를 복사
+    // --- 전체 TCP 소켓 대상 메시지 전송 (브로드캐스트) ---
+    // 함수 이름 변경: broadcast_tcp_message
+    fn broadcast_tcp_message(&mut self, data: Vec<u8>) -> io::Result<()> {
         let tokens_to_send: Vec<Token> = self.clients.keys().cloned().collect();
         for token in tokens_to_send {
-            // Lock-Free 큐에 메시지 푸시
-            // `send_message`를 사용하도록 변경하여 오류 처리 로직을 중앙화
-            if let Err(_) = self.send_message(MessageToSend::Single(token, data.clone())) {
-                eprintln!("Failed to queue broadcast message for token {:?}.", token);
+            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
+            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
+                eprintln!("Failed to queue broadcast TCP message for token {:?}.", token);
             }
         }
         Ok(())
