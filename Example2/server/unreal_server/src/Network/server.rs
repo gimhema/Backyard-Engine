@@ -143,6 +143,7 @@ pub fn start(&mut self) -> io::Result<()> {
                                     self.poll.registry().register(&mut stream, token, Interest::READABLE | Interest::WRITABLE)?;
 
                                     println!("Create new player conn info : {:?}", token.clone());
+                                    self.player_waiting_queue.lock().unwrap().push(token.clone());
 
                                     self.clients.insert(token, ClientConnection {
                                         stream,
