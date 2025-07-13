@@ -39,8 +39,8 @@ pub struct Server {
     pub udp_message_tx_queue: SharedUdpMessageQueue,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
-    last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
-    ping_interval: Duration, // Ping 전송 주기 (예: 5초)
+    pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
+    pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 
     // Game Play Logic
     pub game_character_manager: Arc<Mutex<VECharacterManager>>,
@@ -94,32 +94,6 @@ pub fn start(&mut self) -> io::Result<()> {
 
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
-
-// --- 주기적인 UDP Ping 전송 확인 ---
-            if self.last_ping_time.elapsed() >= self.ping_interval {
-                println!("Sending periodic UDP Ping to all connected clients (where UDP address is known)...");
-                let ping_message_data = "UDP_Ping".as_bytes().to_vec(); // "UDP_Ping" 문자열을 바이트 벡터로 변환
-
-                // 현재 연결된 모든 클라이언트에게 UDP Ping 메시지를 큐에 추가
-                // 이때, ClientConnection에 저장된 UDP 주소를 사용합니다.
-                let clients_for_udp_ping: Vec<(Token, SocketAddr)> = self.clients.iter()
-                    .filter_map(|(&token, client)| {
-                        // is_udp_client가 true이고 udp_addr이 Some인 경우에만 핑을 보냅니다.
-                        if client.is_udp_client && client.udp_addr.is_some() {
-                            Some((token, client.udp_addr.unwrap())) // unwrap()은 Some임을 확인했으므로 안전
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
-
-                for (token, target_udp_addr) in clients_for_udp_ping {
-                    if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
-                        eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
-                    }
-                }
-                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
-            }
 
             // --- TCP 메시지 큐 처리 ---
             self.process_outgoing_tcp_messages()?; // 함수 이름 변경

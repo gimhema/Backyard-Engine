@@ -5,8 +5,8 @@ use std::io;
 use std::net::SocketAddr;
 use std::collections::VecDeque;
 use crate::Network::server::*;
-
-
+use crate::Network::connection::*;
+use std::time::{Instant};
 pub struct WaitingQueue {
     pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
 }
@@ -41,7 +41,35 @@ impl Server{
         // 서버 루프에서 대기열 처리
         self.processing_waiting_queue();
 
+        self.ping();
+    }
 
+    pub fn ping(&mut self) {
+                    // --- 주기적인 UDP Ping 전송 확인 ---
+            if self.last_ping_time.elapsed() >= self.ping_interval {
+                println!("Sending periodic UDP Ping to all connected clients (where UDP address is known)...");
+                let ping_message_data = "UDP_Ping".as_bytes().to_vec(); // "UDP_Ping" 문자열을 바이트 벡터로 변환
+
+                // 현재 연결된 모든 클라이언트에게 UDP Ping 메시지를 큐에 추가
+                // 이때, ClientConnection에 저장된 UDP 주소를 사용합니다.
+                let clients_for_udp_ping: Vec<(Token, SocketAddr)> = self.clients.iter()
+                    .filter_map(|(&token, client)| {
+                        // is_udp_client가 true이고 udp_addr이 Some인 경우에만 핑을 보냅니다.
+                        if client.is_udp_client && client.udp_addr.is_some() {
+                            Some((token, client.udp_addr.unwrap())) // unwrap()은 Some임을 확인했으므로 안전
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                for (token, target_udp_addr) in clients_for_udp_ping {
+                    if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
+                        eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
+                    }
+                }
+                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
+            }
     }
 
     pub fn processing_waiting_queue(&mut self) {
@@ -51,6 +79,7 @@ impl Server{
                 // 클라이언트 연결 처리 로직
                 println!("Processing client with token: {:?}", token);
                 // 예: 클라이언트에게 메시지 전송 등
+                let _req_enter_message = MessageToSend::Single(token, vec![1, 2, 3]);
             } else {
                 eprintln!("Client with token {:?} not found in clients map.", token);
             }
