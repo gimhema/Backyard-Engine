@@ -11,6 +11,7 @@ use std::net::SocketAddr;
 use std::sync::{Mutex};
 use mio::Interest;
 use crate::Network::server::*;
+use crate::Event::event_handler::EventHeader;
 
 // --- 전송할 메시지 유형 정의 ---
 #[derive(Debug)]
@@ -109,5 +110,6 @@ impl Server
         }
         Ok(())
     }
+
 
 }
