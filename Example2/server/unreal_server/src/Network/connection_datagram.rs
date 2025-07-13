@@ -9,6 +9,7 @@ use super::message_queue::*;
 use crate::Network::server::*;
 use std::io::{self, Read, Write};
 use std::net::SocketAddr;
+use crate::Event::event_handler::EventHeader;
 
 impl Server{
     // --- 서버 내부 UDP 메시지 큐 처리 및 실제 전송 수행 (새로 추가) ---
@@ -49,5 +50,10 @@ impl Server{
                 Err(e)
             }
         }
+    }
+
+        pub fn udp_recv_action(&mut self, buffer : &[u8], len : usize) {
+        // 수신된 UDP 메시지 처리 로직
+        EventHeader::action(&buffer[..len]); // 수신된 UDP 메시지 처리
     }
 }

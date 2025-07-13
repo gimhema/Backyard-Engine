@@ -143,14 +143,8 @@ pub fn start(&mut self) -> io::Result<()> {
                         match self.udp_socket.recv_from(&mut buf) {
                             Ok((len, addr)) => {
                                 println!("Received UDP message from {}: {:?}", addr, &buf[..len]);
-                                // TODO: 수신된 UDP 메시지 처리 로직
-                                // 이 부분에서 `addr` (발신자 UDP 주소)를 기반으로
-                                // 클라이언트의 `ClientConnection` 정보를 업데이트하거나
-                                // 새로운 UDP 클라이언트 정보를 생성해야 할 수 있습니다.
-                                // 예를 들어, TCP 클라이언트가 자신의 UDP 주소를 서버에 알리면,
-                                // 해당 TCP 클라이언트의 ClientConnection에 UDP 주소를 저장하고
-                                // `is_udp_client = true`로 설정합니다.
-                                EventHeader::action(&buf[..len]); // 수신된 UDP 메시지 처리
+                                // 수신된 UDP 메시지 처
+                                self.udp_recv_action(&buf, len);
                             }
                             Err(e) => {
                                 eprintln!("Error receiving UDP message: {}", e);
