@@ -1,12 +1,35 @@
-use mio::net::{TcpStream, UdpSocket};
 use mio::Token;
-use std::vec::Vec;
-use std::collections::{HashMap, HashSet};
-use std::sync::{RwLock, Arc};
-// use super::connection::stream_handler;
-// use super::connection_datagram::datagram_handler;
-use super::serverinfo::*;
-use super::Crypto::packet_crypto::*;
+use std::sync::{Arc, RwLock};
+use std::collections::HashMap;
+use std::io;
 use std::net::SocketAddr;
-// use crate::Network::connection::connection_handle;
+use std::collections::VecDeque;
 
+
+pub struct WaitingQueue {
+    pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
+}
+
+impl WaitingQueue {
+    pub fn new() -> Self {
+        WaitingQueue {
+            waiting_queue: Arc::new(RwLock::new(VecDeque::new())),
+        }
+    }
+
+    pub fn push(&self, token: Token) {
+        let mut queue = self.waiting_queue.write().unwrap();
+        queue.push_back(token);
+    }
+
+    pub fn pop(&self) -> Option<Token> {
+        let mut queue = self.waiting_queue.write().unwrap();
+        queue.pop_front()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        let queue = self.waiting_queue.read().unwrap();
+        queue.is_empty()
+    }
+    
+}
