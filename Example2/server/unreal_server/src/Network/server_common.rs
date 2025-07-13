@@ -79,7 +79,10 @@ impl Server{
                 // 클라이언트 연결 처리 로직
                 println!("Processing client with token: {:?}", token);
                 // 예: 클라이언트에게 메시지 전송 등
-                let _req_enter_message = MessageToSend::Single(token, vec![1, 2, 3]);
+                let _req_enter_message = MessageToSend::Single(token, "WaitingQueue: Enter".as_bytes().to_vec());
+                if let Err(_) = self.send_tcp_message(_req_enter_message) {
+                    eprintln!("Failed to send message to client with token: {:?}", token);
+                }
             } else {
                 eprintln!("Client with token {:?} not found in clients map.", token);
             }
