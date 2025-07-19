@@ -95,11 +95,13 @@ pub fn start(&mut self) -> io::Result<()> {
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
 
-            // --- TCP 메시지 큐 처리 ---
-            self.process_outgoing_tcp_messages()?; // 함수 이름 변경
             // --- UDP 메시지 큐 처리 (새로 추가) ---
             self.process_outgoing_udp_messages()?;
 
+            // --- TCP 메시지 큐 처리 ---
+            self.process_outgoing_tcp_messages()?; // 함수 이름 변경
+
+            self.server_loop_action();
 
             let mut actions_to_perform: Vec<(Token, ClientAction)> = Vec::new();
 
