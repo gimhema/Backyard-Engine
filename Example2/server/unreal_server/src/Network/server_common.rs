@@ -1,3 +1,4 @@
+use crossbeam_queue::ArrayQueue;
 use mio::Token;
 use std::sync::{Arc, RwLock};
 use std::collections::HashMap;
@@ -8,6 +9,16 @@ use crate::Network::server::*;
 use crate::Network::connection::*;
 use std::time::{Instant};
 use crate::Event::event_handler::EventHeader;
+
+
+#[derive(Debug, Clone)]
+pub enum ServerActionType
+{
+    EnterPlayer(Token) // 이 유저는 접속했으니까 대기큐에서 삭제해도 괜찮다.
+}
+
+pub type SharedServerActionQueue = Arc<ArrayQueue<ServerActionType>>;
+
 pub struct WaitingQueue {
     pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
 }
