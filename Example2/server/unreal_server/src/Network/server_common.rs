@@ -17,7 +17,10 @@ pub enum ServerActionType
     EnterPlayer(Token) // 이 유저는 접속했으니까 대기큐에서 삭제해도 괜찮다.
 }
 
-pub type SharedServerActionQueue = Arc<ArrayQueue<ServerActionType>>;
+lazy_static! {
+    pub static ref GLOBAL_SERVER_ACTION_QUEUE : Arc<ArrayQueue<ServerActionType>> = Arc::new(ArrayQueue::new(1024));
+}
+
 
 pub struct WaitingQueue {
     pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
@@ -51,9 +54,8 @@ impl Server{
     pub fn server_loop_action(&mut self) {
 
         // 서버 루프에서 대기열 처리
-        self.processing_waiting_queue();
-
-        self.ping();
+        // self.processing_waiting_queue();
+        // self.ping();
     }
 
     pub fn ping(&mut self) {

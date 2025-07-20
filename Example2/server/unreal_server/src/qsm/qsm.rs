@@ -19,6 +19,7 @@ use crossbeam_queue::ArrayQueue;
 
 lazy_static! {
     pub static ref GLOBAL_MESSAGE_TX_QUEUE: Arc<ArrayQueue<MessageToSend>> = Arc::new(ArrayQueue::new(1024));
+    pub static ref GLOBAL_MESSAGE_UDP_QUEUE: Arc<ArrayQueue<Vec<u8>>> = Arc::new(ArrayQueue::new(1024));
 }
 
 #[repr(packed)]
