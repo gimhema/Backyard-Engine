@@ -53,6 +53,13 @@ impl Server{
 
     pub fn server_loop_action(&mut self) {
 
+        while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
+            match action {
+                ServerActionType::EnterPlayer(token) => {
+                    
+                }
+            }
+        }
         // 서버 루프에서 대기열 처리
         // self.processing_waiting_queue();
         // self.ping();
