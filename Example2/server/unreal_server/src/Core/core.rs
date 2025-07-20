@@ -8,6 +8,8 @@ use std::thread;
 use std::sync::Arc;
 use std::time::Duration;
 
+
+#[derive(Debug, Clone, Copy)]
 pub enum ServerMode {
     NONE,
     GARDNER,
@@ -33,34 +35,16 @@ pub fn set_mode_by_prefix(argv: String) -> ServerMode {
     }
 }
 
-pub fn read_server_option(mut argv: Vec<String>) {
+pub fn read_server_option(mut argv: Vec<String>) -> ServerMode {
     println!("Entering run function with arguments: {:?}", argv);
 
            if argv.len() < 2 {
             println!("Insufficient arguments.");
- //           self.print_help();
-            return;
+            return ServerMode::NONE
         }
 
-        // argv[2]와 argv[4]를 상대 경로로 변환
-        if argv.len() > 2 {
-            // argv[2] = to_relative_path(&exe_dir, &argv[2]);
-        }
-        if argv.len() > 4 {
-            // argv[4] = to_relative_path(&exe_dir, &argv[4]);
-        }
     
-        // self.mode = self.set_mode_by_prefix(argv[1].clone());
-        // match self.mode {
-        //     MODE::DEFAULT => {
-        //         self.print_help();
-        //     }
-        //     MODE::TEST => {
-        //         self.param_valid(argv.clone());
-        //     }
-        //     MODE::DIRECTORY => {
-        //         println!("Directory Mode . . .");
-        //         self.parse(argv.clone());
-        //     }
-        // }
+        let mode = set_mode_by_prefix(argv[1].clone());
+
+        return mode
 }
