@@ -13,6 +13,7 @@ use crate::GameLogic::game_player::VECharacterManager;
 
 use super::connection::*;
 use super::server_common::*;
+use crate::Core::core::*;
 
 use std::time::{Instant};
 
@@ -30,6 +31,7 @@ pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Vec<u8>)>>; // (대
 
 // --- 서버 구조체 ---
 pub struct Server {
+    pub server_mode: ServerMode,
     pub poll: Poll,
     pub tcp_listener: TcpListener,
     pub udp_socket: UdpSocket,
@@ -67,6 +69,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
         let udp_queue_for_server = Arc::new(ArrayQueue::new(1024)); // 적절한 용량 설정
 
         let server = Server {
+            server_mode: ServerMode::NONE,
             poll,
             tcp_listener,
             udp_socket,

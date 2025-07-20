@@ -9,6 +9,7 @@ pub mod message_queue;
 pub mod new_server;
 
 use super::Event;
+use super::Core;
 use super::Crypto;
 use super::qsm;
 use super::GameLogic;
