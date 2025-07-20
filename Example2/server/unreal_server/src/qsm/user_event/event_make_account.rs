@@ -24,6 +24,7 @@ pub fn CallBack_MakeAccount(buffer: &[u8])
     }
 }
 
+// 클라이언트 접속 완료처리이후 한번더 클라측에서 보내는 메세지 처리
 pub fn CallBack_VerifyAccount(buffer: &[u8])
 {
     match VerifyAccount::deserialize(buffer) {
