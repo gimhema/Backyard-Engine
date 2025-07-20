@@ -8,7 +8,7 @@ use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
-use crate::qsm::qsm::GLOBAL_MESSAGE_TX_QUEUE;
+use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::GameLogic::game_player::VECharacterManager;
 
 use super::connection::*;
@@ -66,7 +66,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
         // TCP 메시지 큐 초기화 (기존 GLOBAL_MESSAGE_TX_QUEUE 사용)
         let tcp_queue_for_server = GLOBAL_MESSAGE_TX_QUEUE.clone();
         // UDP 메시지 큐 초기화 (새로운 큐 생성)
-        let udp_queue_for_server = Arc::new(ArrayQueue::new(1024)); // 적절한 용량 설정
+        let udp_queue_for_server = GLOBAL_MESSAGE_UDP_QUEUE.clone();
 
         let server = Server {
             server_mode: ServerMode::NONE,

@@ -16,10 +16,10 @@ use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
 use lazy_static::lazy_static;
 use crate::Network::connection::{MessageToSend}; // 경로를 실제에 맞게 수정하세요.
 use crossbeam_queue::ArrayQueue;
-
+use std::net::SocketAddr;
 lazy_static! {
     pub static ref GLOBAL_MESSAGE_TX_QUEUE: Arc<ArrayQueue<MessageToSend>> = Arc::new(ArrayQueue::new(1024));
-    pub static ref GLOBAL_MESSAGE_UDP_QUEUE: Arc<ArrayQueue<Vec<u8>>> = Arc::new(ArrayQueue::new(1024));
+    pub static ref GLOBAL_MESSAGE_UDP_QUEUE: Arc<ArrayQueue<(SocketAddr, Vec<u8>)>> = Arc::new(ArrayQueue::new(1024));
 }
 
 #[repr(packed)]
