@@ -1,5 +1,8 @@
+use crate::qsm;
 use crate::Network::server::*;
 use crate::Network::connection::*;
+use super::qsm::user_message::message_allow_connect::*;
+use super::Event::event_handler::*;
 use mio::Token;
 
 
@@ -10,10 +13,21 @@ impl Server {
         // 대기열에서 토큰을 처리하는 로직
         while let Some(token) = self.player_waiting_queue.lock().unwrap().pop() {
             if let Some(client) = self.clients.get_mut(&token) {
-                // 클라이언트 연결 처리 로직
+
                 println!("Processing client with token: {:?}", token);
-                // 예: 클라이언트에게 메시지 전송 등
-                let _req_enter_message = MessageToSend::Single(token, "WaitingQueue: Enter".as_bytes().to_vec());
+
+                let mut _allow_connect_message = AllowConnectGame::new(
+                    EventHeader::ALLOW_CONNECT_GAME as u32,
+                    0,
+                    Token as u32,
+                    "TEST_ACCOUNT".to_string(),
+                    "TEST_CONNECT_NAME".to_string(),
+                    "TEST_CONNECT_INFO".to_string()
+                );
+
+                let mut _send_msg = _allow_connect_message.serialize();
+
+                let _req_enter_message = MessageToSend::Single(token, _send_msg);
                 if let Err(_) = self.send_tcp_message(_req_enter_message) {
                     eprintln!("Failed to send message to client with token: {:?}", token);
                 }
