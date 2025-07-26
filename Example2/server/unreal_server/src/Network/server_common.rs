@@ -60,8 +60,8 @@ impl Server{
                 ServerActionType::EnterPlayer(token) => { self.server_action_enter_player(token);  }
             }
         }
-        // 서버 루프에서 대기열 처리
-        // self.processing_waiting_queue();
+
+        self.processing_waiting_queue();
     }
 
     pub fn ping(&mut self) {
@@ -89,24 +89,6 @@ impl Server{
                 self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
             }
     }
-
-    pub fn processing_waiting_queue(&mut self) {
-        // 대기열에서 토큰을 처리하는 로직
-        while let Some(token) = self.player_waiting_queue.lock().unwrap().pop() {
-            if let Some(client) = self.clients.get_mut(&token) {
-                // 클라이언트 연결 처리 로직
-                println!("Processing client with token: {:?}", token);
-                // 예: 클라이언트에게 메시지 전송 등
-                let _req_enter_message = MessageToSend::Single(token, "WaitingQueue: Enter".as_bytes().to_vec());
-                if let Err(_) = self.send_tcp_message(_req_enter_message) {
-                    eprintln!("Failed to send message to client with token: {:?}", token);
-                }
-            } else {
-                eprintln!("Client with token {:?} not found in clients map.", token);
-            }
-        }
-    }
-
 
 
 }
