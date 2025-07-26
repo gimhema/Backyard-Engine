@@ -53,6 +53,8 @@ impl Server{
 
     pub fn server_loop_action(&mut self) {
 
+        self.ping();
+
         while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
             match action {
                 ServerActionType::EnterPlayer(token) => {
@@ -62,7 +64,6 @@ impl Server{
         }
         // 서버 루프에서 대기열 처리
         // self.processing_waiting_queue();
-        // self.ping();
     }
 
     pub fn ping(&mut self) {
@@ -71,8 +72,6 @@ impl Server{
                 println!("Sending periodic UDP Ping to all connected clients (where UDP address is known)...");
                 let ping_message_data = "UDP_Ping".as_bytes().to_vec(); // "UDP_Ping" 문자열을 바이트 벡터로 변환
 
-                // 현재 연결된 모든 클라이언트에게 UDP Ping 메시지를 큐에 추가
-                // 이때, ClientConnection에 저장된 UDP 주소를 사용합니다.
                 let clients_for_udp_ping: Vec<(Token, SocketAddr)> = self.clients.iter()
                     .filter_map(|(&token, client)| {
                         // is_udp_client가 true이고 udp_addr이 Some인 경우에만 핑을 보냅니다.

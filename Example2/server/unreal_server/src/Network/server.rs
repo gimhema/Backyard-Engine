@@ -98,7 +98,7 @@ pub fn start(&mut self) -> io::Result<()> {
                  self.udp_socket.local_addr().unwrap());
 
     let udp_queue = self.udp_message_tx_queue.clone();
-    let udp_socket = self.udp_socket.clone(); // ✅ Arc clone
+    let udp_socket = self.udp_socket.clone();
 
     thread::spawn(move || {
         loop {
@@ -108,18 +108,13 @@ pub fn start(&mut self) -> io::Result<()> {
                     Err(e) => eprintln!("[UDP Thread] Error sending to {}: {}", target_addr, e),
                 }
             }
-            thread::sleep(Duration::from_millis(1)); // ✅ 과도한 CPU 사용 방지
+            thread::sleep(Duration::from_millis(1));
         }
     });
 
 
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
-
-            // --- UDP 메시지 큐 처리 (새로 추가) ---
-            // self.process_outgoing_udp_messages()?;
-            // --- TCP 메시지 큐 처리 ---
-            // self.process_outgoing_tcp_messages()?; // 함수 이름 변경
 
             self.server_loop_action();
 
