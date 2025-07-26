@@ -57,9 +57,7 @@ impl Server{
 
         while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
             match action {
-                ServerActionType::EnterPlayer(token) => {
-                    
-                }
+                ServerActionType::EnterPlayer(token) => { self.server_action_enter_player(token);  }
             }
         }
         // 서버 루프에서 대기열 처리

@@ -7,6 +7,7 @@ pub mod serverinfo;
 pub mod server_common;
 pub mod message_queue;
 pub mod new_server;
+pub mod server_actions;
 
 use super::Event;
 use super::Core;
