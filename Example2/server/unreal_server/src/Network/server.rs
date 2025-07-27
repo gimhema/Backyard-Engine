@@ -68,13 +68,13 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
         // UDP 메시지 큐 초기화 (새로운 큐 생성)
         let udp_queue_for_server = GLOBAL_MESSAGE_UDP_QUEUE.clone();
 
-        let raw_socket = UdpSocket::bind(udp_socket_addr)?;
+//        let raw_socket = UdpSocket::bind(udp_socket_addr)?;
 
         let server = Server {
             server_mode: ServerMode::NONE,
             poll,
             tcp_listener,
-            udp_socket : Arc::new(raw_socket),
+            udp_socket : Arc::new(udp_socket),
             clients: HashMap::new(),
             next_client_token: CLIENT_TOKEN_START,
             tcp_message_tx_queue: tcp_queue_for_server,
