@@ -12,6 +12,7 @@ use super::user_event::event_player_movement::CallBack_PlayerMovementUpdate;
 use super::user_event::event_make_account::CallBack_MakeAccount;
 use super::user_event::event_make_account::CallBack_VerifyAccount;
 use super::user_event::event_new_player::CallBack_EnterNewPlayerToGame;
+use super::user_event::event_new_player::CallBack_AllowConnectGame;
 
 use lazy_static::lazy_static;
 use crate::Network::connection::{MessageToSend}; // 경로를 실제에 맞게 수정하세요.
@@ -72,6 +73,7 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
         EventHeader::MAKE_ACCOUNT => CallBack_MakeAccount(buffer),
         EventHeader::VERIFY_ACCOUNT => CallBack_VerifyAccount(buffer),
         EventHeader::ENTER_NEW_PAYER => CallBack_EnterNewPlayerToGame(buffer),
+        EventHeader::ALLOW_CONNECT_GAME => CallBack_AllowConnectGame(buffer),
         // 향후 추가될 다른 EventHeader 값에 대한 처리
         _ => println!("Unhandled EventHeader: {:?}", message_header),
     }
