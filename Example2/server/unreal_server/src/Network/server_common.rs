@@ -14,7 +14,7 @@ use crate::Event::event_handler::EventHeader;
 #[derive(Debug, Clone)]
 pub enum ServerActionType
 {
-    EnterPlayer(Token) // 이 유저는 접속했으니까 대기큐에서 삭제해도 괜찮다.
+    EnterPlayer(Token, String, String, String) // 이 유저는 접속했으니까 대기큐에서 삭제해도 괜찮다.
 }
 
 lazy_static! {
@@ -57,7 +57,8 @@ impl Server{
 
         while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
             match action {
-                ServerActionType::EnterPlayer(token) => { self.server_action_enter_player(token);  }
+                ServerActionType::EnterPlayer(_pId, _accountId, _playerName, _connInfo) => 
+                { self.server_action_enter_player(_pId, _accountId, _playerName, _connInfo);  }
             }
         }
 

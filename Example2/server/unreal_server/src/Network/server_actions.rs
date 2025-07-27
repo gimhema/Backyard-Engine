@@ -3,6 +3,7 @@ use crate::Network::server::*;
 use crate::Network::connection::*;
 use super::qsm::user_message::message_allow_connect::*;
 use super::Event::event_handler::*;
+use crate::Network::server_common::ServerActionType::*;
 use mio::Token;
 
 
@@ -38,7 +39,8 @@ impl Server {
     }
 
     // 인증을 받은 플레이어를 실질적으로 통과시키는 함수
-    pub fn server_action_enter_player(&mut self, token: Token) {
+    pub fn server_action_enter_player(&mut self, 
+        _pid : Token, _account_id: String, _player_name: String, _conn_info: String) {
         // Create Character by Token
     }
 }
