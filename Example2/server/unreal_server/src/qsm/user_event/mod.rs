@@ -5,3 +5,4 @@ pub mod event_make_account;
 pub mod event_delete_player;
 
 use super::GameLogic;
+use super::Network;
