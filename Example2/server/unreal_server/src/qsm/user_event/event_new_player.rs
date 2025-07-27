@@ -37,7 +37,11 @@ pub fn CallBack_AllowConnectGame(buffer: &[u8])
                      _pid, _account_id, _player_name, _conn_info);
 
 
-
+            if let Err(_) = GLOBAL_SERVER_ACTION_QUEUE.push(ServerActionType::EnterPlayer(_pid, _account_id, _player_name, _conn_info)) {
+                eprintln!("Failed to queue Server Action EnterPlayer");
+            } else {
+                println!("Queued Server Action EnterPlayer");
+            }
         }
         Err(e) => {
             eprintln!("Failed to deserialize AllowConnectGame: {}", e);
