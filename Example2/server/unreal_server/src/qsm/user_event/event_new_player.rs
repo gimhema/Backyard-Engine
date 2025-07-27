@@ -27,7 +27,7 @@ pub fn CallBack_AllowConnectGame(buffer: &[u8])
 {
     match AllowConnectGame::deserialize(buffer) {
         Ok(allow_connect_message) => {
-            let _pid = allow_connect_message.pid.to_string();
+            let _pid = allow_connect_message.pid;
             let _account_id = allow_connect_message.accountId.clone();
             let _player_name = allow_connect_message.name.clone();
             let _conn_info = allow_connect_message.connect_info.clone();

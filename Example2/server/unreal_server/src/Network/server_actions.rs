@@ -40,7 +40,9 @@ impl Server {
 
     // 인증을 받은 플레이어를 실질적으로 통과시키는 함수
     pub fn server_action_enter_player(&mut self, 
-        _pid : Token, _account_id: String, _player_name: String, _conn_info: String) {
+        _pid : u32, _account_id: String, _player_name: String, _conn_info: String) {
         // Create Character by Token
+        println!("Entering player with PID: {}, Account ID: {}, Player Name: {}, Conn Info: {}",
+                 _pid, _account_id, _player_name, _conn_info);
     }
 }
