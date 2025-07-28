@@ -9,6 +9,7 @@ use crate::Network::server::*;
 use crate::Network::connection::*;
 use std::time::{Instant};
 use crate::Event::event_handler::EventHeader;
+use std::collections::BTreeSet;
 
 
 #[derive(Debug, Clone)]
@@ -23,29 +24,31 @@ lazy_static! {
 
 
 pub struct WaitingQueue {
-    pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
+//    pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
+    pub waiting_containter: Arc<RwLock<BTreeSet<Token>>>,
 }
 
 impl WaitingQueue {
     pub fn new() -> Self {
         WaitingQueue {
-            waiting_queue: Arc::new(RwLock::new(VecDeque::new())),
+//            waiting_queue: Arc::new(RwLock::new(VecDeque::new())),
+            waiting_containter: Arc::new(RwLock::new(BTreeSet::new()))
         }
     }
 
     pub fn push(&self, token: Token) {
-        let mut queue = self.waiting_queue.write().unwrap();
-        queue.push_back(token);
+        let mut container = self.waiting_containter.write().unwrap();        
+        container.insert(token);
     }
 
-    pub fn pop(&self) -> Option<Token> {
-        let mut queue = self.waiting_queue.write().unwrap();
-        queue.pop_front()
+    pub fn remove(&self, token : Token) {
+        let mut container = self.waiting_containter.write().unwrap();
+        container.remove(&token);
     }
 
     pub fn is_empty(&self) -> bool {
-        let queue = self.waiting_queue.read().unwrap();
-        queue.is_empty()
+        let mut container = self.waiting_containter.write().unwrap();
+        return container.is_empty()
     }
 }
 
