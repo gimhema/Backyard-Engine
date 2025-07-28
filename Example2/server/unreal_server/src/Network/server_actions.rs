@@ -48,6 +48,11 @@ impl Server {
                  _pid, _account_id, _player_name, _conn_info);
 
         // 대기열 큐에서 제거해야함
+
+        let waiting_queue = self.player_waiting_queue.lock().unwrap();
+        
+        let target_token = Token(_pid as usize);
+        waiting_queue.remove(target_token);
         
     }
 }
