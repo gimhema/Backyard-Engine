@@ -44,5 +44,8 @@ impl Server {
         // Create Character by Token
         println!("Entering player with PID: {}, Account ID: {}, Player Name: {}, Conn Info: {}",
                  _pid, _account_id, _player_name, _conn_info);
+
+        // 대기열 큐에서 제거해야함
+        
     }
 }
