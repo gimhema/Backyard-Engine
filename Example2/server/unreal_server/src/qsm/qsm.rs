@@ -71,7 +71,7 @@ pub fn handle_quicksot_message(buffer: &[u8]) {
         EventHeader::PLAYER_MOVEMENT_UPDATE => CallBack_PlayerMovementUpdate(buffer),
         EventHeader::NEW_PLAYER => CallBack_CreateNewPlayer(buffer),
         EventHeader::MAKE_ACCOUNT => CallBack_MakeAccount(buffer),
-        EventHeader::VERIFY_ACCOUNT => CallBack_VerifyAccount(buffer),
+//        EventHeader::VERIFY_ACCOUNT => CallBack_VerifyAccount(buffer),
         EventHeader::ENTER_NEW_PAYER => CallBack_EnterNewPlayerToGame(buffer),
         EventHeader::ALLOW_CONNECT_GAME => CallBack_AllowConnectGame(buffer),
         // 향후 추가될 다른 EventHeader 값에 대한 처리

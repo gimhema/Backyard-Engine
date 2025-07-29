@@ -118,6 +118,8 @@ pub fn start(&mut self) -> io::Result<()> {
 
             self.server_loop_action();
 
+            self.process_outgoing_tcp_messages();
+
             let mut actions_to_perform: Vec<(Token, ClientAction)> = Vec::new();
 
             for event in events.iter() {
