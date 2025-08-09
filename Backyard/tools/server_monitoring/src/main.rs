@@ -7,6 +7,38 @@ struct ServerMonitorApp {
     message_input: String,        // 하단 메시지 입력창 텍스트
 }
 
+impl ServerMonitorApp {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        // ---- 폰트 설정 ----
+        let mut fonts = egui::FontDefinitions::default();
+
+        // TrueType 폰트 로드
+        fonts.font_data.insert(
+            "nanum".to_owned(),
+            egui::FontData::from_owned(
+                std::fs::read("fonts/korean_font.ttf").expect("폰트 파일을 찾을 수 없습니다"),
+            ),
+        );
+
+        // Proportional (일반 UI 폰트) 맨 앞에 추가
+        fonts.families
+            .get_mut(&egui::FontFamily::Proportional)
+            .unwrap()
+            .insert(0, "nanum".to_owned());
+
+        // Monospace (코드/로그용 폰트)에도 추가
+        fonts.families
+            .get_mut(&egui::FontFamily::Monospace)
+            .unwrap()
+            .insert(0, "nanum".to_owned());
+
+        cc.egui_ctx.set_fonts(fonts);
+        // ---- 폰트 설정 끝 ----
+
+        Self::default()
+    }
+}
+
 impl Default for ServerMonitorApp {
     fn default() -> Self {
         Self {
@@ -68,15 +100,17 @@ impl eframe::App for ServerMonitorApp {
     }
 }
 
+
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([800.0, 600.0]), // 창 초기 크기 지정
+            .with_inner_size([800.0, 600.0]),
         ..Default::default()
     };
+
     eframe::run_native(
-        "서버 모니터링 툴",
+        "Backyard Monitor",
         options,
-        Box::new(|_cc| Box::new(ServerMonitorApp::default())),
+        Box::new(|cc| Box::new(ServerMonitorApp::new(cc))),
     )
 }
