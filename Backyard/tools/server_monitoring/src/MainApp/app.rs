@@ -67,15 +67,15 @@ impl eframe::App for ServerMonitorApp {
             });
         });
 
-        egui::SidePanel::left("left_panel")
-            .min_width(150.0)
-            .show(ctx, |ui| {
-                ui.heading("서버 제어");
-                if ui.button("Server Connect").clicked() {
-                    // TODO: 서버 소켓 bind & listen 시작
-                    self.add_log_message("[INFO] 서버 연결을 요청합니다".into());
-                }
-            });
+        // egui::SidePanel::left("left_panel")
+        //     .min_width(150.0)
+        //     .show(ctx, |ui| {
+        //         ui.heading("서버 제어");
+        //         if ui.button("Server Connect").clicked() {
+        //             // TODO: 서버 소켓 bind & listen 시작
+        //             self.add_log_message("[INFO] 서버 연결을 요청합니다".into());
+        //         }
+        //     });
 
         egui::SidePanel::right("right_panel")
             .min_width(200.0)
