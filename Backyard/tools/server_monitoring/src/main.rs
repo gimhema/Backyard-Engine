@@ -70,11 +70,8 @@ impl eframe::App for ServerMonitorApp {
             .min_width(150.0)
             .show(ctx, |ui| {
                 ui.heading("서버 제어");
-                if ui.button("서버 ON").clicked() {
+                if ui.button("Server Connect").clicked() {
                     // TODO: 서버 소켓 bind & listen 시작
-                }
-                if ui.button("서버 OFF").clicked() {
-                    // TODO: 서버 소켓 close 및 모든 connection 종료
                 }
             });
 
