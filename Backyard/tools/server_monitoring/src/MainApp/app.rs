@@ -2,7 +2,7 @@
 use eframe::egui;
 use egui::{Layout, ScrollArea, TextEdit, Align, Align2};
 
-struct ServerMonitorApp {
+pub struct ServerMonitorApp {
     log_messages: Vec<String>,    // 서버 로그 메시지 저장
     connections: Vec<String>,     // 현재 연결된 클라이언트 정보
     message_input: String,        // 하단 메시지 입력창 텍스트
