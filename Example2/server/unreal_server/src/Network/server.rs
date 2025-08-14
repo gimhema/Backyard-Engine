@@ -114,7 +114,7 @@ pub fn start(&mut self) -> io::Result<()> {
 
 
         loop {
-            self.poll.poll(&mut events, Some(Duration::from_millis(100)))?;
+            self.poll.poll(&mut events, Some(Duration::from_millis(1)))?;
 
             self.server_loop_action();
 
