@@ -39,6 +39,7 @@ public:
 	void PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor);
 
 public:
+	// Blueprint properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VoidEscape|Network")
 	FString tcpServerIP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VoidEscape|Network")
@@ -48,5 +49,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VoidEscape|Network")
 	int32 udpServerPort;
 
+
+public:
+	// Game Instance Task Alloc
+	void MessageActionAllocate(std::vector<uint8_t> Message);
+
+	// Message Queue for Game Instance
+	TQueue< std::vector<uint8_t>> GameInstanceMessageQueue;
+	void PushMessageToQueue(const std::vector<uint8_t>& Message);
+	void ProcessMessageQueue();
 	
+
+public:
+	// Message Action
+	void DoMessageAction(const std::vector<uint8_t>& Message);
+
+
 };
