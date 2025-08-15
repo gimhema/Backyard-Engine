@@ -151,9 +151,9 @@ pub fn start(&mut self) -> io::Result<()> {
                                         EventHeader::ALLOW_CONNECT_GAME as u32,
                                         0,
                                         token.0 as u32,
-                                        "TEST_ACCOUNT".to_string(),
-                                        "TEST_CONNECT_NAME".to_string(),
-                                        "TEST_CONNECT_INFO".to_string()
+                                        "NULL".to_string(),
+                                        "NULL".to_string(),
+                                        addr.clone().to_string()
                                     );
 
                                     let send_msg = allow_connect_message.serialize();
