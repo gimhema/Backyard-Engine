@@ -10,6 +10,7 @@ use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::GameLogic::game_player::VECharacterManager;
+use super::qsm::user_message::message_allow_connect::*;
 
 use super::connection::*;
 use super::server_common::*;
@@ -142,9 +143,28 @@ pub fn start(&mut self) -> io::Result<()> {
                                         stream,
                                         addr, // TCP 주소
                                         write_queue: Arc::new(Mutex::new(Vec::new())),
-                                        is_udp_client: false, // 초기에는 UDP 클라이언트 아님
-                                        udp_addr: None, // 초기에는 UDP 주소 없음
+                                        is_udp_client: true,
+                                        udp_addr: None,
                                     });
+                                    
+                                    let allow_connect_message = AllowConnectGame::new(
+                                        EventHeader::ALLOW_CONNECT_GAME as u32,
+                                        0,
+                                        token.0 as u32,
+                                        "TEST_ACCOUNT".to_string(),
+                                        "TEST_CONNECT_NAME".to_string(),
+                                        "TEST_CONNECT_INFO".to_string()
+                                    );
+
+                                    let send_msg = allow_connect_message.serialize();
+                                    let req_enter_message = MessageToSend::Single(token.clone(), send_msg);
+                                    
+                                    if let Err(_) = self.send_tcp_message(req_enter_message) {
+                                        eprintln!("Failed to send message to client with token: {:?}", token);
+                                    } else {
+                                        eprintln!("Client with token {:?} not found in clients map.", token);
+                                    }
+
                                 }
                                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
                                     break;
