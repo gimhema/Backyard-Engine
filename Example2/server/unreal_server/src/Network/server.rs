@@ -147,23 +147,8 @@ pub fn start(&mut self) -> io::Result<()> {
                                         udp_addr: None,
                                     });
                                     
-                                    let allow_connect_message = AllowConnectGame::new(
-                                        EventHeader::ALLOW_CONNECT_GAME as u32,
-                                        0,
-                                        token.0 as u32,
-                                        "NULL".to_string(),
-                                        "NULL".to_string(),
-                                        addr.clone().to_string()
-                                    );
 
-                                    let send_msg = allow_connect_message.serialize();
-                                    let req_enter_message = MessageToSend::Single(token.clone(), send_msg);
                                     
-                                    if let Err(_) = self.send_tcp_message(req_enter_message) {
-                                        eprintln!("Failed to send message to client with token: {:?}", token);
-                                    } else {
-                                        eprintln!("Client with token {:?} not found in clients map.", token);
-                                    }
 
                                 }
                                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
