@@ -11,6 +11,7 @@ impl Server {
 
     // 대기열의 스트림으로부터 인증을 요구하는 함수
     pub fn processing_waiting_queue(&mut self) {
+//    println!("Waiting Queue...");
     let waiting_queue = self.player_waiting_queue.lock().unwrap();
     let container = waiting_queue.waiting_containter.read().unwrap();
 
@@ -33,9 +34,10 @@ impl Server {
             if let Err(_) = self.send_tcp_message(req_enter_message) {
                 eprintln!("Failed to send message to client with token: {:?}", token);
             }
-        } else {
+           } else {
             eprintln!("Client with token {:?} not found in clients map.", token);
-        }
+            }
+            waiting_queue.remove(*token);
     }
 }
 

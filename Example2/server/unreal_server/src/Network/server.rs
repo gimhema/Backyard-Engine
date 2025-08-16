@@ -325,7 +325,7 @@ impl ClientConnection {
 
         match client.stream.write(&write_queue) {
             Ok(n) => {
-                println!("Sent {} bytes to client {}", n, client.addr);
+                // println!(" {} bytes to client {}", n, client.addr);
                 // 보낸 데이터만큼 큐에서 제거 
                 write_queue.drain(..n);
                 Ok(write_queue.is_empty()) // 큐가 비었는지 여부 반환
