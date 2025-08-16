@@ -4,6 +4,7 @@
 #include "TCPSocketListener.h"
 #include "VoidEscape/VoidEscapeGameInstance.h"
 #include "../QSM/QSM_VerifyAccount.hpp"
+#include "../QSM/QSM_AllowConnectGame.hpp"
 
 void TCPSocketListener::Exit()
 {
@@ -76,24 +77,6 @@ bool TCPSocketListener::ConnectToServer(const FString& IP, int32 Port)
         return false;
     }
 
-    PrintOnScreenMessage(TEXT("SetUp TCP Socket Completed. Sending VERIFY_ACCOUNT..."), 5.0f, FColor::Green);
-
-    VerifyAccount _respConnectMsg;
-    _respConnectMsg.mid = 0; // static_cast<uint32_t>(QFunctionType::VERIFY_ACCOUNT);
-    _respConnectMsg.userId = "TESTID";
-    _respConnectMsg.userName = "TESTNAME";
-    _respConnectMsg.password = "1234";
-    _respConnectMsg.connect_info = "127.0.0.1";
-
-    std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
-    if (!SendMessageBinary(_msgBuffer))
-    {
-        PrintOnScreenMessage(TEXT("VERIFY_ACCOUNT Message Send Failed"), 5.0f, FColor::Red);
-        Disconnect();
-        return false;
-    }
-
-    PrintOnScreenMessage(TEXT("VERIFY_ACCOUNT message sent. Starting Receive Thread..."), 5.0f, FColor::Green);
 
     if (!Thread)
     {
@@ -176,9 +159,13 @@ uint32 TCPSocketListener::Run()
 {
     PrintOnScreenMessage(TEXT("TCP Client Thread Started."), 5.0f, FColor::Green);
 
+
+
+
     while (bRunThread)
     {
         ReceiveData();
+
 
 		if (GameInstance)
 		{
@@ -190,8 +177,6 @@ uint32 TCPSocketListener::Run()
 
 void TCPSocketListener::ReceiveData()
 {
-    PrintOnScreenMessage(TEXT("RECV DATA . . . 1 "), 5.0f, FColor::Cyan);
-
     std::vector<uint8_t> TempRecvBuffer;
     TempRecvBuffer.resize(BufferSize);
 
@@ -206,23 +191,11 @@ void TCPSocketListener::ReceiveData()
         return;
     }
 
-    bool bReceived = ClientSocket->Recv(TempRecvBuffer.data(), BufferSize, BytesRead, ESocketReceiveFlags::WaitAll); // ????? ???
+    bool bReceived = ClientSocket->Recv(TempRecvBuffer.data(), BufferSize, BytesRead, ESocketReceiveFlags::None);
 
-    PrintOnScreenMessage(TEXT("RECV DATA . . . 2 "), 5.0f, FColor::Cyan);
-
-    if (!bReceived)
-    {
-        PrintOnScreenMessage(TEXT("bReceived false "), 5.0f, FColor::Cyan);
-    }
-
-    if (BytesRead <= 0)
-    {
-        PrintOnScreenMessage(TEXT("BytesRead <= 0 "), 5.0f, FColor::Cyan);
-    }
 
     if (bReceived && BytesRead > 0)
     {
-        PrintOnScreenMessage("Sucess Recv Message ! ! !", 30.0f, FColor::Red);
 
         AccumulatorBuffer.insert(AccumulatorBuffer.end(), TempRecvBuffer.begin(), TempRecvBuffer.begin() + BytesRead);
 
@@ -246,14 +219,14 @@ void TCPSocketListener::ReceiveData()
 
             if (GameInstance)
             {
-				GameInstance->PrintOnScreenMessage(
-                    FString::Printf(TEXT("Casting Game Instance Valid")),
-                    2.0f, 
-                    FColor::Blue);
+				// GameInstance->PrintOnScreenMessage(
+                //     FString::Printf(TEXT("Casting Game Instance Valid")),
+                //     2.0f, 
+                //     FColor::Blue);
 				GameInstance->MessageActionAllocate(FullMessageBytes);
             }
-
-            AccumulatorBuffer.erase(AccumulatorBuffer.begin(), AccumulatorBuffer.begin() + message_length_prefix);
+			AccumulatorBuffer.clear();
+            // AccumulatorBuffer.erase(AccumulatorBuffer.begin(), AccumulatorBuffer.begin() + message_length_prefix);
         }
     }
     else if (!bReceived)

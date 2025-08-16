@@ -3,11 +3,13 @@
 
 #include "VoidEscapeGameInstance.h"
 #include "QSM/QSM_VerifyAccount.hpp"
-
+#include "QSM/QSM_AllowConnectGame.hpp"
+#include "QSM/QSM_BaseMessage.h"
 
 UVoidEscapeGameInstance::UVoidEscapeGameInstance()
 {
 	// Constructor logic if needed
+	// GameInstanceMessageQueue = TQueue<std::vector<uint8_t>>();
 }
 
 void UVoidEscapeGameInstance::CreateSocket()
@@ -22,15 +24,15 @@ void UVoidEscapeGameInstance::CreateSocket()
 		SocketListener = new TCPSocketListener();
 	}
 
-	if (!udpSocketWrapper)
-	{
-		udpSocketWrapper = new UDPSocketWrapper();
-	}
-	else
-	{
-		delete udpSocketWrapper;
-		udpSocketWrapper = new UDPSocketWrapper();
-	}
+	// if (!udpSocketWrapper)
+	// {
+	// 	udpSocketWrapper = new UDPSocketWrapper();
+	// }
+	// else
+	// {
+	// 	delete udpSocketWrapper;
+	// 	udpSocketWrapper = new UDPSocketWrapper();
+	// }
 }
 
 void UVoidEscapeGameInstance::ConnectToServer()
@@ -79,12 +81,16 @@ void UVoidEscapeGameInstance::MessageActionAllocate(std::vector<uint8_t> Message
 
 	// Message parse, and find messge unique
 
-	int MessageType = 0; // Example: Determine message type from the first byte or some other logic
+	BaseMessage BaseMsg = BaseMessage::deserialize(Message);
+
+	EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
 
 	switch (MessageType)
 		{
-		case 0: // Example case for a specific message type
+		// Game Instance Actions
+		case EServerMessageType::ALLOW_CONNECT_GAME: // Example case for a specific message type
 			// Handle the message accordingly
+			PrintOnScreenMessage("Received ALLOW_CONNECT_GAME message", 3.0f, FColor::Red);
 			PushMessageToQueue(Message);
 			break;
 		default:
@@ -100,23 +106,61 @@ void UVoidEscapeGameInstance::CheckGameInstance()
 
 void UVoidEscapeGameInstance::PushMessageToQueue(const std::vector<uint8_t>& Message)
 {
-	GameInstanceMessageQueue.Enqueue(Message);
+	PrintOnScreenMessage("Pushing Message to Queue ! ! ! ! ! ! ! ! ! ! ! ", 3.0f, FColor::Green);
+	// GameInstanceMessageQueue.Enqueue(Message);
 }
 
 void UVoidEscapeGameInstance::ProcessMessageQueue()
 {
 	std::vector<uint8_t> Message;
-	while (GameInstanceMessageQueue.Dequeue(Message))
-	{
-		// Process the message
-		// For example, you can convert it to FString and print it
-		// FString ReceivedMessage = FString(UTF8_TO_TCHAR(Message.data()));
-		// PrintOnScreenMessage(ReceivedMessage, 5.0f, FColor::Green);
-		DoMessageAction(Message);
-	}
+	// while (GameInstanceMessageQueue.Dequeue(Message))
+	// {
+	// 	// Process the message
+	// 	// For example, you can convert it to FString and print it
+	// 	// FString ReceivedMessage = FString(UTF8_TO_TCHAR(Message.data()));
+	// 	// PrintOnScreenMessage(ReceivedMessage, 5.0f, FColor::Green);
+	// 	DoMessageAction(Message);
+	// 
+	// 	if (GameInstanceMessageQueue.IsEmpty()) {
+	// 		return;
+	// 	}
+	// }
 }
 
 void UVoidEscapeGameInstance::DoMessageAction(const std::vector<uint8_t>& Message)
 {
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+}
 
+void UVoidEscapeGameInstance::SendVerifyAccount()
+{
+	bool allowConnect = false;
+	if (allowConnect == false)
+	{
+		allowConnect = true;
+
+		PrintOnScreenMessage(TEXT("SetUp TCP Socket Completed. Sending VERIFY_ACCOUNT..."), 5.0f, FColor::Green);
+
+		VerifyAccount _respConnectMsg;
+		_respConnectMsg.mid = static_cast<uint32_t>(EServerMessageType::VERIFY_ACCOUNT);
+		_respConnectMsg.userId = "TESTID";
+		_respConnectMsg.userName = "TESTNAME";
+		_respConnectMsg.password = "1234";
+		_respConnectMsg.connect_info = "127.0.0.1";
+
+		std::vector<uint8_t> _msgBuffer = _respConnectMsg.serialize();
+		if (!SocketListener->SendMessageBinary(_msgBuffer))
+		{
+			PrintOnScreenMessage(TEXT("VERIFY_ACCOUNT Message Send Failed"), 5.0f, FColor::Red);
+			SocketListener->Disconnect();
+			return;
+		}
+
+		PrintOnScreenMessage(TEXT("VERIFY_ACCOUNT message sent. Starting Receive Thread..."), 5.0f, FColor::Green);
+	}
 }
