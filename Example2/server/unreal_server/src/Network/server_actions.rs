@@ -1,3 +1,6 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 use crate::qsm;
 use crate::Network::server::*;
 use crate::Network::connection::*;
@@ -17,6 +20,7 @@ impl Server {
 
     for token in container.iter() {
         if let Some(client) = self.clients.get_mut(token) {
+            sleep(Duration::from_millis(100));
             println!("Processing client with token: {:?}", token);
 
             let allow_connect_message = AllowConnectGame::new(
@@ -33,11 +37,13 @@ impl Server {
 
             if let Err(_) = self.send_tcp_message(req_enter_message) {
                 eprintln!("Failed to send message to client with token: {:?}", token);
+                waiting_queue.remove(*token);
             }
            } else {
             eprintln!("Client with token {:?} not found in clients map.", token);
-            }
             waiting_queue.remove(*token);
+            }
+            // 
     }
 }
 
