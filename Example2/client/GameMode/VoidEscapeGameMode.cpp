@@ -2,120 +2,65 @@
 
 #include "VoidEscapeGameMode.h"
 #include "VoidEscapeCharacter.h"
+#include "VoidEscapeGameInstance.h"
+#include "QSM/QSM_BaseMessage.h"
 #include "UObject/ConstructorHelpers.h"
-
 
 AVoidEscapeGameMode::AVoidEscapeGameMode()
 	: Super()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true; // 안전빵
+
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 
-
 }
 
-void AVoidEscapeGameMode::InitGameInstance()
+void AVoidEscapeGameMode::Tick(float DeltaSeconds)
 {
-	if (UDPSocketWrapper == nullptr)
-	{
-		// Create a new instance of the UDP socket wrapper
-		UDPSocketWrapper = new FUDPSocketWrapper();
-		UDPSocketWrapper->SetGameInstance();
-	}
+	Super::Tick(DeltaSeconds);
+	// You can add any game mode specific logic here that needs to be executed every frame
 
-	if (TCPSocketListener == nullptr)
-	{
-		// Create a new instance of the TCP socket listener
-		TCPSocketListener = new FTCPSocketListener();
-		TCPSocketListener->SetGameInstance();
-	}
-}
+	// PrintOnScreenMessage("Tick 1", 1.0f, FColor::Red);
 
+	auto* GI = GetGameInstance<UVoidEscapeGameInstance>();
+	if (!GI) return;
 
-void AVoidEscapeGameMode::InitNetwork()
-{// Set up TCP and UDP connections
+	//PrintOnScreenMessage("Tick 2", 1.0f, FColor::Blue);
 
-	
+	std::vector<uint8_t> Msg;
 
-	SetUpTCPConnection();
-	SetUpUDPConnection();
-}
+	while (GI->TryDequeue(Msg)) // 소비자는 오직 여기 한 곳
+	{
+		// PrintOnScreenMessage("Message Parse . . .", 3.0f, FColor::Red);
+		BaseMessage BaseMsg = BaseMessage::deserialize(Msg);
 
-void AVoidEscapeGameMode::SetUpTCPConnection()
-{
-	if (TCPSocketListener != nullptr)
-	{
-		// 8080
-		TCPSocketListener->ConnectToServer(ServerIP, TCPPort);
-	}
-	else
-	{
-		// UE_LOG(LogTemp, Error, TEXT("UDP Socket Wrapper is not initialized!"));
-	}
-}
+		EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
 
-void AVoidEscapeGameMode::SetUpUDPConnection()
-{
-	if (UDPSocketWrapper != nullptr)
-	{
-		// 8081
-		UDPSocketWrapper->SetUpUDPSocket(ServerIP, UDPPort);
-	}
-	else
-	{
-		// UE_LOG(LogTemp, Error, TEXT("UDP Socket Wrapper is not initialized!"));
-	}
-}
-void AVoidEscapeGameMode::SendTCPSpin()
-{
-	if (TCPSocketListener != nullptr)
-	{
-		if (!TCPMessageQueue.empty())
+		switch (MessageType)
 		{
-			std::vector<uint8_t> Message = TCPMessageQueue.front();
+			// Game Instance Actions
+		case EServerMessageType::ALLOW_CONNECT_GAME: // Example case for a specific message type
+			// Handle the message accordingly
+			PrintOnScreenMessage("Received ALLOW_CONNECT_GAME message", 3.0f, FColor::Red);
 
-			TCPSocketListener->SendMessageBinary(Message);
 
-			TCPMessageQueue.pop(); // Remove the message after sending
-		}
-		else
-		{
-			// UE_LOG(LogTemp, Warning, TEXT("TCP Message Queue is empty!"));
+			// PushMessageToQueue(Message);
+
+			break;
+		default:
+			// Handle unknown message type or default case
+			break;
 		}
 	}
-	else
-	{
-		// UE_LOG(LogTemp, Error, TEXT("TCP Socket Listener is not initialized!"));
-	}
 }
-void AVoidEscapeGameMode::SendUDPSpin()
+
+void AVoidEscapeGameMode::PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor)
 {
-	if (UDPSocketWrapper != nullptr)
+	if (GEngine)
 	{
-		if (!UDPMessageQueue.empty())
-		{
-			std::vector<uint8_t> Message = UDPMessageQueue.front();
-
-			UDPSocketWrapper->SendMessageBinary(Message);
-
-			UDPMessageQueue.pop(); // Remove the message after sending
-
-		}
-		else
-		{
-			// UE_LOG(LogTemp, Warning, TEXT("UDP Message Queue is empty!"));
-		}
+		GEngine->AddOnScreenDebugMessage(-1, Duration, TextColor, Message);
 	}
-	else
-	{
-		// UE_LOG(LogTemp, Error, TEXT("UDP Socket Wrapper is not initialized!"));
-	}
-}
-void AVoidEscapeGameMode::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	// Example of sending messages
-	SendTCPSpin();
-	SendUDPSpin();
 }
