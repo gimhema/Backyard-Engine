@@ -15,7 +15,9 @@
 class VOIDESCAPE_API TCPSocketListener : public FRunnable
 {
 public:
-	TCPSocketListener();
+
+    explicit TCPSocketListener(class UVoidEscapeGameInstance* InGI);
+	// TCPSocketListener();
 	~TCPSocketListener();
 
 public:
@@ -42,7 +44,10 @@ private:
     FRunnableThread* Thread;
     FThreadSafeBool bRunThread;
 
-    class UVoidEscapeGameInstance* GameInstance;
+
+    // UObject는 직접 오래 붙들면 위험하니 Weak로 보관 (안전하게 게임 스레드로 되돌려 호출할 것)
+    TWeakObjectPtr<class UVoidEscapeGameInstance> GameInstanceWeak;
+    // class UVoidEscapeGameInstance* GameInstance;
 
     static const int32 BufferSize = 4096;
 
@@ -51,5 +56,8 @@ private:
     void ReceiveData();
 
     void PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor);
+
+
+public:
 
 };

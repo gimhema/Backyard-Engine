@@ -11,23 +11,25 @@ void TCPSocketListener::Exit()
     PrintOnScreenMessage(TEXT("TCP Client Thread Exited."), 5.0f, FColor::Yellow);
 }
 
-TCPSocketListener::TCPSocketListener()
-    : ClientSocket(nullptr), Thread(nullptr), bRunThread(true)
+TCPSocketListener::TCPSocketListener(UVoidEscapeGameInstance* InGI)
+    : ClientSocket(nullptr)
+    , Thread(nullptr)
+    , bRunThread(true)
+    , GameInstanceWeak(InGI) // 게임 스레드에서 주입받은 GI를 Weak로 저장
 {
-
-    // ClientSocket = nullptr;
 }
 
 void TCPSocketListener::SetGameInstance()
 {
-    if (!GameInstance)
-    {
-        GameInstance = Cast<UVoidEscapeGameInstance>(GEngine->GetWorld()->GetGameInstance());
-        if (!GameInstance)
-        {
-            PrintOnScreenMessage(TEXT("Not Found Game Instance."), 5.0f, FColor::Red);
-        }
-    }
+    PrintOnScreenMessage(TEXT("Set Game Instance."), 5.0f, FColor::Red);
+    // if (!GameInstance)
+    // {
+    //     GameInstance = Cast<UVoidEscapeGameInstance>(GEngine->GetWorld()->GetGameInstance());
+    //     if (!GameInstance)
+    //     {
+
+    //     }
+    // }
 }
 
 TCPSocketListener::~TCPSocketListener()
@@ -167,10 +169,10 @@ uint32 TCPSocketListener::Run()
         ReceiveData();
 
 
-		if (GameInstance)
-		{
-			GameInstance->ProcessMessageQueue();
-		}
+		// if (GameInstance)
+		// {
+		// 	GameInstance->ProcessMessageQueue();
+		// }
     }
     return 0;
 }
@@ -201,32 +203,49 @@ void TCPSocketListener::ReceiveData()
 
         while (AccumulatorBuffer.size() >= sizeof(uint32_t))
         {
-            uint32_t MessageTotalLength = 0;
-            FMemory::Memcpy(&MessageTotalLength, AccumulatorBuffer.data(), sizeof(uint32_t));
+            uint32_t totalLen = 0;
+            FMemory::Memcpy(&totalLen, AccumulatorBuffer.data(), sizeof(uint32_t));
 
-            if (AccumulatorBuffer.size() < sizeof(uint32_t)) {
-                break;
-            }
-
-            uint32_t message_length_prefix;
-            FMemory::Memcpy(&message_length_prefix, AccumulatorBuffer.data(), sizeof(uint32_t));
-            if (AccumulatorBuffer.size() < message_length_prefix) {
-
-                break;
-            }
-
-            std::vector<uint8_t> FullMessageBytes(AccumulatorBuffer.begin(), AccumulatorBuffer.begin() + message_length_prefix);
-
-            if (GameInstance)
+            // 최소 길이 보정: 길이 헤더 자체 포함이라고 가정
+            if (totalLen < sizeof(uint32_t))
             {
-				// GameInstance->PrintOnScreenMessage(
-                //     FString::Printf(TEXT("Casting Game Instance Valid")),
-                //     2.0f, 
-                //     FColor::Blue);
-				GameInstance->MessageActionAllocate(FullMessageBytes);
+                // 프로토콜 에러: 안전하게 드롭하거나 Accumulator 비우기
+                AccumulatorBuffer.clear();
+                break;
             }
+
+            if (AccumulatorBuffer.size() < totalLen)
+            {
+                // 아직 패킷이 덜 옴
+                break;
+            }
+
+            // 완성된 패킷 슬라이스 추출
+            std::vector<uint8_t> FullMessageBytes(
+                AccumulatorBuffer.begin(),
+                AccumulatorBuffer.begin() + totalLen
+            );
+
+            // 게임 스레드로 넘겨 호출 (Option 2 패턴)
+            TWeakObjectPtr<UVoidEscapeGameInstance> GIWeak = GameInstanceWeak;
+            if (GIWeak.IsValid())
+            {
+                auto DataCopy = MoveTemp(FullMessageBytes);
+
+                AsyncTask(ENamedThreads::GameThread, [GIWeak, Data = MoveTemp(DataCopy)]() mutable
+                    {
+                        if (UVoidEscapeGameInstance* GI = GIWeak.Get())
+                        {
+                            // 게임 스레드에서만 멤버 호출
+                            GI->EnqueueMessage(MoveTemp(Data));
+                        }
+                    });
+            }
+
+            // 소비한 영역만 제거 (clear 대신 erase)
 			AccumulatorBuffer.clear();
-            // AccumulatorBuffer.erase(AccumulatorBuffer.begin(), AccumulatorBuffer.begin() + message_length_prefix);
+            // AccumulatorBuffer.erase(AccumulatorBuffer.begin(),
+            //     AccumulatorBuffer.begin() + totalLen);
         }
     }
     else if (!bReceived)
@@ -251,8 +270,16 @@ void TCPSocketListener::ReceiveData()
 
 void TCPSocketListener::PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor)
 {
-    if (GEngine)
+    AsyncTask(ENamedThreads::GameThread, [M = Message, Duration, TextColor]()
+        {
+            if (GEngine)
+            {
+                GEngine->AddOnScreenDebugMessage(-1, Duration, TextColor, M);
+            }
+        });
+
+    /*if (GEngine)
     {
         GEngine->AddOnScreenDebugMessage(-1, Duration, TextColor, Message);
-    }
+    }*/
 }
