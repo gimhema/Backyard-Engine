@@ -58,12 +58,12 @@ impl Server{
         
         // self.ping();
 
-        // while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
-        //     match action {
-        //         ServerActionType::EnterPlayer(_pId, _accountId, _playerName, _connInfo) => 
-        //         { self.server_action_enter_player(_pId, _accountId, _playerName, _connInfo);  }
-        //     }
-        // }
+        while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
+            match action {
+                ServerActionType::EnterPlayer(_pId, _accountId, _playerName, _connInfo) => 
+                { self.server_action_enter_player(_pId, _accountId, _playerName, _connInfo);  }
+            }
+        }
         self.processing_waiting_queue();
     }
 
