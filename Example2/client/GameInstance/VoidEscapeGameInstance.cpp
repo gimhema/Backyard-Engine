@@ -9,20 +9,22 @@
 UVoidEscapeGameInstance::UVoidEscapeGameInstance()
 {
 	// Constructor logic if needed
-	// GameInstanceMessageQueue = TQueue<std::vector<uint8_t>>();
+
 }
+
 
 void UVoidEscapeGameInstance::CreateSocket()
 {
-	if (!SocketListener)
+	check(IsInGameThread()); // 안전상 체크(선택)
+
+	if (SocketListener)
 	{
-		SocketListener = new TCPSocketListener();
-	}
-	else
-	{
+		SocketListener->Disconnect();
 		delete SocketListener;
-		SocketListener = new TCPSocketListener();
+		SocketListener = nullptr;
 	}
+
+	SocketListener = new TCPSocketListener(this);
 
 	// if (!udpSocketWrapper)
 	// {
@@ -81,22 +83,27 @@ void UVoidEscapeGameInstance::MessageActionAllocate(std::vector<uint8_t> Message
 
 	// Message parse, and find messge unique
 
-	BaseMessage BaseMsg = BaseMessage::deserialize(Message);
 
-	EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
 
-	switch (MessageType)
-		{
-		// Game Instance Actions
-		case EServerMessageType::ALLOW_CONNECT_GAME: // Example case for a specific message type
-			// Handle the message accordingly
-			PrintOnScreenMessage("Received ALLOW_CONNECT_GAME message", 3.0f, FColor::Red);
-			PushMessageToQueue(Message);
-			break;
-		default:
-			// Handle unknown message type or default case
-			break;
-		}
+	//BaseMessage BaseMsg = BaseMessage::deserialize(Message);
+
+	//EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
+
+	//switch (MessageType)
+	//	{
+	//	// Game Instance Actions
+	//	case EServerMessageType::ALLOW_CONNECT_GAME: // Example case for a specific message type
+	//		// Handle the message accordingly
+	//		PrintOnScreenMessage("Received ALLOW_CONNECT_GAME message", 3.0f, FColor::Red);
+	//		
+
+	//		// PushMessageToQueue(Message);
+
+	//		break;
+	//	default:
+	//		// Handle unknown message type or default case
+	//		break;
+	//	}
 }
 
 void UVoidEscapeGameInstance::CheckGameInstance()
@@ -104,37 +111,21 @@ void UVoidEscapeGameInstance::CheckGameInstance()
 	PrintOnScreenMessage("Game Instance Valid", 10.0, FColor::Blue);
 }
 
-void UVoidEscapeGameInstance::PushMessageToQueue(const std::vector<uint8_t>& Message)
+void UVoidEscapeGameInstance::PushMessageToQueue(std::vector<uint8_t> Message)
 {
 	PrintOnScreenMessage("Pushing Message to Queue ! ! ! ! ! ! ! ! ! ! ! ", 3.0f, FColor::Green);
-	// GameInstanceMessageQueue.Enqueue(Message);
+
+
 }
 
 void UVoidEscapeGameInstance::ProcessMessageQueue()
 {
-	std::vector<uint8_t> Message;
-	// while (GameInstanceMessageQueue.Dequeue(Message))
-	// {
-	// 	// Process the message
-	// 	// For example, you can convert it to FString and print it
-	// 	// FString ReceivedMessage = FString(UTF8_TO_TCHAR(Message.data()));
-	// 	// PrintOnScreenMessage(ReceivedMessage, 5.0f, FColor::Green);
-	// 	DoMessageAction(Message);
-	// 
-	// 	if (GameInstanceMessageQueue.IsEmpty()) {
-	// 		return;
-	// 	}
-	// }
+
 }
 
 void UVoidEscapeGameInstance::DoMessageAction(const std::vector<uint8_t>& Message)
 {
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
-	PrintOnScreenMessage("Processing Message Action", 5.0f, FColor::Emerald);
+	PrintOnScreenMessage("Processing Message Action", 1.0f, FColor::Emerald);
 }
 
 void UVoidEscapeGameInstance::SendVerifyAccount()
