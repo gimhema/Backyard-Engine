@@ -7,7 +7,9 @@ use crate::Network::connection::*;
 use super::qsm::user_message::message_allow_connect::*;
 use super::Event::event_handler::*;
 use crate::Network::server_common::ServerActionType::*;
+use crate::GameLogic::game_player::VECharcater;
 use mio::Token;
+use crate::GameLogic::game_player::GameNetStatus;
 
 
 impl Server {
@@ -59,8 +61,28 @@ impl Server {
 
         let waiting_queue = self.player_waiting_queue.lock().unwrap();
         
+        // token is pid
+
         let target_token = Token(_pid as usize);
+        let _pid_token = target_token.clone();
         waiting_queue.remove(target_token);
         
+        // Create a new player character
+        let mut new_player = VECharcater::new_zero();
+        
+        // setting network config
+        new_player.player_network_config.set_sessionid(0 as i64);
+        new_player.player_network_config.set_net_token(_pid_token);
+        new_player.player_network_config.set_net_status(GameNetStatus::CONNECTED);
+
+        // setting personal info
+        new_player.set_player_name(_player_name.clone());
+        new_player.set_player_pid(_pid as i64);
+        new_player.set_player_ip_addr(_conn_info);
+        new_player.init();
+
+
+        // add game player to game character manager
+        self.game_character_manager.lock().unwrap().new_character(new_player);
     }
 }

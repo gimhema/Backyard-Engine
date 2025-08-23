@@ -20,6 +20,12 @@ impl ActorParameta
         return ActorParameta { total_health_point: 0, total_ability_point: 0, total_stamina_point: 0 }
     }
 
+    pub fn init(&mut self) {
+        // self.total_health_point = 100;
+        // self.total_ability_point = 100;
+        // self.total_stamina_point = 100;
+    }
+
     pub fn get_total_health_point(self) -> i64 {
         return self.total_health_point.clone()
     }
