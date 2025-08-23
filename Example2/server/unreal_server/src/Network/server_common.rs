@@ -24,14 +24,12 @@ lazy_static! {
 
 
 pub struct WaitingQueue {
-//    pub waiting_queue: Arc<RwLock<VecDeque<Token>>>,
     pub waiting_containter: Arc<RwLock<BTreeSet<Token>>>,
 }
 
 impl WaitingQueue {
     pub fn new() -> Self {
         WaitingQueue {
-//            waiting_queue: Arc::new(RwLock::new(VecDeque::new())),
             waiting_containter: Arc::new(RwLock::new(BTreeSet::new()))
         }
     }
