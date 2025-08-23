@@ -201,51 +201,77 @@ void TCPSocketListener::ReceiveData()
 
         AccumulatorBuffer.insert(AccumulatorBuffer.end(), TempRecvBuffer.begin(), TempRecvBuffer.begin() + BytesRead);
 
-        while (AccumulatorBuffer.size() >= sizeof(uint32_t))
+        while (AccumulatorBuffer.size() >= 4)
         {
-            uint32_t totalLen = 0;
-            FMemory::Memcpy(&totalLen, AccumulatorBuffer.data(), sizeof(uint32_t));
+            bool processed = false;
 
-            // 최소 길이 보정: 길이 헤더 자체 포함이라고 가정
-            if (totalLen < sizeof(uint32_t))
+            // ------- 케이스 1: [length | payload(mid..)] 프리픽스가 있는 경우 -------
             {
-                // 프로토콜 에러: 안전하게 드롭하거나 Accumulator 비우기
-                AccumulatorBuffer.clear();
-                break;
-            }
+                uint32_t payloadLen = 0;
+                FMemory::Memcpy(&payloadLen, AccumulatorBuffer.data(), 4);
 
-            if (AccumulatorBuffer.size() < totalLen)
-            {
-                // 아직 패킷이 덜 옴
-                break;
-            }
+                // payload의 최소 길이: u32*3(12) + len*3(12) = 24 이상이어야 정상
+                const size_t need = 4 + static_cast<size_t>(payloadLen);
+                if (payloadLen >= 24 && AccumulatorBuffer.size() >= need)
+                {
+                    // ★ payload만 추출 (길이 4바이트는 버림). payload의 첫 4바이트가 mid(id)!
+                    std::vector<uint8_t> Payload(
+                        AccumulatorBuffer.begin() + 4,
+                        AccumulatorBuffer.begin() + need
+                    );
 
-            // 완성된 패킷 슬라이스 추출
-            std::vector<uint8_t> FullMessageBytes(
-                AccumulatorBuffer.begin(),
-                AccumulatorBuffer.begin() + totalLen
-            );
-
-            // 게임 스레드로 넘겨 호출 (Option 2 패턴)
-            TWeakObjectPtr<UVoidEscapeGameInstance> GIWeak = GameInstanceWeak;
-            if (GIWeak.IsValid())
-            {
-                auto DataCopy = MoveTemp(FullMessageBytes);
-
-                AsyncTask(ENamedThreads::GameThread, [GIWeak, Data = MoveTemp(DataCopy)]() mutable
+                    if (auto GI = GameInstanceWeak.Get())
                     {
-                        if (UVoidEscapeGameInstance* GI = GIWeak.Get())
+                        AsyncTask(ENamedThreads::GameThread, [GI, Data = MoveTemp(Payload)]() mutable {
+                            GI->EnqueueMessage(MoveTemp(Data)); // mid부터
+                            });
+                    }
+
+                    AccumulatorBuffer.erase(AccumulatorBuffer.begin(),
+                        AccumulatorBuffer.begin() + need);
+                    processed = true;
+                }
+            }
+            if (processed) continue;
+
+            // ------- 케이스 2: 프리픽스 없이 바로 mid부터 시작하는 경우 -------
+            if (AccumulatorBuffer.size() >= 24)
+            {
+                // [mid(0) | sessionId(4) | pid(8) | accLen(12) | nameLen(16) | connLen(20) | .. ]
+                uint32_t accLen = 0, nameLen = 0, connLen = 0;
+                FMemory::Memcpy(&accLen, AccumulatorBuffer.data() + 12, 4);
+                FMemory::Memcpy(&nameLen, AccumulatorBuffer.data() + 16, 4);
+                FMemory::Memcpy(&connLen, AccumulatorBuffer.data() + 20, 4);
+
+                // 안전 가드 (필요시 상한 조정)
+                const uint32_t MAX_FIELD = 1u << 20; // 1MB
+                if (accLen <= MAX_FIELD && nameLen <= MAX_FIELD && connLen <= MAX_FIELD)
+                {
+                    const size_t need = 24ull + accLen + nameLen + connLen;
+                    if (AccumulatorBuffer.size() >= need)
+                    {
+                        // ★ 프리픽스가 없으므로, 0부터 need까지가 완전한 payload (첫 4바이트가 mid)
+                        std::vector<uint8_t> Payload(
+                            AccumulatorBuffer.begin(),
+                            AccumulatorBuffer.begin() + need
+                        );
+
+                        if (auto GI = GameInstanceWeak.Get())
                         {
-                            // 게임 스레드에서만 멤버 호출
-                            GI->EnqueueMessage(MoveTemp(Data));
+                            AsyncTask(ENamedThreads::GameThread, [GI, Data = MoveTemp(Payload)]() mutable {
+                                GI->EnqueueMessage(MoveTemp(Data)); // mid부터
+                                });
                         }
-                    });
+
+                        AccumulatorBuffer.erase(AccumulatorBuffer.begin(),
+                            AccumulatorBuffer.begin() + need);
+                        processed = true;
+                    }
+                }
             }
 
-            // 소비한 영역만 제거 (clear 대신 erase)
-			AccumulatorBuffer.clear();
-            // AccumulatorBuffer.erase(AccumulatorBuffer.begin(),
-            //     AccumulatorBuffer.begin() + totalLen);
+            // 둘 다 아니면 데이터가 더 필요함
+            if (!processed) break;
         }
     }
     else if (!bReceived)

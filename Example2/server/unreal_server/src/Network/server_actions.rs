@@ -34,16 +34,10 @@ impl Server {
                     "".to_string()
                 );
 
-                // let send_msg = allow_connect_message.serialize();
-                // let req_enter_message = MessageToSend::Single(*token, send_msg);
+                let send_msg = allow_connect_message.serialize();
+                let req_enter_message = MessageToSend::Single(*token, send_msg);
 
-                let payload = allow_connect_message.serialize();
-                let mut framed = Vec::with_capacity(4 + payload.len());
-                framed.extend(&(payload.len() as u32).to_le_bytes()); // 4바이트 길이 프리픽스
-                framed.extend(&payload);
-                // self.send_tcp_message(MessageToSend::Single(*token, framed))?;
-
-                if let Err(_) = self.send_tcp_message(MessageToSend::Single(*token, framed)) {
+                if let Err(_) = self.send_tcp_message(req_enter_message) {
                     eprintln!("Failed to send message to client with token: {:?}", token);
                     waiting_queue.remove(*token);
                 }
@@ -91,6 +85,6 @@ impl Server {
         // add game player to game character manager
         self.game_character_manager.lock().unwrap().new_character(new_player);
 
-
+        
     }
 }
