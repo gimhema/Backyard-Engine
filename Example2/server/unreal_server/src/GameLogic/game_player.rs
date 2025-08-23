@@ -152,6 +152,7 @@ impl VECharacterManager
         let _char_arc = Arc::new(Mutex::new(_new_char));
 
 //        self.player_container_vec.push(Arc::clone(&_char_arc));
+        println!("Created Player ! ! !");
     }
 
     pub fn delete_characeter(&mut self, _target_id: i64) {

@@ -84,5 +84,7 @@ impl Server {
 
         // add game player to game character manager
         self.game_character_manager.lock().unwrap().new_character(new_player);
+
+        
     }
 }
