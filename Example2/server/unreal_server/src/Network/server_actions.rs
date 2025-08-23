@@ -59,29 +59,36 @@ impl Server {
 
         // 대기열 큐에서 제거해야함
 
+        println!("Step 1");
         let waiting_queue = self.player_waiting_queue.lock().unwrap();
         
         // token is pid
-
+        println!("Step 2");
         let target_token = Token(_pid as usize);
         let _pid_token = target_token.clone();
         waiting_queue.remove(target_token);
         
         // Create a new player character
         let mut new_player = VECharcater::new_zero();
-        
+        println!("Step 3");
         // setting network config
         new_player.player_network_config.set_sessionid(0 as i64);
         new_player.player_network_config.set_net_token(_pid_token);
         new_player.player_network_config.set_net_status(GameNetStatus::CONNECTED);
 
+        println!("Step 4");
+
         // setting personal info
         new_player.set_player_name(_player_name.clone());
+        println!("Step 4.1");
         new_player.set_player_pid(_pid as i64);
+        println!("Step 4.2");
         new_player.set_player_ip_addr(_conn_info);
-        new_player.init();
+        println!("Step 4.3");
+        // new_player.init();
+        println!("Step 4.4");
 
-
+        println!("Step 5");
         // add game player to game character manager
         self.game_character_manager.lock().unwrap().new_character(new_player);
 

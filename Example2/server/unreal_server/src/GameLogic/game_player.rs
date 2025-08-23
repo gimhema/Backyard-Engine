@@ -90,6 +90,7 @@ impl VEPlayerNetWorkStatus
 #[derive(Debug, Clone)]
 pub struct VECharcater
 {
+    pub pid : i64,
     pub player_network_config : VEPlayerNetWorkStatus,
     pub player_personal_info : VEPlayerPersonalInfo,
     pub player_status : ActorStatus,
@@ -100,6 +101,7 @@ pub struct VECharcater
 impl VECharcater {
     pub fn new_zero() -> Self {
         return VECharcater { 
+            pid : 0,
             player_network_config: VEPlayerNetWorkStatus::new_zero(),
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
             player_status : ActorStatus::new_zero(),
@@ -113,11 +115,13 @@ impl VECharcater {
     }
 
     pub fn set_player_pid(&mut self, _id : i64) {
-        self.set_player_pid(_id);
+        // self.set_player_pid(_id);
+        self.pid = _id;
     }
 
     pub fn set_player_ip_addr(&mut self, _addr : String) {
-        self.set_player_ip_addr(_addr);
+        
+        // self.set_player_ip_addr(_addr);
     }
 
     pub fn init(&mut self) {
