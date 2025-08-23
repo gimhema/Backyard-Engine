@@ -4,6 +4,7 @@
 #include "VoidEscapeCharacter.h"
 #include "VoidEscapeGameInstance.h"
 #include "QSM/QSM_BaseMessage.h"
+#include "QSM/QSM_AllowConnectGame.hpp"
 #include "UObject/ConstructorHelpers.h"
 
 AVoidEscapeGameMode::AVoidEscapeGameMode()
@@ -32,29 +33,44 @@ void AVoidEscapeGameMode::Tick(float DeltaSeconds)
 
 	std::vector<uint8_t> Msg;
 
-	while (GI->TryDequeue(Msg)) // 소비자는 오직 여기 한 곳
-	{
-		// PrintOnScreenMessage("Message Parse . . .", 3.0f, FColor::Red);
-		BaseMessage BaseMsg = BaseMessage::deserialize(Msg);
+    while (GI->TryDequeue(Msg))
+    {
+        PrintOnScreenMessage("STEP 1", 1.0f, FColor::Blue);
+        BaseMessage BaseMsg = BaseMessage::deserialize(Msg);
+        EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
 
-		EServerMessageType MessageType = static_cast<EServerMessageType>(BaseMsg.id);
+        switch (MessageType)
+        {
+        case EServerMessageType::ALLOW_CONNECT_GAME:
+        {
+            PrintOnScreenMessage("STEP 2", 1.0f, FColor::Blue);
+            AllowConnectGame recvMessage = AllowConnectGame::deserialize(Msg);
 
-		switch (MessageType)
-		{
-			// Game Instance Actions
-		case EServerMessageType::ALLOW_CONNECT_GAME: // Example case for a specific message type
-			// Handle the message accordingly
-			PrintOnScreenMessage("Received ALLOW_CONNECT_GAME message", 3.0f, FColor::Red);
+            // (선택 권장) 실패 프레임 또는 부분 패킷일 때 응답을 피하기 위한 1줄 가드
+            if (recvMessage.mid != static_cast<uint32_t>(EServerMessageType::ALLOW_CONNECT_GAME)) {
+                PrintOnScreenMessage("ALLOW_CONNECT_GAME EXCPETION", 1.0f, FColor::Blue);
+                break;
+            }
 
+            AllowConnectGame resp;
+            resp.mid = static_cast<uint32_t>(EServerMessageType::ALLOW_CONNECT_GAME);
+            resp.sessionId = recvMessage.sessionId;
+            resp.pid = recvMessage.pid;
+            resp.accountId = "TEST_CONNECTED_PLAYER";
+            resp.name = "TEST_CONNECTED_PLAYER_NAME";
+            resp.connect_info = "127.0.0.1";
+            GI->SendMessageBinary(resp.serialize());
+        }
+        break;
 
-			// PushMessageToQueue(Message);
-
-			break;
-		default:
-			// Handle unknown message type or default case
-			break;
-		}
-	}
+        default:
+            {
+                PrintOnScreenMessage("UNSUPPORTED MESSAGE", 1.0f, FColor::Blue);
+				PrintOnScreenMessage(FString::Printf(TEXT("Message Type: %d"), static_cast<int32_t>(MessageType)), 1.0f, FColor::Red);
+            }
+            break;
+        }
+    }
 }
 
 void AVoidEscapeGameMode::PrintOnScreenMessage(const FString& Message, float Duration, FColor TextColor)
