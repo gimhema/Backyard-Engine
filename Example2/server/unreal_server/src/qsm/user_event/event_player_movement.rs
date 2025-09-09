@@ -1,5 +1,5 @@
 // use crate::get_udp_server_instance;
-use crate::qsm::user_message::message_movement::{self, PlayerMovement};
+use crate::qsm::{qsm::GLOBAL_MESSAGE_UDP_QUEUE, user_message::message_movement::{self, PlayerMovement}};
 
 use super::GameLogic::game_logic_main::*;
 
@@ -15,15 +15,10 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
             let pitch = movement_message.pitch;
             let yaw = movement_message.yaw;
 
-            println!("sender : {}", sender);
-            println!("location x : {}, y : {}, z : {}",
-             loc_x, loc_y, loc_z);
-            println!("euler rotation roll : {}, pitch : {}, yaw : {}",
-             roll, pitch, yaw);
 
-            // push_command_to_game_logic(Command::Move { entity_id: sender, loc_x: loc_x, loc_y: loc_y, loc_z : loc_z, roll : roll, pitch : pitch, yaw : yaw });
-             
-//            get_udp_server_instance().write().unwrap().send_message_to_all_conn(buffer);
+
+
+
         }
         Err(e) => {
             eprintln!("Failed to deserialize MovementMessage: {}", e);
