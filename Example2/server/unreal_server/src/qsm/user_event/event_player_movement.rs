@@ -16,7 +16,9 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
             let yaw = movement_message.yaw;
 
 
-
+            G_GAME_LOGIC.lock().unwrap().push_command(
+                Command::Move { entity_id: sender, loc_x, loc_y, loc_z, q_x: roll, q_y: pitch, q_z: yaw, q_w: 0.0 }
+            );
 
 
         }
