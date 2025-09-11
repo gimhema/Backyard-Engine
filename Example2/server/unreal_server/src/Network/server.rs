@@ -95,43 +95,65 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
 
     // --- 서버 시작 및 이벤트 루프 ---
 pub fn start(&mut self) -> io::Result<()> {
+
+        self.game_logic.lock().unwrap().world_create();
+        // Craete Game Logic Thread
+        let game_logic_thread = {
+            let game_logic = Arc::clone(&self.game_logic);
+            thread::spawn(move || {
+                let tick_duration = Duration::from_millis(50); // 20 ticks per second
+                let mut last_tick = Instant::now();
+                loop {
+                    let now = Instant::now();
+                    if now.duration_since(last_tick) >= tick_duration {
+                        // Process game logic here
+                        game_logic.lock().unwrap().process_commands();
+                        last_tick = now;
+                    } else {
+                        // Sleep for a short duration to avoid busy-waiting
+                        thread::sleep(Duration::from_millis(1));
+                    }
+                }
+            })
+        };
+
         let mut events = Events::with_capacity(1024);
 
         println!("Server started. Listening on TCP {} and UDP {}",
                  self.tcp_listener.local_addr().unwrap(),
                  self.udp_socket.local_addr().unwrap());
 
-    let udp_queue = self.udp_message_tx_queue.clone();
-    let udp_socket = self.udp_socket.clone();
+        let udp_queue = self.udp_message_tx_queue.clone();
+        let udp_socket = self.udp_socket.clone();
 
-thread::spawn(move || {
-    const BATCH: usize = 256;
-    loop {
-        let mut n_sent = 0;
-        for _ in 0..BATCH {
-            match udp_queue.pop() {
-                Some((addr, data)) => {
-                    match udp_socket.send_to(&data, addr) {
-                        Ok(_) => { n_sent += 1; }
-                        Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                            std::thread::yield_now();
-                            break;
-                        }
-                        Err(e) => {
-                            eprintln!("[UDP Thread] send_to error {} -> {}", addr, e);
+            thread::spawn(move || {
+                const BATCH: usize = 256;
+                loop {
+                    let mut n_sent = 0;
+                    for _ in 0..BATCH {
+                        match udp_queue.pop() {
+                            Some((addr, data)) => {
+                                match udp_socket.send_to(&data, addr) {
+                                    Ok(_) => { n_sent += 1; }
+                                    Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                                        std::thread::yield_now();
+                                        break;
+                                    }
+                                    Err(e) => {
+                                        eprintln!("[UDP Thread] send_to error {} -> {}", addr, e);
+                                    }
+                                }
+                            }
+                            None => break,
                         }
                     }
-                }
-                None => break,
-            }
-        }
 
-        if n_sent == 0 {
-            // 큐가 비었으면 살짝 쉼 (busy-spin 방지)
-            std::thread::sleep(Duration::from_micros(200));
-        }
-    }
-});
+                    if n_sent == 0 {
+                        // 큐가 비었으면 살짝 쉼 (busy-spin 방지)
+                        std::thread::sleep(Duration::from_micros(200));
+                    }
+                }
+            });
 
 
 
@@ -265,6 +287,8 @@ thread::spawn(move || {
                 }
             }
         }
+
+        game_logic_thread.join().unwrap();
     }
 
 
