@@ -7,13 +7,13 @@ use super::game_logic_action::*;
 
 use std::collections::{HashMap};
 
-lazy_static! {
-    pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
-}
+// lazy_static! {
+//     pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
+// }
 
-pub fn push_command_to_game_logic(command : Command) {
-    G_GAME_LOGIC.lock().unwrap().push_command(command);
-}
+// pub fn push_command_to_game_logic(command : Command) {
+//     G_GAME_LOGIC.lock().unwrap().push_command(command);
+// }
 
 #[derive(Debug)]
 pub enum Command {
