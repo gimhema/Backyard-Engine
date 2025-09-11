@@ -101,17 +101,35 @@ pub fn start(&mut self) -> io::Result<()> {
     let udp_queue = self.udp_message_tx_queue.clone();
     let udp_socket = self.udp_socket.clone();
 
-    thread::spawn(move || {
-        loop {
-            while let Some((target_addr, data)) = udp_queue.pop() {
-                match udp_socket.send_to(&data, target_addr) {
-                    Ok(n) => println!("[UDP Thread] Sent {} bytes to {}", n, target_addr),
-                    Err(e) => eprintln!("[UDP Thread] Error sending to {}: {}", target_addr, e),
+thread::spawn(move || {
+    const BATCH: usize = 256;
+    loop {
+        let mut n_sent = 0;
+        for _ in 0..BATCH {
+            match udp_queue.pop() {
+                Some((addr, data)) => {
+                    match udp_socket.send_to(&data, addr) {
+                        Ok(_) => { n_sent += 1; }
+                        Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                            std::thread::yield_now();
+                            break;
+                        }
+                        Err(e) => {
+                            eprintln!("[UDP Thread] send_to error {} -> {}", addr, e);
+                        }
+                    }
                 }
+                None => break,
             }
-            thread::sleep(Duration::from_millis(1));
         }
-    });
+
+        if n_sent == 0 {
+            // 큐가 비었으면 살짝 쉼 (busy-spin 방지)
+            std::thread::sleep(Duration::from_micros(200));
+        }
+    }
+});
+
 
 
         loop {

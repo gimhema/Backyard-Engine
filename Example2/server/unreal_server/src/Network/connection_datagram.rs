@@ -38,8 +38,6 @@ impl Server {
         }
     }
 
-    // --- 연결된 모든 UDP 클라이언트에게 브로드캐스트(큐 푸시만) ---
-    // 외부에서도 &self 로 안전하게 호출 가능하며, 실제 송신은 process_outgoing_udp_messages 가 담당
     pub fn broadcast_udp_message(&self, data: Vec<u8>) -> Result<usize, ()> {
         let mut pushed = 0usize;
 
