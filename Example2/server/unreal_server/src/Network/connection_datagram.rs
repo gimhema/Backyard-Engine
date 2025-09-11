@@ -12,21 +12,6 @@ use std::net::SocketAddr;
 use crate::Event::event_handler::EventHeader;
 
 impl Server {
-    // --- 서버 내부 UDP 메시지 큐 처리 및 실제 전송 수행 (기존 그대로) ---
-    pub fn process_outgoing_udp_messages(&mut self) -> io::Result<()> {
-        while let Some((target_addr, data)) = self.udp_message_tx_queue.pop() {
-            match self.udp_socket.send_to(&data, target_addr) {
-                Ok(n) => {
-                    println!("Sent {} bytes UDP message to {} from queue.", n, target_addr);
-                }
-                Err(e) => {
-                    eprintln!("Error sending UDP message to {} from queue: {}", target_addr, e);
-                    // 개별 전송 실패는 루프를 계속 진행
-                }
-            }
-        }
-        Ok(())
-    }
 
     // --- 단일 UDP 메시지 송신(큐 푸시) ---
     pub fn send_udp_message(&self, target_addr: SocketAddr, data: Vec<u8>) -> Result<(), ()> {
