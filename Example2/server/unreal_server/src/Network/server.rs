@@ -10,6 +10,7 @@ use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::GameLogic::game_player::VECharacterManager;
+use crate::GameLogic::game_logic_main::GameLogicMain;
 use super::qsm::user_message::message_allow_connect::*;
 
 use super::connection::*;
@@ -46,6 +47,7 @@ pub struct Server {
     pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 
     // Game Play Logic
+    pub game_logic : Arc<Mutex<GameLogicMain>>,
     pub game_character_manager: Arc<Mutex<VECharacterManager>>,
     pub player_waiting_queue: Arc<Mutex<WaitingQueue>>, // 플레이어 대기열
 }
@@ -85,6 +87,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             ping_interval: Duration::from_secs(5),
             game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
             player_waiting_queue: Arc::new(Mutex::new(WaitingQueue::new())),
+            game_logic: Arc::new(Mutex::new(GameLogicMain::new())),
         };
 
         Ok(server)
