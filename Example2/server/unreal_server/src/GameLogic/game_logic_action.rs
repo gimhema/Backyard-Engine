@@ -53,7 +53,7 @@ pub fn do_command_move(&mut self, _command : Command) {
         };
         let serialized_message = udp_message.serialize();
 
-
+        self.broadcast_msg_udp_all(serialized_message);
         // for loop in self.game_world.entities
 
     }

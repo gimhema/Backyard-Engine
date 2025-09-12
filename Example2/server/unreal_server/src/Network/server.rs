@@ -226,7 +226,12 @@ pub fn start(&mut self) -> io::Result<()> {
                         match self.udp_socket.recv_from(&mut buf) {
                             Ok((len, addr)) => {
                                 println!("Received UDP message from {}: {:?}", addr, &buf[..len]);
-                                // 수신된 UDP 메시지 처
+
+                                if !self.is_known_udp_addr(addr) {
+                                    self.try_bind_udp_by_ip(addr);
+                                }
+
+
                                 self.udp_recv_action(&buf, len);
                             }
                             Err(e) => {
@@ -342,6 +347,43 @@ pub fn start(&mut self) -> io::Result<()> {
         if let Some(i) = w.iter().position(|x| x == addr) {
             w.swap_remove(i);
         }
+    }
+
+    /// 토큰에 UDP 주소를 바인딩하고 레지스트리를 갱신
+    pub fn register_udp_for_token(&mut self, token: Token, addr: SocketAddr) {
+        if let Some(client) = self.clients.get_mut(&token) {
+            // 이전 주소가 있으면 레지스트리에서 제거
+            if let Some(prev) = client.udp_addr.replace(addr) {
+                if prev != addr {
+                    self.remove_udp_target(&prev);
+                }
+            }
+            self.add_udp_target(addr);
+            // 필요하다면 로그
+            // println!("[UDP] token {:?} -> {}", token, addr);
+        } else {
+            eprintln!("[UDP] register for unknown token {:?}", token);
+        }
+    }
+
+    /// (옵션) 동일 IP 하나만 매칭될 때 자동 바인딩
+    fn try_bind_udp_by_ip(&mut self, addr: SocketAddr) {
+        let ip = addr.ip();
+        let mut candidates: Vec<Token> = self.clients
+            .iter()
+            .filter(|(_, c)| c.udp_addr.is_none() && c.addr.ip() == ip)
+            .map(|(t, _)| *t)
+            .collect();
+
+        if candidates.len() == 1 {
+            let token = candidates[0];
+            self.register_udp_for_token(token, addr);
+        }
+    }
+
+    #[inline]
+    fn is_known_udp_addr(&self, addr: SocketAddr) -> bool {
+        self.udp_targets_registry.read().unwrap().contains(&addr)
     }
 
 }
