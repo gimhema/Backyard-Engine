@@ -44,6 +44,7 @@ pub struct Server {
     pub tcp_message_tx_queue: SharedTcpMessageQueue,
     pub udp_message_tx_queue: SharedUdpMessageQueue,
     pub udp_targets_registry: Arc<RwLock<Vec<SocketAddr>>>,
+    pub udp_token_registry: Arc<RwLock<HashMap<Token, SocketAddr>>>,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
@@ -86,6 +87,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             tcp_message_tx_queue: tcp_queue_for_server,
             udp_message_tx_queue: udp_queue_for_server, // 새 큐 할당
             udp_targets_registry: Arc::new(RwLock::new(Vec::new())),
+            udp_token_registry: Arc::new(RwLock::new(HashMap::new())),
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
@@ -104,16 +106,18 @@ pub fn start(&mut self) -> io::Result<()> {
             let mut gl = self.game_logic.lock().unwrap();
             gl.world_create();
 
-            // ✅ 레지스트리를 캡처하는 클로저 (Send + Sync + 'static OK)
             let targets_registry = self.udp_targets_registry.clone();
-            let targets_fn = Arc::new(move || -> Vec<std::net::SocketAddr> {
-                // 스냅샷 반환
-                targets_registry.read().unwrap().clone()
+            let targets_fn = Arc::new(move || targets_registry.read().unwrap().clone());
+
+            let token_reg = self.udp_token_registry.clone();
+            let resolve_by_token = Arc::new(move |t: Token| -> Option<SocketAddr> {
+                token_reg.read().unwrap().get(&t).cloned()
             });
 
-            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn);
+            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn, resolve_by_token);
             gl.set_net_sender(Arc::new(udp_tx));
         }
+
 
 
         let game_logic_thread = {
@@ -286,6 +290,11 @@ pub fn start(&mut self) -> io::Result<()> {
                 match action {
                     ClientAction::Disconnect => {
                         if let Some(mut removed_client) = self.clients.remove(&token) {
+                            if let Some(addr) = removed_client.udp_addr.take() {
+                                self.remove_udp_target(&addr);
+                            }
+                            self.remove_token_addr(&token); 
+
                             if let Err(e) = self.poll.registry().deregister(&mut removed_client.stream) {
                                 eprintln!("Error deregistering stream for client {:?}: {}", token, e);
                             }
@@ -352,17 +361,11 @@ pub fn start(&mut self) -> io::Result<()> {
     /// 토큰에 UDP 주소를 바인딩하고 레지스트리를 갱신
     pub fn register_udp_for_token(&mut self, token: Token, addr: SocketAddr) {
         if let Some(client) = self.clients.get_mut(&token) {
-            // 이전 주소가 있으면 레지스트리에서 제거
             if let Some(prev) = client.udp_addr.replace(addr) {
-                if prev != addr {
-                    self.remove_udp_target(&prev);
-                }
+                if prev != addr { self.remove_udp_target(&prev); }
             }
             self.add_udp_target(addr);
-            // 필요하다면 로그
-            // println!("[UDP] token {:?} -> {}", token, addr);
-        } else {
-            eprintln!("[UDP] register for unknown token {:?}", token);
+            self.upsert_token_addr(token, addr);
         }
     }
 
@@ -384,6 +387,16 @@ pub fn start(&mut self) -> io::Result<()> {
     #[inline]
     fn is_known_udp_addr(&self, addr: SocketAddr) -> bool {
         self.udp_targets_registry.read().unwrap().contains(&addr)
+    }
+
+    #[inline]
+    fn upsert_token_addr(&self, token: Token, addr: SocketAddr) {
+        self.udp_token_registry.write().unwrap().insert(token, addr);
+    }
+
+    #[inline]
+    fn remove_token_addr(&self, token: &Token) {
+        self.udp_token_registry.write().unwrap().remove(token);
     }
 
 }
