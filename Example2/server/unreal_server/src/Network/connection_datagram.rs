@@ -13,35 +13,6 @@ use crate::Event::event_handler::EventHeader;
 
 impl Server {
 
-    // --- 단일 UDP 메시지 송신(큐 푸시) ---
-    // pub fn send_udp_message(&self, target_addr: SocketAddr, data: Vec<u8>) -> Result<(), ()> {
-    //     if let Err(e) = self.udp_message_tx_queue.push((target_addr, data)) {
-    //         eprintln!("Failed to push UDP message to queue: {:?}", e);
-    //         Err(())
-    //     } else {
-    //         Ok(())
-    //     }
-    // }
-
-    // pub fn broadcast_udp_message(&self, data: Vec<u8>) -> Result<usize, ()> {
-    //     let mut pushed = 0usize;
-// 
-    //     // 현재 시점의 UDP 타겟 스냅샷을 만들어 큐에 푸시
-    //     for (_token, client) in self.clients.iter() {
-    //         if let Some(addr) = client.udp_addr {
-    //             // 각 대상별로 payload 복제
-    //             let payload = data.clone();
-    //             if let Err(e) = self.udp_message_tx_queue.push((addr, payload)) {
-    //                 eprintln!("Failed to push UDP broadcast item to {}: {:?}", addr, e);
-    //             } else {
-    //                 pushed += 1;
-    //             }
-    //         }
-    //     }
-// 
-    //     Ok(pushed)
-    // }
-
     // --- (옵션) 브로드캐스트 대상 주소만 먼저 뽑아 쓰고 싶을 때 사용할 헬퍼 ---
     pub fn collect_udp_targets(&self) -> Vec<SocketAddr> {
         self.clients
