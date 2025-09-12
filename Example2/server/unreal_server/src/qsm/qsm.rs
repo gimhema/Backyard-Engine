@@ -20,8 +20,9 @@ use crossbeam_queue::ArrayQueue;
 use std::net::SocketAddr;
 lazy_static! {
     pub static ref GLOBAL_MESSAGE_TX_QUEUE: Arc<ArrayQueue<MessageToSend>> = Arc::new(ArrayQueue::new(1024));
-    pub static ref GLOBAL_MESSAGE_UDP_QUEUE: Arc<ArrayQueue<(SocketAddr, Vec<u8>)>> = Arc::new(ArrayQueue::new(1024));
+    pub static ref GLOBAL_MESSAGE_UDP_QUEUE: Arc<ArrayQueue<(SocketAddr, Arc<[u8]>)>> = Arc::new(ArrayQueue::new(1024));
 }
+// pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Arc<[u8]>)>>;
 
 #[repr(packed)]
 pub struct BaseMessage {

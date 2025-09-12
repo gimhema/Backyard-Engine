@@ -26,7 +26,8 @@ const CLIENT_TOKEN_START: Token = Token(2); // 클라이언트 토큰은 2부터
 
 // --- 메시지를 전송할 Lock-Free 큐 타입 정의 ---
 pub type SharedTcpMessageQueue = Arc<ArrayQueue<MessageToSend>>;
-pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Vec<u8>)>>; // (대상 주소, 데이터) 튜플 저장
+pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Arc<[u8]>)>>;
+ // (대상 주소, 데이터) 튜플 저장
 
 
 
