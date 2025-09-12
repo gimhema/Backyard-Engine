@@ -53,17 +53,17 @@ impl GameLogicMain {
         self.command_queue.push(cmd);
     }
 
-    pub fn process_commands(&self) {
+    pub fn process_commands(&mut self) {
         while let Some(cmd) = self.command_queue.pop() {
             match cmd {
                 Command::Create { entity_id } => {
-                    do_command_create(cmd);
+                    self.do_command_create(cmd);
                 }
                 Command::Delete { entity_id } => {
-                    do_command_delete(cmd);
+                    self.do_command_delete(cmd);
                 }
                 Command::Move { entity_id, loc_x, loc_y, loc_z,q_x, q_y,q_z, q_w } => {
-                    do_command_move(cmd);
+                    self.do_command_move(cmd);
                 }
                 Command::Shoot { entity_id } => {
                     println!("Entity {} shoots!", entity_id);

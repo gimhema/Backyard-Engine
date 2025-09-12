@@ -4,7 +4,9 @@ use super::{game_geometry::{Position, Rotation, Transform}, game_logic_main::*};
 use super::qsm::user_message::message_movement;
 
 
-pub fn do_command_create(_command: Command) {
+impl GameLogicMain {
+
+    pub fn do_command_create(&mut self, _command: Command) {
     if let Command::Create { entity_id } = _command {
         println!("Create entity {}", entity_id);
 
@@ -15,7 +17,7 @@ pub fn do_command_create(_command: Command) {
     }
 }
 
-pub fn do_command_delete(_command: Command) {
+pub fn do_command_delete(&mut self, _command: Command) {
     if let Command::Create { entity_id } = _command {
         println!("Create entity {}", entity_id);
 
@@ -26,7 +28,7 @@ pub fn do_command_delete(_command: Command) {
     }
 }
 
-pub fn do_command_move(_command : Command) {
+pub fn do_command_move(&mut self, _command : Command) {
     if let Command::Move { entity_id, loc_x, loc_y, loc_z, q_x, q_y, q_z, q_w } = _command {
 
         // let mut game_logic = G_GAME_LOGIC.lock().unwrap();
@@ -54,3 +56,7 @@ pub fn do_command_move(_command : Command) {
 
     }
 }
+
+
+}
+
