@@ -99,6 +99,8 @@ impl GameLogicMain {
         }
     }
 
+    // When use, just call like this:
+    // self.send_msg_udp_to_entity(entity_id, payload_vec);
     pub fn send_msg_udp_to_entity(&self, entity_id: u32, payload: Vec<u8>) -> bool {
         if let Some(tx) = &self.net_tx {
             // ⚠️ 전제: entity_id == Token.0 (usize) 매핑
