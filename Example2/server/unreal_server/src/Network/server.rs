@@ -19,6 +19,8 @@ use crate::Core::core::*;
 use std::thread;
 use std::time::{Instant};
 
+use crate::Network::net_tx::{UdpTx, NetSender};
+
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
 const SERVER_UDP_TOKEN: Token = Token(1);
@@ -96,22 +98,25 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
     // --- 서버 시작 및 이벤트 루프 ---
 pub fn start(&mut self) -> io::Result<()> {
 
-        self.game_logic.lock().unwrap().world_create();
-        // Craete Game Logic Thread
+        {
+            let mut gl = self.game_logic.lock().unwrap();
+            gl.world_create();
+            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone());
+            gl.set_net_sender(Arc::new(udp_tx));
+        }
+
         let game_logic_thread = {
             let game_logic = Arc::clone(&self.game_logic);
-            thread::spawn(move || {
-                let tick_duration = Duration::from_millis(50); // 20 ticks per second
+            std::thread::spawn(move || {
+                let tick_duration = Duration::from_millis(50);
                 let mut last_tick = Instant::now();
                 loop {
                     let now = Instant::now();
                     if now.duration_since(last_tick) >= tick_duration {
-                        // Process game logic here
                         game_logic.lock().unwrap().process_commands();
                         last_tick = now;
                     } else {
-                        // Sleep for a short duration to avoid busy-waiting
-                        thread::sleep(Duration::from_millis(1));
+                        std::thread::sleep(Duration::from_millis(1));
                     }
                 }
             })
