@@ -7,13 +7,6 @@ use super::game_logic_action::*;
 
 use std::collections::{HashMap};
 
-// lazy_static! {
-//     pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
-// }
-
-// pub fn push_command_to_game_logic(command : Command) {
-//     G_GAME_LOGIC.lock().unwrap().push_command(command);
-// }
 
 #[derive(Debug)]
 pub enum Command {
@@ -33,7 +26,6 @@ impl GameLogicMain {
     pub fn new() -> Self {
         GameLogicMain {
             game_world : World::new(),
-//            world_container : HashMap::new(),
             command_queue: Arc::new(SegQueue::new()),
         }
     }
@@ -69,23 +61,4 @@ impl GameLogicMain {
             }
         }
     }
-
-    // let mut game_logic = G_GAME_LOGIC.lock().unwrap();
-
-    // if let Some(world) = game_logic.get_world(0) {
-    //     if let Some(pos) = world.get_position(42) {
-    //         println!("Entity 42 position: {:?}", pos);
-    //     }
-    // }
-    // pub fn get_world(&self, world_id: i64) -> Option<&World> {
-    //     self.world_container.get(&world_id)
-    // }
-
-
-    // if let Some(world) = game_logic.get_world_mut(0) {
-    //     world.create_entity_with_components(None, 42);
-    // }
-    // pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
-    //     self.world_container.get_mut(&world_id)
-    // }
 }
