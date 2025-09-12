@@ -21,10 +21,10 @@ pub enum WorldType
 // ==== ECS World ====
 
 pub struct World {
-    world_type : WorldType,
-    world_id : WorldId,
-    entities: HashSet<EntityId>,
-    transforms: HashMap<EntityId, Transform>,
+    pub world_type : WorldType,
+    pub world_id : WorldId,
+    pub entities: HashSet<EntityId>,
+    pub transforms: HashMap<EntityId, Transform>,
 }
 
 impl World {

@@ -2,6 +2,7 @@ use crate::Event::event_handler::EventHeader;
 
 use super::{game_geometry::{Position, Rotation, Transform}, game_logic_main::*};
 use super::qsm::user_message::message_movement;
+use super::game_ecs::*;
 
 
 impl GameLogicMain {
@@ -40,19 +41,20 @@ pub fn do_command_move(&mut self, _command : Command) {
         // game_logic.game_world.update_movement(entity_id, update_mov);
 
         // // Broadcast to all clients
-        // let udp_message = message_movement::PlayerMovement {
-        //     mid : EventHeader::PLAYER_MOVEMENT_UPDATE as u32,
-        //     id: entity_id,
-        //     x: loc_x,
-        //     y: loc_y,
-        //     z: loc_z,
-        //     roll: q_x,
-        //     pitch: q_y,
-        //     yaw: q_z,
-        // };
-        // let serialized_message = udp_message.serialize();
+        let udp_message = message_movement::PlayerMovement {
+            mid : EventHeader::PLAYER_MOVEMENT_UPDATE as u32,
+            id: entity_id,
+            x: loc_x,
+            y: loc_y,
+            z: loc_z,
+            roll: q_x,
+            pitch: q_y,
+            yaw: q_z,
+        };
+        let serialized_message = udp_message.serialize();
 
-        
+
+        // for loop in self.game_world.entities
 
     }
 }

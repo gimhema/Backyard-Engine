@@ -3,15 +3,13 @@ use mio::net::{TcpListener, TcpStream, UdpSocket};
 use std::collections::HashMap;
 use std::io::{self, Read, Write};
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
-use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::GameLogic::game_player::VECharacterManager;
 use crate::GameLogic::game_logic_main::GameLogicMain;
-use super::qsm::user_message::message_allow_connect::*;
 
 use super::connection::*;
 use super::server_common::*;
@@ -19,7 +17,7 @@ use crate::Core::core::*;
 use std::thread;
 use std::time::{Instant};
 
-use crate::Network::net_tx::{UdpTx, NetSender};
+use crate::Network::net_tx::{UdpTx};
 
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
@@ -35,6 +33,7 @@ pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Vec<u8>)>>; // (대
 
 // --- 서버 구조체 ---
 pub struct Server {
+    // NetWork
     pub server_mode: ServerMode,
     pub poll: Poll,
     pub tcp_listener: TcpListener,
@@ -43,6 +42,7 @@ pub struct Server {
     pub next_client_token: Token,
     pub tcp_message_tx_queue: SharedTcpMessageQueue,
     pub udp_message_tx_queue: SharedUdpMessageQueue,
+    pub udp_targets_registry: Arc<RwLock<Vec<SocketAddr>>>,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
@@ -84,6 +84,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             next_client_token: CLIENT_TOKEN_START,
             tcp_message_tx_queue: tcp_queue_for_server,
             udp_message_tx_queue: udp_queue_for_server, // 새 큐 할당
+            udp_targets_registry: Arc::new(RwLock::new(Vec::new())),
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
@@ -101,9 +102,18 @@ pub fn start(&mut self) -> io::Result<()> {
         {
             let mut gl = self.game_logic.lock().unwrap();
             gl.world_create();
-            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone());
+
+            // ✅ 레지스트리를 캡처하는 클로저 (Send + Sync + 'static OK)
+            let targets_registry = self.udp_targets_registry.clone();
+            let targets_fn = Arc::new(move || -> Vec<std::net::SocketAddr> {
+                // 스냅샷 반환
+                targets_registry.read().unwrap().clone()
+            });
+
+            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn);
             gl.set_net_sender(Arc::new(udp_tx));
         }
+
 
         let game_logic_thread = {
             let game_logic = Arc::clone(&self.game_logic);
@@ -318,6 +328,21 @@ pub fn start(&mut self) -> io::Result<()> {
             println!("Client {:?} removed from group '{}'", token, group_name);
         }
     }
+
+    fn add_udp_target(&self, addr: SocketAddr) {
+        let mut w = self.udp_targets_registry.write().unwrap();
+        if !w.contains(&addr) {
+            w.push(addr);
+        }
+    }
+
+    fn remove_udp_target(&self, addr: &SocketAddr) {
+        let mut w = self.udp_targets_registry.write().unwrap();
+        if let Some(i) = w.iter().position(|x| x == addr) {
+            w.swap_remove(i);
+        }
+    }
+
 }
 
 // ClientConnection의 이벤트 핸들러는 이제 'Server' 인스턴스와 완전히 독립적입니다.

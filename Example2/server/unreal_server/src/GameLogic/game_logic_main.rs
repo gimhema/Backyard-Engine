@@ -88,4 +88,13 @@ impl GameLogicMain {
             eprintln!("[GameLogic] NetSender not set; cannot send UDP");
         }
     }
+
+    pub fn broadcast_msg_udp_all(&self, data: Vec<u8>) -> usize {
+        if let Some(tx) = &self.net_tx {
+            tx.broadcast_udp_all(data)
+        } else {
+            eprintln!("[GameLogic] NetSender not set; cannot broadcast UDP");
+            0
+        }
+    }
 }
