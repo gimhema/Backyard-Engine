@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use crate::Event::event_handler::EventHeader;
-// use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
+use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 // use crate::GameLogic::game_player::VECharacterManager;
 // use crate::GameLogic::game_logic_main::GameLogicMain;
 
@@ -200,7 +200,7 @@ pub fn start(&mut self) -> io::Result<()> {
                                     self.poll.registry().register(&mut stream, token, Interest::READABLE | Interest::WRITABLE)?;
 
                                     println!("Create new player conn info : {:?}", token.clone());
-                                    self.player_waiting_queue.lock().unwrap().push(token.clone());
+                                    // self.player_waiting_queue.lock().unwrap().push(token.clone());
 
                                     self.clients.insert(token, ClientConnection {
                                         stream,
@@ -318,7 +318,7 @@ pub fn start(&mut self) -> io::Result<()> {
             }
         }
 
-        game_logic_thread.join().unwrap();
+        // game_logic_thread.join().unwrap();
     }
 
 
