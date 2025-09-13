@@ -1,136 +1,115 @@
+// For TCP
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 use mio::net::TcpStream;
 use mio::Token;
 use std::io::{self, Read, Write};
+use std::net::IpAddr; // SocketAddr 대신 IpAddr만 사용하는 경우
+use std::sync::{RwLock, Arc, RwLockReadGuard};
+use std::net::SocketAddr;
+use std::sync::{Mutex};
+use mio::Interest;
+use crate::Network::server::*;
+use crate::Event::event_handler::EventHeader;
 
-pub trait connection_handle {
-    fn new() -> Self;
-    fn get_id_set_clone(&mut self) -> HashSet<i64>;
-    fn del_connection(&mut self, token : Token);
-    fn get_current_id_sum(&mut self) -> i64;
-    fn update_id_sum(&mut self);
-    fn send(&mut self, _token :Token, _message : String);
-
-//    fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>;
-//    fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>;
-//    fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token);
+// --- 전송할 메시지 유형 정의 ---
+#[derive(Debug)]
+pub enum MessageToSend {
+    Single(Token, Vec<u8>),      // 단일 소켓 대상
+    Group(String, Vec<u8>),       // 특정 그룹 소켓 대상 (그룹 이름으로 식별)
+    Broadcast(Vec<u8>),           // 전체 소켓 대상
 }
 
+// --- 클라이언트 연결 구조체 ---
+pub struct ClientConnection {
+    pub stream: TcpStream,
+    pub addr: SocketAddr, // 이 addr은 TCP 주소
+    pub write_queue: Arc<Mutex<Vec<u8>>>,
+    pub is_udp_client: bool, // 클라이언트가 UDP 통신을 지원하는지 여부
+    pub udp_addr: Option<SocketAddr>, // 클라이언트의 UDP 수신 주소를 저장할 필드 (새로 추가)
+}
 
-pub struct connection_stream
+impl Server
 {
-    token: Token,
-    id: i64,
-    tcpStream: TcpStream
-}
-
-impl connection_stream {
-    pub fn new(_token: Token, _id: i64, _stream: TcpStream) -> Self {
-        connection_stream {
-            token : _token,
-            id : _id,
-            tcpStream : _stream
-        }
-    }
-
-    pub fn write(&mut self, _message : String) {
-        // self.tcpStream.write(_message.as_byte());
-
-        let serialized_msg = _message.as_bytes();
-
-        self.tcpStream.write(serialized_msg);
-    }
-}
-
-pub struct stream_handler {
-    id_sum : i64,
-    connections: HashMap<Token, connection_stream>,
-    tokenIdMap: HashMap<i64, Token>,
-    idSet : HashSet<i64>
-}
-
-impl connection_handle for stream_handler {
-    fn new() -> Self {
-        let mut _connetions = HashMap::new();
-        let mut _tokenID = HashMap::new();
-        let mut _idSet = HashSet::new();
-        stream_handler{
-            id_sum : 0,
-            connections : _connetions,
-            tokenIdMap : _tokenID,
-            idSet : _idSet
-        }
-    }
-
-    fn get_id_set_clone(&mut self) -> HashSet<i64> {
-        println!("Cloning ID set...");
-        self.idSet.clone()
-    }
-
-    fn del_connection(&mut self, token : Token) {
-        let mut id = self.connections.get(&token).unwrap().id;
-
-        self.connections.remove(&token);
-        self.tokenIdMap.remove(&id);
-        self.idSet.remove(&id);
-    }
-
-    fn get_current_id_sum(&mut self) -> i64 {
-        self.id_sum.clone()
-    }
-
-    fn update_id_sum(&mut self) {
-        self.id_sum += 1;
-    }
-
-    fn send(&mut self, _token: Token, _message: String) {
-        // Connection을 맵에서 가져옴
-        if let Some(connection) = self.connections.get_mut(&_token) {
-            // 메시지를 전송
-            println!("Write Message Complemeted :{:?}", _message.clone());
-            connection.write(_message);
-            
+// --- TCP 메시지 송신 함수 (외부에서 호출 가능) ---
+    pub fn send_tcp_message(&self, message: MessageToSend) -> Result<(), ()> {
+        if let Err(e) = self.tcp_message_tx_queue.push(message) {
+            eprintln!("Failed to push TCP message to queue: {:?}", e);
+            Err(())
         } else {
-            // 연결이 없는 경우 처리 (예: 로그 남기기)
-            eprintln!("No connection found for token: {:?}", _token);
+            Ok(())
         }
     }
 
-    
-}
 
-impl stream_handler {
-    pub fn get_connection_by_id (&mut self, id : i64) -> Option<&mut TcpStream>
-    {
-        let mut _token = self.tokenIdMap.get(&id);
-
-        if let Some(connection) = self.connections.get_mut(_token.unwrap()) {
-            Some(&mut connection.tcpStream)
+// --- 단일 TCP 소켓 대상 메시지 전송 (TCP 전용) ---
+    // 함수 이름 변경: send_tcp_data_to_token
+    pub fn send_tcp_data_to_token(&mut self, token: Token, data: Vec<u8>) -> io::Result<()> {
+        if let Some(client) = self.clients.get_mut(&token) {
+            let mut write_queue = client.write_queue.lock().unwrap();
+            write_queue.extend_from_slice(&data);
+            self.poll.registry().reregister(&mut client.stream, token, Interest::READABLE | Interest::WRITABLE)?;
+            Ok(())
         } else {
-            None
-        }   
-    }
-
-    pub fn get_connetion_by_token(&mut self, token: Token) -> Option<&mut TcpStream>
-    {
-        if let Some(connection) = self.connections.get_mut(&token) {
-            Some(&mut connection.tcpStream)
-        } else {
-            None
+            eprintln!("Attempted to send TCP message to non-existent client with token: {:?}", token);
+            Ok(())
         }
     }
 
-    pub fn new_connection(&mut self, _tcpStream : TcpStream, _token: Token)
-    {
-        // Id 처리 로직 필요함
-        let _id_top = self.get_current_id_sum();
-        let _new_connection = connection_stream::new(_token, _id_top, _tcpStream);
+    // --- 특정 그룹 TCP 소켓 대상 메시지 전송 ---
+    // 함수 이름 변경: send_tcp_data_to_group
+    pub fn send_tcp_data_to_group(&mut self, group_name: &str, data: Vec<u8>) -> io::Result<()> {
+        let client_groups_lock = self.client_groups.lock().unwrap();
+        let tokens_to_send: Vec<Token> = client_groups_lock
+            .get(group_name)
+            .cloned()
+            .unwrap_or_else(Vec::new);
+        drop(client_groups_lock);
 
-        self.connections.insert(_token, _new_connection);
-        self.tokenIdMap.insert(_id_top, _token);
-        self.idSet.insert(_id_top);
-
-        self.update_id_sum();
+        for &token in tokens_to_send.iter() {
+            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
+            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
+                eprintln!("Failed to queue group TCP message for token {:?}.", token);
+            }
+        }
+        if tokens_to_send.is_empty() {
+             println!("Group '{}' not found or is empty for sending TCP message.", group_name);
+        }
+        Ok(())
     }
+
+    // --- 전체 TCP 소켓 대상 메시지 전송 (브로드캐스트) ---
+    // 함수 이름 변경: broadcast_tcp_message
+    pub fn broadcast_tcp_message(&mut self, data: Vec<u8>) -> io::Result<()> {
+        let tokens_to_send: Vec<Token> = self.clients.keys().cloned().collect();
+        for token in tokens_to_send {
+            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
+            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
+                eprintln!("Failed to queue broadcast TCP message for token {:?}.", token);
+            }
+        }
+        Ok(())
+    }
+
+     // --- 서버 내부 TCP 메시지 큐 처리 및 실제 전송 수행 ---
+    // 이름 변경: process_outgoing_tcp_messages로 명확화
+    pub fn process_outgoing_tcp_messages(&mut self) -> io::Result<()> {
+        while let Some(msg) = self.tcp_message_tx_queue.pop() {
+            match msg {
+                MessageToSend::Single(token, data) => {
+                    self.send_tcp_data_to_token(token, data)?; // 함수 이름 변경
+                }
+                MessageToSend::Group(group_name, data) => {
+                    self.send_tcp_data_to_group(&group_name, data)?; // 함수 이름 변경
+                }
+                MessageToSend::Broadcast(data) => {
+                    self.broadcast_tcp_message(data)?; // 함수 이름 변경
+                }
+            }
+        }
+        Ok(())
+    }
+
+
 }
