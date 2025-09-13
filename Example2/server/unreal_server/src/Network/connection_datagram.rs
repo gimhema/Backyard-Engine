@@ -13,7 +13,6 @@ use crate::Event::event_handler::EventHeader;
 
 impl Server {
 
-    // --- (옵션) 브로드캐스트 대상 주소만 먼저 뽑아 쓰고 싶을 때 사용할 헬퍼 ---
     pub fn collect_udp_targets(&self) -> Vec<SocketAddr> {
         self.clients
             .values()
@@ -21,7 +20,6 @@ impl Server {
             .collect()
     }
 
-    // --- 즉시 전송(직접 send_to) 버전: 기존 유지 ---
     pub fn send_udp_message_to_token(&self, token: Token, addr: SocketAddr, data: Vec<u8>) -> io::Result<()> {
         match self.udp_socket.send_to(&data, addr) {
             Ok(n) => {

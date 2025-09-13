@@ -10,7 +10,6 @@ pub trait NetSender: Send + Sync {
     fn send_udp(&self, addr: SocketAddr, data: Vec<u8>) -> Result<(), ()>;
     fn broadcast_udp_all(&self, data: Vec<u8>) -> usize;
 
-    // ✅ 추가: Token을 통해 전송
     fn send_udp_to_token(&self, token: Token, data: Vec<u8>) -> Result<(), ()>;
 }
 
@@ -18,7 +17,7 @@ pub trait NetSender: Send + Sync {
 pub struct UdpTx {
     queue: SharedUdpMessageQueue,
     targets_fn: Arc<dyn Fn() -> Vec<SocketAddr> + Send + Sync>,
-    // ✅ Token -> SocketAddr 해석기
+
     resolve_by_token: Arc<dyn Fn(Token) -> Option<SocketAddr> + Send + Sync>,
 }
 
