@@ -7,9 +7,9 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use crate::Event::event_handler::EventHeader;
-use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
-use crate::GameLogic::game_player::VECharacterManager;
-use crate::GameLogic::game_logic_main::GameLogicMain;
+// use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
+// use crate::GameLogic::game_player::VECharacterManager;
+// use crate::GameLogic::game_logic_main::GameLogicMain;
 
 use super::connection::*;
 use super::server_common::*;
@@ -51,9 +51,9 @@ pub struct Server {
     pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 
     // Game Play Logic
-    pub game_logic : Arc<Mutex<GameLogicMain>>,
-    pub game_character_manager: Arc<Mutex<VECharacterManager>>,
-    pub player_waiting_queue: Arc<Mutex<WaitingQueue>>, // 플레이어 대기열
+    // pub game_logic : Arc<Mutex<GameLogicMain>>,
+    // pub game_character_manager: Arc<Mutex<VECharacterManager>>,
+    // pub player_waiting_queue: Arc<Mutex<WaitingQueue>>, // 플레이어 대기열
 }
 
 
@@ -91,9 +91,9 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
-            game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
-            player_waiting_queue: Arc::new(Mutex::new(WaitingQueue::new())),
-            game_logic: Arc::new(Mutex::new(GameLogicMain::new())),
+            // game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
+            // player_waiting_queue: Arc::new(Mutex::new(WaitingQueue::new())),
+            // game_logic: Arc::new(Mutex::new(GameLogicMain::new())),
         };
 
         Ok(server)
@@ -102,40 +102,40 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
     // --- 서버 시작 및 이벤트 루프 ---
 pub fn start(&mut self) -> io::Result<()> {
 
-        {
-            let mut gl = self.game_logic.lock().unwrap();
-            gl.world_create();
+        // {
+        //     let mut gl = self.game_logic.lock().unwrap();
+        //     gl.world_create();
+// 
+        //     let targets_registry = self.udp_targets_registry.clone();
+        //     let targets_fn = Arc::new(move || targets_registry.read().unwrap().clone());
+// 
+        //     let token_reg = self.udp_token_registry.clone();
+        //     let resolve_by_token = Arc::new(move |t: Token| -> Option<SocketAddr> {
+        //         token_reg.read().unwrap().get(&t).cloned()
+        //     });
+// 
+        //     let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn, resolve_by_token);
+        //     gl.set_net_sender(Arc::new(udp_tx));
+        // }
 
-            let targets_registry = self.udp_targets_registry.clone();
-            let targets_fn = Arc::new(move || targets_registry.read().unwrap().clone());
-
-            let token_reg = self.udp_token_registry.clone();
-            let resolve_by_token = Arc::new(move |t: Token| -> Option<SocketAddr> {
-                token_reg.read().unwrap().get(&t).cloned()
-            });
-
-            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn, resolve_by_token);
-            gl.set_net_sender(Arc::new(udp_tx));
-        }
 
 
-
-        let game_logic_thread = {
-            let game_logic = Arc::clone(&self.game_logic);
-            std::thread::spawn(move || {
-                let tick_duration = Duration::from_millis(50);
-                let mut last_tick = Instant::now();
-                loop {
-                    let now = Instant::now();
-                    if now.duration_since(last_tick) >= tick_duration {
-                        game_logic.lock().unwrap().process_commands();
-                        last_tick = now;
-                    } else {
-                        std::thread::sleep(Duration::from_millis(1));
-                    }
-                }
-            })
-        };
+        // let game_logic_thread = {
+        //     let game_logic = Arc::clone(&self.game_logic);
+        //     std::thread::spawn(move || {
+        //         let tick_duration = Duration::from_millis(50);
+        //         let mut last_tick = Instant::now();
+        //         loop {
+        //             let now = Instant::now();
+        //             if now.duration_since(last_tick) >= tick_duration {
+        //                 game_logic.lock().unwrap().process_commands();
+        //                 last_tick = now;
+        //             } else {
+        //                 std::thread::sleep(Duration::from_millis(1));
+        //             }
+        //         }
+        //     })
+        // };
 
         let mut events = Events::with_capacity(1024);
 
