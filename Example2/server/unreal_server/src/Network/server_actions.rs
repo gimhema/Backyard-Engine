@@ -10,6 +10,7 @@ use crate::Network::server_common::ServerActionType::*;
 use crate::GameLogic::game_player::VECharcater;
 use mio::Token;
 use crate::GameLogic::game_player::GameNetStatus;
+use crate::Command;
 
 
 impl Server {
@@ -78,6 +79,12 @@ impl Server {
         new_player.set_player_pid(_pid as i64);
         new_player.set_player_ip_addr(_conn_info);
         self.game_character_manager.lock().unwrap().new_character(_pid as i64, new_player);
+
+        // add new entity to game logic
+        let _new_entity_id = _pid as u32;
+        self.game_logic.lock().unwrap().push_command(
+            Command::Create { entity_id: _new_entity_id  }
+        );
         
 
         
