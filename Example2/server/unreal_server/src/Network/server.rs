@@ -290,6 +290,10 @@ pub fn start(&mut self) -> io::Result<()> {
                 match action {
                     ClientAction::Disconnect => {
                         if let Some(mut removed_client) = self.clients.remove(&token) {
+
+                            let _remove_target_pid = token.0 as i64;
+                            self.game_character_manager.lock().unwrap().delete_characeter(_remove_target_pid);
+
                             if let Some(addr) = removed_client.udp_addr.take() {
                                 self.remove_udp_target(&addr);
                             }
