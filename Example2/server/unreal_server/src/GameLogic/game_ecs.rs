@@ -63,7 +63,10 @@ impl World {
     }
 
     pub fn update_movement(&mut self, entity: EntityId,  update_mov : Transform) {
-
+        if let Some(transform) = self.transforms.get_mut(&entity) {
+            transform.set_position(update_mov.position);
+            transform.set_rotation(update_mov.rotation);
+        }
         // self.transforms.get_mut(&entity).unwrap().set_position(target);
         // self.transforms.get_mut(&entity).unwrap().set_rotation(target);
     }

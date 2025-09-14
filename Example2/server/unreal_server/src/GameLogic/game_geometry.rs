@@ -3,10 +3,10 @@ use std::fmt::Pointer;
 #[derive(Debug, Clone, Copy)]
 pub struct Rotation
 {
-    q_x : f64,
-    q_y : f64,
-    q_z : f64,
-    q_w : f64
+    pub q_x : f64,
+    pub q_y : f64,
+    pub q_z : f64,
+    pub q_w : f64
 }
 
 impl Rotation
@@ -32,9 +32,9 @@ impl Rotation
 #[derive(Debug, Clone, Copy)]
 pub struct Position
 {
-    x : f64,
-    y : f64,
-    z : f64
+    pub x : f64,
+    pub y : f64,
+    pub z : f64
 }
 
 impl Position {
@@ -57,8 +57,8 @@ impl Position {
 #[derive(Debug, Clone, Copy)]
 pub struct Transform
 {
-    position : Position,
-    rotation : Rotation
+    pub position : Position,
+    pub rotation : Rotation
 }
 
 impl Transform 
