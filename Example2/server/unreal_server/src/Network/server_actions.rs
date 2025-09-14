@@ -77,7 +77,8 @@ impl Server {
         new_player.set_player_name(_player_name.clone());
         new_player.set_player_pid(_pid as i64);
         new_player.set_player_ip_addr(_conn_info);
-        self.game_character_manager.lock().unwrap().new_character(new_player);
+        self.game_character_manager.lock().unwrap().new_character(_pid as i64, new_player);
+        
 
         
     }
