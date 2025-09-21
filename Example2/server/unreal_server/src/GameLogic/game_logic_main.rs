@@ -50,9 +50,14 @@ impl GameLogicMain {
         // . . .
     }
 
-    pub fn push_command(&mut self, cmd : Command) {
+    // pub fn push_command(&mut self, cmd : Command) {
+    //     self.command_queue.push(cmd);
+    // }
+
+    pub fn push_command(&self, cmd : Command) {
         self.command_queue.push(cmd);
     }
+
 
     pub fn process_commands(&mut self) {
         while let Some(cmd) = self.command_queue.pop() {
