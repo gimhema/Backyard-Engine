@@ -12,6 +12,7 @@ pub mod game_npc;
 pub mod game_setting;
 pub mod game_tables;
 pub mod game_parameta_action_logic;
+pub mod game_logic_handle;
 
 use super::Network;
 use super::qsm;

@@ -3,6 +3,11 @@ name = "unreal_server"
 version = "0.1.0"
 edition = "2021"
 
+[target.'cfg(unix)'.dependencies.tokio]
+features = ["fs"]
+version = "1.25.0"
+
+
 [dependencies]
 mio = { version = "0.8", features = ["os-poll", "net"] }
 log = "0.4.0"
@@ -11,3 +16,4 @@ lazy_static = "1.4.0"
 regex = "1.5.4"
 crossbeam = "0.8"
 crossbeam-queue = "0.3"
+once_cell = "1"

@@ -51,4 +51,3 @@ pub fn do_command_move(&mut self, _command : Command) {
 
 
 }
-
