@@ -2,6 +2,7 @@
 use crate::qsm::{qsm::GLOBAL_MESSAGE_UDP_QUEUE, user_message::message_movement::{self, PlayerMovement}};
 
 use super::GameLogic::game_logic_main::*;
+use super::GameLogic::game_logic_handle::get_game_logic;
 
 pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
 {
@@ -15,11 +16,21 @@ pub fn CallBack_PlayerMovementUpdate(buffer: &[u8])
             let pitch = movement_message.pitch;
             let yaw = movement_message.yaw;
 
-
-            // G_GAME_LOGIC.lock().unwrap().push_command(
-            //     Command::Move { entity_id: sender, loc_x, loc_y, loc_z, q_x: roll, q_y: pitch, q_z: yaw, q_w: 0.0 }
-            // );
-
+            if let Some(gl_arc) = get_game_logic() {
+                if let Ok(mut gl) = gl_arc.lock() {
+                    gl.push_command(
+                        Command::Move {
+                            entity_id: sender,
+                            loc_x, loc_y, loc_z,
+                            q_x: roll, q_y: pitch, q_z: yaw, q_w: 0.0,
+                        }
+                    );
+                } else {
+                    eprintln!("[MovementCB] Failed to lock GameLogic.");
+                }
+            } else {
+                eprintln!("[MovementCB] GameLogic not initialized (set_global_game_logic missing).");
+            }
 
         }
         Err(e) => {
