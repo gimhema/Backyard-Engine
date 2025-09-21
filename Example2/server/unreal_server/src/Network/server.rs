@@ -19,6 +19,8 @@ use std::time::{Instant};
 
 use crate::Network::net_tx::{UdpTx};
 
+use crate::GameLogic::game_logic_handle::*;
+
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
 const SERVER_UDP_TOKEN: Token = Token(1);
@@ -101,6 +103,11 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
 
     // --- 서버 시작 및 이벤트 루프 ---
 pub fn start(&mut self) -> io::Result<()> {
+
+        {
+            let gl_arc = Arc::clone(&self.game_logic);
+            set_global_game_logic(gl_arc);
+        }
 
         {
             let mut gl = self.game_logic.lock().unwrap();
