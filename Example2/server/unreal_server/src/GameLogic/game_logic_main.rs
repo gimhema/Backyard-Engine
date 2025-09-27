@@ -72,9 +72,7 @@ impl GameLogicMain {
                     self.do_command_move(cmd);
                 }
                 Command::Shoot { entity_id } => {
-                    println!("Entity {} shoots!", entity_id);
-                    // Example: Send a UDP message when an entity shoots
-                    // self.try_send_udp(addr, payload);
+                    self.do_command_shoot(cmd);
                 }
                 Command::NetSendUdp { addr, payload } => {
                     self.try_send_udp(addr, payload);
