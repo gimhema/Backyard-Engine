@@ -3,6 +3,11 @@ name = "unreal_server"
 version = "0.1.0"
 edition = "2021"
 
+[target.'cfg(unix)'.dependencies.tokio]
+features = ["fs"]
+version = "1.25.0"
+
+
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 mio = { version = "0.8", features = ["os-poll", "net"] }

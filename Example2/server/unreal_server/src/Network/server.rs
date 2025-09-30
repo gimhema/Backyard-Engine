@@ -3,20 +3,23 @@ use mio::net::{TcpListener, TcpStream, UdpSocket};
 use std::collections::HashMap;
 use std::io::{self, Read, Write};
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
-use crate::qsm::*;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::GameLogic::game_player::VECharacterManager;
-use super::qsm::user_message::message_allow_connect::*;
+use crate::GameLogic::game_logic_main::GameLogicMain;
 
 use super::connection::*;
 use super::server_common::*;
 use crate::Core::core::*;
 use std::thread;
 use std::time::{Instant};
+
+use crate::Network::net_tx::{UdpTx};
+
+use crate::GameLogic::game_logic_handle::*;
 
 // --- 토큰 정의 ---
 const SERVER_TCP_TOKEN: Token = Token(0);
@@ -25,13 +28,15 @@ const CLIENT_TOKEN_START: Token = Token(2); // 클라이언트 토큰은 2부터
 
 // --- 메시지를 전송할 Lock-Free 큐 타입 정의 ---
 pub type SharedTcpMessageQueue = Arc<ArrayQueue<MessageToSend>>;
-pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Vec<u8>)>>; // (대상 주소, 데이터) 튜플 저장
+pub type SharedUdpMessageQueue = Arc<ArrayQueue<(SocketAddr, Arc<[u8]>)>>;
+ // (대상 주소, 데이터) 튜플 저장
 
 
 
 
 // --- 서버 구조체 ---
 pub struct Server {
+    // NetWork
     pub server_mode: ServerMode,
     pub poll: Poll,
     pub tcp_listener: TcpListener,
@@ -40,12 +45,15 @@ pub struct Server {
     pub next_client_token: Token,
     pub tcp_message_tx_queue: SharedTcpMessageQueue,
     pub udp_message_tx_queue: SharedUdpMessageQueue,
+    pub udp_targets_registry: Arc<RwLock<Vec<SocketAddr>>>,
+    pub udp_token_registry: Arc<RwLock<HashMap<Token, SocketAddr>>>,
     // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
     pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
 
     // Game Play Logic
+    pub game_logic : Arc<Mutex<GameLogicMain>>,
     pub game_character_manager: Arc<Mutex<VECharacterManager>>,
     pub player_waiting_queue: Arc<Mutex<WaitingQueue>>, // 플레이어 대기열
 }
@@ -80,11 +88,14 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             next_client_token: CLIENT_TOKEN_START,
             tcp_message_tx_queue: tcp_queue_for_server,
             udp_message_tx_queue: udp_queue_for_server, // 새 큐 할당
+            udp_targets_registry: Arc::new(RwLock::new(Vec::new())),
+            udp_token_registry: Arc::new(RwLock::new(HashMap::new())),
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
             game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
             player_waiting_queue: Arc::new(Mutex::new(WaitingQueue::new())),
+            game_logic: Arc::new(Mutex::new(GameLogicMain::new())),
         };
 
         Ok(server)
@@ -92,26 +103,85 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
 
     // --- 서버 시작 및 이벤트 루프 ---
 pub fn start(&mut self) -> io::Result<()> {
+
+        {
+            let gl_arc = Arc::clone(&self.game_logic);
+            set_global_game_logic(gl_arc);
+        }
+
+        {
+            let mut gl = self.game_logic.lock().unwrap();
+            gl.world_create();
+
+            let targets_registry = self.udp_targets_registry.clone();
+            let targets_fn = Arc::new(move || targets_registry.read().unwrap().clone());
+
+            let token_reg = self.udp_token_registry.clone();
+            let resolve_by_token = Arc::new(move |t: Token| -> Option<SocketAddr> {
+                token_reg.read().unwrap().get(&t).cloned()
+            });
+
+            let udp_tx = UdpTx::new(self.udp_message_tx_queue.clone(), targets_fn, resolve_by_token);
+            gl.set_net_sender(Arc::new(udp_tx));
+        }
+
+
+
+        let game_logic_thread = {
+            let game_logic = Arc::clone(&self.game_logic);
+            std::thread::spawn(move || {
+                let tick_duration = Duration::from_millis(50);
+                let mut last_tick = Instant::now();
+                loop {
+                    let now = Instant::now();
+                    if now.duration_since(last_tick) >= tick_duration {
+                        game_logic.lock().unwrap().process_commands();
+                        last_tick = now;
+                    } else {
+                        std::thread::sleep(Duration::from_millis(1));
+                    }
+                }
+            })
+        };
+
         let mut events = Events::with_capacity(1024);
 
         println!("Server started. Listening on TCP {} and UDP {}",
                  self.tcp_listener.local_addr().unwrap(),
                  self.udp_socket.local_addr().unwrap());
 
-    let udp_queue = self.udp_message_tx_queue.clone();
-    let udp_socket = self.udp_socket.clone();
+        let udp_queue = self.udp_message_tx_queue.clone();
+        let udp_socket = self.udp_socket.clone();
 
-    thread::spawn(move || {
-        loop {
-            while let Some((target_addr, data)) = udp_queue.pop() {
-                match udp_socket.send_to(&data, target_addr) {
-                    Ok(n) => println!("[UDP Thread] Sent {} bytes to {}", n, target_addr),
-                    Err(e) => eprintln!("[UDP Thread] Error sending to {}: {}", target_addr, e),
+            thread::spawn(move || {
+                const BATCH: usize = 256;
+                loop {
+                    let mut n_sent = 0;
+                    for _ in 0..BATCH {
+                        match udp_queue.pop() {
+                            Some((addr, data)) => {
+                                match udp_socket.send_to(&data, addr) {
+                                    Ok(_) => { n_sent += 1; }
+                                    Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                                        std::thread::yield_now();
+                                        break;
+                                    }
+                                    Err(e) => {
+                                        eprintln!("[UDP Thread] send_to error {} -> {}", addr, e);
+                                    }
+                                }
+                            }
+                            None => break,
+                        }
+                    }
+
+                    if n_sent == 0 {
+                        // 큐가 비었으면 살짝 쉼 (busy-spin 방지)
+                        std::thread::sleep(Duration::from_micros(200));
+                    }
                 }
-            }
-            thread::sleep(Duration::from_millis(1));
-        }
-    });
+            });
+
 
 
         loop {
@@ -167,7 +237,12 @@ pub fn start(&mut self) -> io::Result<()> {
                         match self.udp_socket.recv_from(&mut buf) {
                             Ok((len, addr)) => {
                                 println!("Received UDP message from {}: {:?}", addr, &buf[..len]);
-                                // 수신된 UDP 메시지 처
+
+                                if !self.is_known_udp_addr(addr) {
+                                    self.try_bind_udp_by_ip(addr);
+                                }
+
+
                                 self.udp_recv_action(&buf, len);
                             }
                             Err(e) => {
@@ -222,6 +297,15 @@ pub fn start(&mut self) -> io::Result<()> {
                 match action {
                     ClientAction::Disconnect => {
                         if let Some(mut removed_client) = self.clients.remove(&token) {
+
+                            let _remove_target_pid = token.0 as i64;
+                            self.game_character_manager.lock().unwrap().delete_characeter(_remove_target_pid);
+
+                            if let Some(addr) = removed_client.udp_addr.take() {
+                                self.remove_udp_target(&addr);
+                            }
+                            self.remove_token_addr(&token); 
+
                             if let Err(e) = self.poll.registry().deregister(&mut removed_client.stream) {
                                 eprintln!("Error deregistering stream for client {:?}: {}", token, e);
                             }
@@ -244,6 +328,8 @@ pub fn start(&mut self) -> io::Result<()> {
                 }
             }
         }
+
+        game_logic_thread.join().unwrap();
     }
 
 
@@ -268,6 +354,62 @@ pub fn start(&mut self) -> io::Result<()> {
             println!("Client {:?} removed from group '{}'", token, group_name);
         }
     }
+
+    fn add_udp_target(&self, addr: SocketAddr) {
+        let mut w = self.udp_targets_registry.write().unwrap();
+        if !w.contains(&addr) {
+            w.push(addr);
+        }
+    }
+
+    fn remove_udp_target(&self, addr: &SocketAddr) {
+        let mut w = self.udp_targets_registry.write().unwrap();
+        if let Some(i) = w.iter().position(|x| x == addr) {
+            w.swap_remove(i);
+        }
+    }
+
+    /// 토큰에 UDP 주소를 바인딩하고 레지스트리를 갱신
+    pub fn register_udp_for_token(&mut self, token: Token, addr: SocketAddr) {
+        if let Some(client) = self.clients.get_mut(&token) {
+            if let Some(prev) = client.udp_addr.replace(addr) {
+                if prev != addr { self.remove_udp_target(&prev); }
+            }
+            self.add_udp_target(addr);
+            self.upsert_token_addr(token, addr);
+        }
+    }
+
+    /// (옵션) 동일 IP 하나만 매칭될 때 자동 바인딩
+    fn try_bind_udp_by_ip(&mut self, addr: SocketAddr) {
+        let ip = addr.ip();
+        let mut candidates: Vec<Token> = self.clients
+            .iter()
+            .filter(|(_, c)| c.udp_addr.is_none() && c.addr.ip() == ip)
+            .map(|(t, _)| *t)
+            .collect();
+
+        if candidates.len() == 1 {
+            let token = candidates[0];
+            self.register_udp_for_token(token, addr);
+        }
+    }
+
+    #[inline]
+    fn is_known_udp_addr(&self, addr: SocketAddr) -> bool {
+        self.udp_targets_registry.read().unwrap().contains(&addr)
+    }
+
+    #[inline]
+    fn upsert_token_addr(&self, token: Token, addr: SocketAddr) {
+        self.udp_token_registry.write().unwrap().insert(token, addr);
+    }
+
+    #[inline]
+    fn remove_token_addr(&self, token: &Token) {
+        self.udp_token_registry.write().unwrap().remove(token);
+    }
+
 }
 
 // ClientConnection의 이벤트 핸들러는 이제 'Server' 인스턴스와 완전히 독립적입니다.

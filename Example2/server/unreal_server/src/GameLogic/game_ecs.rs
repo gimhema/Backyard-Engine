@@ -21,10 +21,10 @@ pub enum WorldType
 // ==== ECS World ====
 
 pub struct World {
-    world_type : WorldType,
-    world_id : WorldId,
-    entities: HashSet<EntityId>,
-    transforms: HashMap<EntityId, Transform>,
+    pub world_type : WorldType,
+    pub world_id : WorldId,
+    pub entities: HashSet<EntityId>,
+    pub transforms: HashMap<EntityId, Transform>,
 }
 
 impl World {
@@ -63,7 +63,10 @@ impl World {
     }
 
     pub fn update_movement(&mut self, entity: EntityId,  update_mov : Transform) {
-
+        if let Some(transform) = self.transforms.get_mut(&entity) {
+            transform.set_position(update_mov.position);
+            transform.set_rotation(update_mov.rotation);
+        }
         // self.transforms.get_mut(&entity).unwrap().set_position(target);
         // self.transforms.get_mut(&entity).unwrap().set_rotation(target);
     }

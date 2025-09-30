@@ -1,41 +1,44 @@
 use crossbeam::queue::SegQueue;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::net::SocketAddr;
 
 use super::game_ecs::*;
 use super::game_logic_action::*;
+use std::collections::HashMap;
 
-use std::collections::{HashMap};
+// 추가: 전송 인터페이스
+use mio::Token;
+use crate::Network::net_tx::NetSender;
 
-lazy_static! {
-    pub static ref G_GAME_LOGIC : Mutex<GameLogicMain> = Mutex::new(GameLogicMain::new());
-}
-
-pub fn push_command_to_game_logic(command : Command) {
-    G_GAME_LOGIC.lock().unwrap().push_command(command);
-}
 
 #[derive(Debug)]
 pub enum Command {
     Create { entity_id: u32 },
-    Delete {entity_id: u32},
+    Delete { entity_id: u32 },
     Move { entity_id: u32, loc_x: f32, loc_y: f32, loc_z: f32, q_x: f32, q_y: f32, q_z: f32, q_w: f32 },
-    Shoot { entity_id: u32 },
+    Shoot { entity_id: u32, target_id: u32, damage: u32 },
+
+    NetSendUdp { addr: SocketAddr, payload: Vec<u8> },
 }
 
 pub struct GameLogicMain {
     pub command_queue: Arc<SegQueue<Command>>,
-//    pub world_container : HashMap<i64, World>
     pub game_world : World,
+
+    net_tx: Option<Arc<dyn NetSender>>,
 }
 
 impl GameLogicMain {
     pub fn new() -> Self {
         GameLogicMain {
             game_world : World::new(),
-//            world_container : HashMap::new(),
             command_queue: Arc::new(SegQueue::new()),
+            net_tx: None,
         }
+    }
+
+    pub fn set_net_sender(&mut self, tx: Arc<dyn NetSender>) {
+        self.net_tx = Some(tx);
     }
 
     pub fn world_create(&mut self) {
@@ -47,45 +50,68 @@ impl GameLogicMain {
         // . . .
     }
 
-    pub fn push_command(&mut self, cmd : Command) {
+    // pub fn push_command(&mut self, cmd : Command) {
+    //     self.command_queue.push(cmd);
+    // }
+
+    pub fn push_command(&self, cmd : Command) {
         self.command_queue.push(cmd);
     }
 
-    pub fn process_commands(&self) {
+
+    pub fn process_commands(&mut self) {
         while let Some(cmd) = self.command_queue.pop() {
             match cmd {
                 Command::Create { entity_id } => {
-                    do_command_create(cmd);
+                    self.do_command_create(cmd);
                 }
                 Command::Delete { entity_id } => {
-                    do_command_delete(cmd);
+                    self.do_command_delete(cmd);
                 }
                 Command::Move { entity_id, loc_x, loc_y, loc_z,q_x, q_y,q_z, q_w } => {
-                    do_command_move(cmd);
+                    self.do_command_move(cmd);
                 }
-                Command::Shoot { entity_id } => {
-                    println!("Entity {} shoots!", entity_id);
+                Command::Shoot { entity_id, target_id,damage } => {
+                    self.do_command_shoot(cmd);
+                }
+                Command::NetSendUdp { addr, payload } => {
+                    self.try_send_udp(addr, payload);
                 }
             }
         }
     }
 
-    // let mut game_logic = G_GAME_LOGIC.lock().unwrap();
+    #[inline]
+    fn try_send_udp(&self, addr: SocketAddr, payload: Vec<u8>) {
+        if let Some(tx) = &self.net_tx {
+            if let Err(_) = tx.send_udp(addr, payload) {
+                // 큐가 가득 찬 경우 로깅/백프레셔 전략 택1
+                eprintln!("[GameLogic] UDP queue is full; dropping packet to {}", addr);
+            }
+        } else {
+            eprintln!("[GameLogic] NetSender not set; cannot send UDP");
+        }
+    }
 
-    // if let Some(world) = game_logic.get_world(0) {
-    //     if let Some(pos) = world.get_position(42) {
-    //         println!("Entity 42 position: {:?}", pos);
-    //     }
-    // }
-    // pub fn get_world(&self, world_id: i64) -> Option<&World> {
-    //     self.world_container.get(&world_id)
-    // }
+    pub fn broadcast_msg_udp_all(&self, data: Vec<u8>) -> usize {
+        if let Some(tx) = &self.net_tx {
+            tx.broadcast_udp_all(data)
+        } else {
+            eprintln!("[GameLogic] NetSender not set; cannot broadcast UDP");
+            0
+        }
+    }
 
-
-    // if let Some(world) = game_logic.get_world_mut(0) {
-    //     world.create_entity_with_components(None, 42);
-    // }
-    // pub fn get_world_mut(&mut self, world_id: i64) -> Option<&mut World> {
-    //     self.world_container.get_mut(&world_id)
-    // }
+    // When use, just call like this:
+    // self.send_msg_udp_to_entity(entity_id, payload_vec);
+    pub fn send_msg_udp_to_entity(&self, entity_id: u32, payload: Vec<u8>) -> bool {
+        if let Some(tx) = &self.net_tx {
+            // ⚠️ 전제: entity_id == Token.0 (usize) 매핑
+            let token = Token(entity_id as usize);
+            tx.send_udp_to_token(token, payload).is_ok()
+        } else {
+            eprintln!("[GameLogic] NetSender not set; cannot send UDP to entity {}", entity_id);
+            false
+        }
+    }
 }

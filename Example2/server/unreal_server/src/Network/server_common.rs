@@ -83,9 +83,9 @@ impl Server{
                     .collect();
 
                 for (token, target_udp_addr) in clients_for_udp_ping {
-                    if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
-                        eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
-                    }
+                    // if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
+                    //     eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
+                    // }
                 }
                 self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
             }

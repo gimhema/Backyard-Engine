@@ -1,178 +1,96 @@
-use mio::net::{TcpStream, UdpSocket};
+use crossbeam_queue::ArrayQueue;
 use mio::Token;
-use std::vec::Vec;
-use std::collections::{HashSet};
-use std::sync::{RwLock, Arc};
-use super::connection::stream_handler;
-use super::connection_datagram::datagram_handler;
-use super::serverinfo::*;
-use super::Crypto::packet_crypto::*;
+use std::sync::{Arc, RwLock};
+use std::collections::HashMap;
+use std::io;
 use std::net::SocketAddr;
-use crate::Network::connection::connection_handle;
+use std::collections::VecDeque;
+use crate::Network::server::*;
+use crate::Network::connection::*;
+use std::time::{Instant};
+use crate::Event::event_handler::EventHeader;
+use std::collections::BTreeSet;
+
+
+#[derive(Debug, Clone)]
+pub enum ServerActionType
+{
+    EnterPlayer(u32, String, String, String) // 이 유저는 접속했으니까 대기큐에서 삭제해도 괜찮다.
+}
 
 lazy_static! {
-    static ref G_GAME_COMMON_LOGIC_INSTANCE: Arc<RwLock<server_extend_common>> = Arc::new(RwLock::new(server_extend_common::new()));
-    static ref G_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
-    static ref G_SEND_CONNECTION_HANLDER_INSTANCE: Arc<RwLock<server_common_connetion_handler>> = Arc::new(RwLock::new(server_common_connetion_handler::new()));
-    static ref G_USER_CONN_INFO_INSTANCE: Arc<RwLock<user_connect_info>> = Arc::new(RwLock::new(user_connect_info::new()));
+    pub static ref GLOBAL_SERVER_ACTION_QUEUE : Arc<ArrayQueue<ServerActionType>> = Arc::new(ArrayQueue::new(1024));
 }
 
-pub fn get_common_logic_instance() -> &'static Arc<RwLock<server_extend_common>> {
-    &G_GAME_COMMON_LOGIC_INSTANCE
+
+pub struct WaitingQueue {
+    pub waiting_containter: Arc<RwLock<BTreeSet<Token>>>,
 }
 
-pub fn get_connection_handler() -> &'static Arc<RwLock<server_common_connetion_handler>> {
-    &G_CONNECTION_HANLDER_INSTANCE
-}
-
-pub fn get_user_connection_info() -> &'static Arc<RwLock<user_connect_info>> {
-    &G_USER_CONN_INFO_INSTANCE
-}
-
-pub struct server_common_info {
-    connect_info : serverinfo,
-    crypto_processor : cryption_processor
-}
-
-impl server_common_info {
+impl WaitingQueue {
     pub fn new() -> Self {
-        let mut _conn_info = serverinfo::new();
-        let mut _crypto_processor = cryption_processor::new();
-
-        _conn_info.init();
-        _crypto_processor.init();
-
-        server_common_info{connect_info : _conn_info, crypto_processor : _crypto_processor}
-    }
-
-    pub fn get_socket_addr(&mut self) -> String {
-        self.connect_info.get_socket_addr()
-    }
-}
-
-pub struct user_common_info {
-    pId : i64, // share network info, not index
-    idToken  : Token,  // share network info
-    ipaddress : String,  // share network info
-}
-
-impl user_common_info {
-    pub fn new(_pId : i64, _token : Token, _ipaddress : String) -> Self {
-        user_common_info { pId: _pId, idToken: _token, ipaddress: _ipaddress }
-    }
-}
-
-// for extend user customize(UserLogic)
-pub struct server_extend_common {
-    user_common_container : Vec<user_common_info> 
-}
-
-impl server_extend_common {
-    pub fn new() -> Self {
-        server_extend_common{ user_common_container: Vec::new() }
-    }
-
-    pub fn PushNewCommonInfo(&mut self, _new_user_common: user_common_info) {
-        self.user_common_container.push(_new_user_common);
-    }
-}
-
-
-// for udp
-pub struct server_common_connetion_handler {
-    tcp_connections : stream_handler,
-    udp_connections : datagram_handler
-}
-
-impl server_common_connetion_handler {
-    pub fn new() -> Self {
-        server_common_connetion_handler{ 
-            tcp_connections : stream_handler::new(), 
-            udp_connections : datagram_handler::new() 
+        WaitingQueue {
+            waiting_containter: Arc::new(RwLock::new(BTreeSet::new()))
         }
     }
 
-    // TCP
-    pub fn new_tcp_connection(&mut self, _tcpStream : TcpStream, _token: Token) 
-    {
-        self.tcp_connections.new_connection(_tcpStream, _token);
+    pub fn push(&self, token: Token) {
+        let mut container = self.waiting_containter.write().unwrap();        
+        container.insert(token);
     }
 
-    pub fn get_tcp_connection_by_token(&mut self, _token: Token) -> Option<&mut TcpStream>
-    {
-        self.tcp_connections.get_connetion_by_token(_token)
+    pub fn remove(&self, token : Token) {
+        let mut container = self.waiting_containter.write().unwrap();
+        container.remove(&token);
     }
 
-    pub fn get_tcp_connection_by_id(&mut self, _id: i64) -> Option<&mut TcpStream>
-    {
-        self.tcp_connections.get_connection_by_id(_id)
-    }
-
-    pub fn del_tcp_connection(&mut self, _token: Token) {
-        self.tcp_connections.del_connection(_token);
-    }
-
-    pub fn get_tcp_connection_list(&mut self) -> HashSet<i64> {
-        self.tcp_connections.get_id_set_clone()
-    }
-
-    pub fn send_message_to_stream(&mut self, _token : Token, _msg : String) {
-        self.tcp_connections.send(_token, _msg);
-    }
-
-
-    // UDP
-    pub fn new_udp_connection(&mut self, _udpSocket : UdpSocket, _token: Token)
-    {
-        self.udp_connections.new_connection(_udpSocket, _token);
-    }
-
-    pub fn get_udp_connection_by_token(&mut self, _token: Token) -> Option<&mut UdpSocket>
-    {
-        self.udp_connections.get_connetion_by_token(_token)
-    }
-
-    pub fn get_udp_connection_by_id(&mut self, _id: i64) -> Option<&mut UdpSocket>
-    {
-        self.udp_connections.get_connection_by_id(_id)
-    }
-
-    pub fn del_udp_connection(&mut self, _token: Token) {
-        self.udp_connections.del_connection(_token);
-    }
-
-    pub fn get_udp_connection_list(&mut self) -> HashSet<i64> {
-        self.udp_connections.get_id_set_clone()
+    pub fn is_empty(&self) -> bool {
+        let mut container = self.waiting_containter.write().unwrap();
+        return container.is_empty()
     }
 }
 
+impl Server{
 
-pub struct user_connect_info {
-    user_token_vec : Vec<Token>
-}
+    pub fn server_loop_action(&mut self) {
+        
+        // self.ping();
 
-impl user_connect_info {
-    pub fn new() -> Self {
-        return user_connect_info{ user_token_vec : Vec::new() }
-    }
-
-    pub fn push(&mut self, new_token : Token) {
-        self.user_token_vec.push(new_token);
-    }
-
-    pub fn get_token(&self, idx: usize) -> Option<Token> {
-        if let Some(&value) = self.user_token_vec.get(idx) {
-            return Some(value);
+        while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
+            // match action {
+            //     // ServerActionType::EnterPlayer(_pId, _accountId, _playerName, _connInfo) => 
+            //     // { self.server_action_enter_player(_pId, _accountId, _playerName, _connInfo);  }
+            // }
         }
-        None
+
     }
 
-    pub fn get_token_vec_size(&self) -> usize {
-        return self.user_token_vec.len()
+    pub fn ping(&mut self) {
+                    // --- 주기적인 UDP Ping 전송 확인 ---
+            if self.last_ping_time.elapsed() >= self.ping_interval {
+                println!("Sending periodic UDP Ping to all connected clients (where UDP address is known)...");
+                let ping_message_data = "UDP_Ping".as_bytes().to_vec(); // "UDP_Ping" 문자열을 바이트 벡터로 변환
+
+                let clients_for_udp_ping: Vec<(Token, SocketAddr)> = self.clients.iter()
+                    .filter_map(|(&token, client)| {
+                        // is_udp_client가 true이고 udp_addr이 Some인 경우에만 핑을 보냅니다.
+                        if client.is_udp_client && client.udp_addr.is_some() {
+                            Some((token, client.udp_addr.unwrap())) // unwrap()은 Some임을 확인했으므로 안전
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                for (token, target_udp_addr) in clients_for_udp_ping {
+                    // if let Err(_) = self.send_udp_message(target_udp_addr, ping_message_data.clone()) {
+                    //     eprintln!("Failed to queue UDP ping message for client {:?} ({}).", token, target_udp_addr);
+                    // }
+                }
+                self.last_ping_time = Instant::now(); // 마지막 Ping 전송 시간 업데이트
+            }
     }
 
-    pub fn get_token_vec(&self) -> Vec<Token> {
-        return self.user_token_vec.clone()
-    }
+
 }
 
