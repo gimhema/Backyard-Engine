@@ -107,6 +107,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SendVerifyAccount();
 	
+	void SendMessageBinary(const std::vector<uint8_t>& Data);
 
 public:
 	// Message Action
