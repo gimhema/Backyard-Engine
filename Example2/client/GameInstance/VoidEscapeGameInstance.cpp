@@ -155,3 +155,23 @@ void UVoidEscapeGameInstance::SendVerifyAccount()
 		PrintOnScreenMessage(TEXT("VERIFY_ACCOUNT message sent. Starting Receive Thread..."), 5.0f, FColor::Green);
 	}
 }
+
+void UVoidEscapeGameInstance::SendMessageBinary(const std::vector<uint8_t>& Data)
+{
+
+	if (SocketListener)
+	{
+		if (SocketListener->SendMessageBinary(Data))
+		{
+			PrintOnScreenMessage(TEXT("Binary message sent successfully."), 5.0f, FColor::Green);
+		}
+		else
+		{
+			PrintOnScreenMessage(TEXT("Failed to send binary message."), 5.0f, FColor::Red);
+		}
+	}
+	else
+	{
+		PrintOnScreenMessage(TEXT("SocketListener is not initialized."), 5.0f, FColor::Red);
+	}
+}
