@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::{RwLock, RwLockReadGuard};
 use crate::qsm::user_event::event_delete_player::RequestDeletePlayer;
-use crate::GameLogic::game_parameta_action_logic::ActorParameta;
 use mio::Token;
 
 use super::game_geometry::*;

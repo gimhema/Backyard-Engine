@@ -1,6 +1,7 @@
 
 use super::game_geometry::*;
 use super::game_player::*;
+use super::game_system_status::*;
 
 
 
@@ -25,6 +26,7 @@ pub struct World {
     pub world_id : WorldId,
     pub entities: HashSet<EntityId>,
     pub transforms: HashMap<EntityId, Transform>,
+    pub statuses: HashMap<EntityId, ActorStatus>,
 }
 
 impl World {
@@ -34,6 +36,7 @@ impl World {
             world_id : 0,
             entities: HashSet::new(),
             transforms: HashMap::new(),
+            statuses: HashMap::new(),
         }
     }
 
