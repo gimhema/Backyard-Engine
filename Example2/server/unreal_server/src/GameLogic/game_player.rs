@@ -93,9 +93,9 @@ pub struct VECharcater
     pub pid : i64,
     pub player_network_config : VEPlayerNetWorkStatus,
     pub player_personal_info : VEPlayerPersonalInfo,
-    pub player_status : ActorStatus,
-    pub player_equipment : PlayerEquipment,
-    pub player_parameta : ActorParameta
+    // pub player_status : ActorStatus,
+    // pub player_equipment : PlayerEquipment,
+    // pub player_parameta : ActorParameta
 }
 
 impl VECharcater {
@@ -104,9 +104,9 @@ impl VECharcater {
             pid : 0,
             player_network_config: VEPlayerNetWorkStatus::new_zero(),
             player_personal_info: VEPlayerPersonalInfo::new_zero(),
-            player_status : ActorStatus::new_zero(),
-            player_equipment : PlayerEquipment::new(),
-            player_parameta : ActorParameta::new_zero()
+            // player_status : ActorStatus::new_zero(),
+            // player_equipment : PlayerEquipment::new(),
+            // player_parameta : ActorParameta::new_zero()
             }
     }
 
@@ -125,9 +125,9 @@ impl VECharcater {
     }
 
     pub fn init(&mut self) {
-        self.player_status.init();
-        self.player_equipment.init();
-        self.player_parameta.init();
+        // self.player_status.init();
+        // self.player_equipment.init();
+        // self.player_parameta.init();
     }
 
 }

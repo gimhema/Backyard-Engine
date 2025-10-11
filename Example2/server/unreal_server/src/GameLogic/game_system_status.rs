@@ -81,36 +81,36 @@ impl ActorStatus {
 // Character Method Status Action Implementation
 impl VECharcater {
     pub fn set_character_health(&mut self, val : i64) {
-        self.player_status.set_health_point(val);
+//        self.player_status.set_health_point(val);
     }
 
     pub fn set_character_ability_point(&mut self, val : i64) {
-        self.player_status.set_ability_point(val);
+//        self.player_status.set_ability_point(val);
     }
 
     pub fn set_character_stamina(&mut self, val : i64) {
-        self.player_status.set_stamina(val);
+//        self.player_status.set_stamina(val);
     }
 
     pub fn set_character_mode(&mut self, val : ActorStatusMode) {
-        self.player_status.set_actor_mode(val);
+//        self.player_status.set_actor_mode(val);
     }
 
-    pub fn get_character_health(&self) -> i64 {
-        return self.player_status.get_health_point()
-    }
+//     pub fn get_character_health(&self) -> i64 {
+// //        return self.player_status.get_health_point()
+//     }
 
-    pub fn get_character_ability_point(&self) -> i64 {
-        return self.player_status.get_ability_point()
-    }
+//     pub fn get_character_ability_point(&self) -> i64 {
+// //        return self.player_status.get_ability_point()
+//     }
 
-    pub fn get_character_stamina(&self) -> i64 {
-        return self.player_status.get_stamina()
-    }
+//     pub fn get_character_stamina(&self) -> i64 {
+// //        return self.player_status.get_stamina()
+//     }
 
-    pub fn get_character_mode(&self) -> ActorStatusMode {
-        return self.player_status.get_actor_mode()
-    }
+    // pub fn get_character_mode(&self) -> ActorStatusMode {
+    //     return self.player_status.get_actor_mode()
+    // }
 }
 
 // Character Manager Method Status Action Implementation
@@ -163,55 +163,55 @@ impl VECharacterManager {
         }
     }
 
-    pub fn get_character_health(&self, id: i64) -> i64 {
-        if let Some(char_arc) = self.player_container_search_map.get(&id) {
-            if let Ok(character) = char_arc.lock() {
-                return character.get_character_health();
-            } else {
-                eprintln!("Failed to acquire lock for get_character_health, id={}", id);
-            }
-        } else {
-            eprintln!("Character not found for get_character_health, id={}", id);
-        }
-        return 0
-    }
+    // pub fn get_character_health(&self, id: i64) -> i64 {
+    //     if let Some(char_arc) = self.player_container_search_map.get(&id) {
+    //         if let Ok(character) = char_arc.lock() {
+    //             return character.get_character_health();
+    //         } else {
+    //             eprintln!("Failed to acquire lock for get_character_health, id={}", id);
+    //         }
+    //     } else {
+    //         eprintln!("Character not found for get_character_health, id={}", id);
+    //     }
+    //     return 0
+    // }
 
-    pub fn get_character_ability_point(&self, id: i64) -> i64 {
-        if let Some(char_arc) = self.player_container_search_map.get(&id) {
-            if let Ok(character) = char_arc.lock() {
-                return character.get_character_ability_point();
-            } else {
-                eprintln!("Failed to acquire lock for get_character_ability_point, id={}", id);
-            }
-        } else {
-            eprintln!("Character not found for get_character_ability_point, id={}", id);
-        }
-        return 0
-    }
+    // pub fn get_character_ability_point(&self, id: i64) -> i64 {
+    //     if let Some(char_arc) = self.player_container_search_map.get(&id) {
+    //         if let Ok(character) = char_arc.lock() {
+    //             return character.get_character_ability_point();
+    //         } else {
+    //             eprintln!("Failed to acquire lock for get_character_ability_point, id={}", id);
+    //         }
+    //     } else {
+    //         eprintln!("Character not found for get_character_ability_point, id={}", id);
+    //     }
+    //     return 0
+    // }
 
-    pub fn get_character_stamina(&self, id: i64) -> i64 {
-        if let Some(char_arc) = self.player_container_search_map.get(&id) {
-            if let Ok(character) = char_arc.lock() {
-                return character.get_character_stamina();
-            } else {
-                eprintln!("Failed to acquire lock for get_character_stamina, id={}", id);
-            }
-        } else {
-            eprintln!("Character not found for get_character_stamina, id={}", id);
-        }
-        return 0
-    }
+    // pub fn get_character_stamina(&self, id: i64) -> i64 {
+    //     if let Some(char_arc) = self.player_container_search_map.get(&id) {
+    //         if let Ok(character) = char_arc.lock() {
+    //             return character.get_character_stamina();
+    //         } else {
+    //             eprintln!("Failed to acquire lock for get_character_stamina, id={}", id);
+    //         }
+    //     } else {
+    //         eprintln!("Character not found for get_character_stamina, id={}", id);
+    //     }
+    //     return 0
+    // }
 
-    pub fn get_character_mode(&self, id: i64) -> ActorStatusMode {
-        if let Some(char_arc) = self.player_container_search_map.get(&id) {
-            if let Ok(character) = char_arc.lock() {
-                return character.get_character_mode();
-            } else {
-                eprintln!("Failed to acquire lock for get_character_mode, id={}", id);
-            }
-        } else {
-            eprintln!("Character not found for get_character_mode, id={}", id);
-        }
-        return ActorStatusMode::IDLE
-    }
+    // pub fn get_character_mode(&self, id: i64) -> ActorStatusMode {
+    //     if let Some(char_arc) = self.player_container_search_map.get(&id) {
+    //         if let Ok(character) = char_arc.lock() {
+    //             return character.get_character_mode();
+    //         } else {
+    //             eprintln!("Failed to acquire lock for get_character_mode, id={}", id);
+    //         }
+    //     } else {
+    //         eprintln!("Character not found for get_character_mode, id={}", id);
+    //     }
+    //     return ActorStatusMode::IDLE
+    // }
 }

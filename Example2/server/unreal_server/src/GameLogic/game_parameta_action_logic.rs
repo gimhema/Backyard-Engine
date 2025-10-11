@@ -68,25 +68,25 @@ impl ActorParameta
 
 impl VECharcater 
 {
-    pub fn get_total_health_point(self) -> i64 {
-        return self.player_parameta.get_total_health_point()
-    }
+    // pub fn get_total_health_point(self) -> i64 {
+    //     return self.player_parameta.get_total_health_point()
+    // }
 
-    pub fn get_total_ability_point(self) -> i64 {
-        return self.player_parameta.get_total_ability_point()
-    }
+    // pub fn get_total_ability_point(self) -> i64 {
+    //     return self.player_parameta.get_total_ability_point()
+    // }
 
-    pub fn get_total_stamina_pont(self) -> i64 {
-        return self.player_parameta.get_total_stamina_point()
-    }
+    // pub fn get_total_stamina_pont(self) -> i64 {
+    //     return self.player_parameta.get_total_stamina_point()
+    // }
 
     pub fn update_parameta(&mut self) {
         // 장비 교체시 호출
 
         // 전부 리셋
-        self.player_parameta.reset_health_point();
-        self.player_parameta.reset_ability_point();
-        self.player_parameta.reset_stamina_point();
+        // self.player_parameta.reset_health_point();
+        // self.player_parameta.reset_ability_point();
+        // self.player_parameta.reset_stamina_point();
         
         // 체력 합산
         self.calc_total_health_point();
@@ -101,19 +101,19 @@ impl VECharcater
     pub fn calc_total_health_point(&mut self) {
         let mut _total_health_point = 0;
 
-        self.player_parameta.set_total_health_point(_total_health_point);
+//        self.player_parameta.set_total_health_point(_total_health_point);
     }
 
     pub fn calc_total_ability_point(&mut self) {
         let mut _total_ability_point = 0;
 
-        self.player_parameta.set_total_ability_point(_total_ability_point);
+//        self.player_parameta.set_total_ability_point(_total_ability_point);
     }
     
     pub fn calc_total_stamina_point(&mut self) {
         let mut _total_stamina_point = 0;
 
-        self.player_parameta.set_total_stamina_point(_total_stamina_point);
+//        self.player_parameta.set_total_stamina_point(_total_stamina_point);
     }
 }
 
