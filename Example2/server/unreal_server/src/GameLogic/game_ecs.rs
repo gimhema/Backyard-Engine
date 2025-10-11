@@ -49,21 +49,23 @@ impl World {
     /// 기본 Entity 생성 (빈 컴포넌트)
     pub fn create_entity(&mut self, _new_id : EntityId) -> EntityId {
         self.entities.insert(_new_id);
+
+        // Init Transform Component
+        let mut _init_position = Transform::new(
+            Position::new_zero(),
+            Rotation::new_zero()
+        );
+        self.transforms.insert(_new_id, _init_position);
+
+        // Init Status Component
+        let mut _init_status = ActorStatus::new_zero();
+        _init_status.init();
+        self.statuses.insert(_new_id, _init_status);
+
         _new_id
     }
 
-    /// Entity 생성과 동시에 Position, Velocity 등록
-    pub fn create_entity_with_components(
-        &mut self,
-        position: Option<Transform>,
-        _new_id : EntityId
-    ) -> EntityId {
-        let id = self.create_entity(_new_id);
-        if let Some(pos) = position {
-            self.transforms.insert(id, pos);
-        }
-        id
-    }
+
 
     pub fn update_movement(&mut self, entity: EntityId,  update_mov : Transform) {
         if let Some(transform) = self.transforms.get_mut(&entity) {
@@ -79,11 +81,6 @@ impl World {
         self.transforms.remove(&entity);
         // 향후 다른 컴포넌트들도 여기에 추가
     }
-
-    pub fn add_position(&mut self, entity: EntityId, pos: Transform) {
-        self.transforms.insert(entity, pos);
-    }
-
 
     pub fn get_position(&self, entity: EntityId) -> Option<&Transform> {
         self.transforms.get(&entity)
