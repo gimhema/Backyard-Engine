@@ -54,13 +54,11 @@ impl Server{
 
     pub fn server_loop_action(&mut self) {
         
-        // self.ping();
+        let now = Instant::now();
+        self.ds_registry.reap_timeouts(now);
 
         while let Some(action) = GLOBAL_SERVER_ACTION_QUEUE.pop() {
-            // match action {
-            //     // ServerActionType::EnterPlayer(_pId, _accountId, _playerName, _connInfo) => 
-            //     // { self.server_action_enter_player(_pId, _accountId, _playerName, _connInfo);  }
-            // }
+
         }
 
     }

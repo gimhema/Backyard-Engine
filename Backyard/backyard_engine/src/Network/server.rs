@@ -10,6 +10,7 @@ use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::manager_messages::{parse_manager_msg, ManagerMsg};
 use crate::Network::protocol::drain_frames;
+use crate::ds_registry::DsRegistry;
 
 
 use super::connection::*;
@@ -50,11 +51,8 @@ pub struct Server {
     pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
     pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
     pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
+    pub ds_registry: DsRegistry,
 
-    // Game Play Logic
-    // pub game_logic : Arc<Mutex<GameLogicMain>>,
-    // pub game_character_manager: Arc<Mutex<VECharacterManager>>,
-    // pub player_waiting_queue: Arc<Mutex<WaitingQueue>>, // 플레이어 대기열
 }
 
 
@@ -92,9 +90,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             client_groups: Arc::new(Mutex::new(HashMap::new())),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
-            // game_character_manager: Arc::new(Mutex::new(VECharacterManager::new())),
-            // player_waiting_queue: Arc::new(Mutex::new(WaitingQueue::new())),
-            // game_logic: Arc::new(Mutex::new(GameLogicMain::new())),
+            ds_registry: DsRegistry::new(Duration::from_secs(5)),
         };
 
         Ok(server)
@@ -187,10 +183,12 @@ pub fn start(&mut self) -> io::Result<()> {
 
             let mut actions_to_perform: Vec<(Token, ClientAction)> = Vec::new();
 
+            let mut incoming_mgr_msgs: Vec<(Token, SocketAddr, ManagerMsg)> = Vec::new();
+
+
             for event in events.iter() {
                 match event.token() {
                     SERVER_TCP_TOKEN => {
-                        // ... TCP 연결 수락 로직은 동일 ...
                         loop {
                             match self.tcp_listener.accept() {
                                 Ok((mut stream, addr)) => {
@@ -211,10 +209,6 @@ pub fn start(&mut self) -> io::Result<()> {
                                         udp_addr: None,
                                         read_acc: Vec::new(),
                                     });
-                                    
-
-                                    
-
                                 }
                                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
                                     break;
@@ -246,53 +240,63 @@ pub fn start(&mut self) -> io::Result<()> {
                         }
                     }
                     token if token.0 >= CLIENT_TOKEN_START.0 => {
-                        // 클라이언트 소켓 이벤트 처리 (TCP 전용)
-                        if let Some(client) = self.clients.get_mut(&token) {
+                    if let Some(client) = self.clients.get_mut(&token) {
+                        if event.is_readable() {
+                            let peer = client.addr; // SocketAddr 복사
+                            let frames = client.handle_read_event()?;
+                            for payload in frames {
+                                match parse_manager_msg(&payload) {
+                                    Ok(msg) => {
+                                        incoming_mgr_msgs.push((token, peer, msg));
+                                    }
+                                    Err(e) => {
+                                        eprintln!("[Protocol] invalid msg from {:?}: {}", token, e);
+                                    }
+                                }
+                            }
+                        }
 
-                    // 1) READ 처리
-                    if event.is_readable() {
-                        let frames = client.handle_read_event()?;
-                        for payload in frames {
-                            match parse_manager_msg(&payload) {
-                                Ok(ManagerMsg::Register(r)) => {
-                                    println!(
-                                        "[DS Register] id={} port={} max={} build={}",
-                                        r.ds_id, r.game_port, r.max_players, r.build
-                                    );
-                                }
-                                Ok(ManagerMsg::Heartbeat(hb)) => {
-                                    println!(
-                                        "[DS Heartbeat] id={} players={} state={}",
-                                        hb.ds_id, hb.current_players, hb.state
-                                    );
-                                }
+                        if event.is_writable() {
+                            match ClientConnection::handle_write_event(client) {
+                                Ok(_) => actions_to_perform.push((token, ClientAction::Reregister)),
                                 Err(e) => {
-                                    eprintln!("[Protocol] invalid msg from {:?}: {}", token, e);
+                                    eprintln!("Error during write for client {:?}: {}", token, e);
+                                    actions_to_perform.push((token, ClientAction::Disconnect));
                                 }
                             }
                         }
                     }
-
-                    // 2) WRITE 처리
-                    if event.is_writable() {
-                        match ClientConnection::handle_write_event(client) {
-                            Ok(queue_empty) => {
-                                // 지금은 empty/non-empty 상관 없이 reregister 하고 있음
-                                actions_to_perform.push((token, ClientAction::Reregister));
-                            }
-                            Err(e) => {
-                                eprintln!("Error during write for client {:?}: {}", token, e);
-                                actions_to_perform.push((token, ClientAction::Disconnect));
-                            }
-                        }
+                    else {
+                        eprintln!("Received event for unknown client token: {:?}", token);
                     }
-
-                } else {
-                    eprintln!("Received event for unknown client token: {:?}", token);
-                }
 
                     }
                     _ => { /* 알 수 없는 토큰 */ }
+                }
+            }
+
+            let now = Instant::now();
+            for (_token, peer, msg) in incoming_mgr_msgs.drain(..) {
+                match msg {
+                    ManagerMsg::Register(r) => {
+                        self.ds_registry.on_register(
+                            now,
+                            _token,
+                            peer,
+                            r.ds_id,
+                            r.game_port,
+                            r.max_players,
+                            r.build,
+                        );
+                    }
+                    ManagerMsg::Heartbeat(hb) => {
+                        self.ds_registry.on_heartbeat(
+                            now,
+                            &hb.ds_id,
+                            hb.current_players,
+                            hb.state,
+                        );
+                    }
                 }
             }
 
@@ -300,6 +304,8 @@ pub fn start(&mut self) -> io::Result<()> {
             for (token, action) in actions_to_perform {
                 match action {
                     ClientAction::Disconnect => {
+                        self.ds_registry.on_disconnect(token);
+
                         if let Some(mut removed_client) = self.clients.remove(&token) {
                             if let Some(addr) = removed_client.udp_addr.take() {
                                 self.remove_udp_target(&addr);

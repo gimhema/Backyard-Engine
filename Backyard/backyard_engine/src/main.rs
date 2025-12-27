@@ -6,7 +6,9 @@ mod Core;
 mod Event;
 mod Network;
 mod qsm;
-mod manager_messages; 
+mod manager_messages;
+mod ds_registry;
+
 
 use std::io;
 use crate::Network::server::Server;
