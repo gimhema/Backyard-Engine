@@ -9,6 +9,7 @@ use crossbeam_queue::ArrayQueue;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::manager_messages::{parse_manager_msg, ManagerMsg};
+use crate::Network::protocol::drain_frames;
 
 
 use super::connection::*;
@@ -247,47 +248,49 @@ pub fn start(&mut self) -> io::Result<()> {
                     token if token.0 >= CLIENT_TOKEN_START.0 => {
                         // 클라이언트 소켓 이벤트 처리 (TCP 전용)
                         if let Some(client) = self.clients.get_mut(&token) {
-                            if event.is_readable() {
-                                if let Some(conn) = self.clients.get_mut(&token) {
-                                    let frames = conn.handle_read_event()?;
-                                    for payload in frames {
-                                        match parse_manager_msg(&payload) {
-                                            Ok(ManagerMsg::Register(r)) => {
-                                                println!("[DS Register] id={} port={} max={} build={}",
-                                                    r.ds_id, r.game_port, r.max_players, r.build);
-                                                // P2에서 ds_registry 업데이트로 확장
-                                            }
-                                            Ok(ManagerMsg::Heartbeat(hb)) => {
-                                                println!("[DS Heartbeat] id={} players={} state={}",
-                                                    hb.ds_id, hb.current_players, hb.state);
-                                            }
-                                            Err(e) => {
-                                                eprintln!("[Protocol] invalid msg from {:?}: {}", token, e);
-                                            }
-                                        }
-                                    }
+
+                    // 1) READ 처리
+                    if event.is_readable() {
+                        let frames = client.handle_read_event()?;
+                        for payload in frames {
+                            match parse_manager_msg(&payload) {
+                                Ok(ManagerMsg::Register(r)) => {
+                                    println!(
+                                        "[DS Register] id={} port={} max={} build={}",
+                                        r.ds_id, r.game_port, r.max_players, r.build
+                                    );
+                                }
+                                Ok(ManagerMsg::Heartbeat(hb)) => {
+                                    println!(
+                                        "[DS Heartbeat] id={} players={} state={}",
+                                        hb.ds_id, hb.current_players, hb.state
+                                    );
+                                }
+                                Err(e) => {
+                                    eprintln!("[Protocol] invalid msg from {:?}: {}", token, e);
                                 }
                             }
-
-
-                            if event.is_writable() {
-                                match ClientConnection::handle_write_event(client) {
-                                    Ok(queue_empty) => {
-                                        if queue_empty {
-                                            actions_to_perform.push((token, ClientAction::Reregister));
-                                        } else {
-                                            actions_to_perform.push((token, ClientAction::Reregister));
-                                        }
-                                    }
-                                    Err(e) => {
-                                        eprintln!("Error during write for client {:?}: {}", token, e);
-                                        actions_to_perform.push((token, ClientAction::Disconnect));
-                                    }
-                                }
-                            }
-                        } else {
-                            eprintln!("Received event for unknown client token: {:?}", token);
                         }
+                    }
+
+                    // 2) WRITE 처리
+                    if event.is_writable() {
+                        match ClientConnection::handle_write_event(client) {
+                            Ok(queue_empty) => {
+                                // 지금은 empty/non-empty 상관 없이 reregister 하고 있음
+                                actions_to_perform.push((token, ClientAction::Reregister));
+                            }
+                            Err(e) => {
+                                eprintln!("Error during write for client {:?}: {}", token, e);
+                                actions_to_perform.push((token, ClientAction::Disconnect));
+                            }
+                        }
+                    }
+
+                } else {
+                    eprintln!("Received event for unknown client token: {:?}", token);
+                }
+
                     }
                     _ => { /* 알 수 없는 토큰 */ }
                 }
