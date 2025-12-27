@@ -1,9 +1,4 @@
-use crate::qsm::QuickShotMessage;
-use super::Event;
-use super::qsm::qsm::*;
-use super::Network::*;
-// use crate::Network::server_send::send_message_to_all_conn_TEST;
-
+use crate::qsm::qsm::handle_quicksot_message;
 
 macro_rules! enum_from_u32 {
     ($name:ident { $($variant:ident = $value:expr),* $(,)? }) => {
@@ -14,10 +9,10 @@ macro_rules! enum_from_u32 {
         }
 
         impl From<u32> for $name {
-            fn from(header: u32) -> Self {
-                match header {
-                    $($value => $name::$variant),*,
-                    _ => $name::END,
+            fn from(value: u32) -> Self {
+                match value {
+                    $($value => $name::$variant,)*
+                    _ => $name::DEFAULT,
                 }
             }
         }
@@ -31,10 +26,9 @@ enum_from_u32! {
     }
 }
 
-
 impl EventHeader {
-    pub fn action(buffer: &[u8])
-    {
-        // handle_quicksot_message(buffer);
+    pub fn action(buffer: &[u8]) {
+        // 지금은 QSM 파서로 넘기는 최소 연결만 유지
+        handle_quicksot_message(buffer);
     }
 }
