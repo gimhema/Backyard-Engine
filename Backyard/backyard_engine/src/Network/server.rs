@@ -8,8 +8,8 @@ use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
-// use crate::GameLogic::game_player::VECharacterManager;
-// use crate::GameLogic::game_logic_main::GameLogicMain;
+use crate::manager_messages::{parse_manager_msg, ManagerMsg};
+
 
 use super::connection::*;
 use super::server_common::*;
@@ -208,6 +208,7 @@ pub fn start(&mut self) -> io::Result<()> {
                                         write_queue: Arc::new(Mutex::new(Vec::new())),
                                         is_udp_client: true,
                                         udp_addr: None,
+                                        read_acc: Vec::new(),
                                     });
                                     
 
@@ -247,20 +248,27 @@ pub fn start(&mut self) -> io::Result<()> {
                         // 클라이언트 소켓 이벤트 처리 (TCP 전용)
                         if let Some(client) = self.clients.get_mut(&token) {
                             if event.is_readable() {
-                                match ClientConnection::handle_read_event(client) {
-                                    Ok(disconnected) => {
-                                        if disconnected {
-                                            actions_to_perform.push((token, ClientAction::Disconnect));
-                                        } else {
-                                            actions_to_perform.push((token, ClientAction::Reregister));
+                                if let Some(conn) = self.clients.get_mut(&token) {
+                                    let frames = conn.handle_read_event()?;
+                                    for payload in frames {
+                                        match parse_manager_msg(&payload) {
+                                            Ok(ManagerMsg::Register(r)) => {
+                                                println!("[DS Register] id={} port={} max={} build={}",
+                                                    r.ds_id, r.game_port, r.max_players, r.build);
+                                                // P2에서 ds_registry 업데이트로 확장
+                                            }
+                                            Ok(ManagerMsg::Heartbeat(hb)) => {
+                                                println!("[DS Heartbeat] id={} players={} state={}",
+                                                    hb.ds_id, hb.current_players, hb.state);
+                                            }
+                                            Err(e) => {
+                                                eprintln!("[Protocol] invalid msg from {:?}: {}", token, e);
+                                            }
                                         }
-                                    }
-                                    Err(e) => {
-                                        eprintln!("Error during read for client {:?}: {}", token, e);
-                                        actions_to_perform.push((token, ClientAction::Disconnect));
                                     }
                                 }
                             }
+
 
                             if event.is_writable() {
                                 match ClientConnection::handle_write_event(client) {
@@ -401,49 +409,41 @@ pub fn start(&mut self) -> io::Result<()> {
 
 }
 
-// ClientConnection의 이벤트 핸들러는 이제 'Server' 인스턴스와 완전히 독립적입니다.
+
 impl ClientConnection {
     // --- 메시지 수신 처리 (읽기 이벤트) ---
     // 이 함수는 'ClientConnection'에 대한 가변 참조만 받습니다.
-    fn handle_read_event(client: &mut ClientConnection) -> io::Result<bool> {
-        let mut buffer = Vec::new();
-        let mut _read_bytes = 0; // 경고 제거: 'read_bytes'는 사용되지 않지만 할당됨
+    fn handle_read_event(&mut self) -> std::io::Result<Vec<Vec<u8>>> {
+        let mut temp = [0u8; 4096];
 
         loop {
-            let mut chunk = [0; 4096]; // 4KB 청크
-            match client.stream.read(&mut chunk) {
+            match self.stream.read(&mut temp) {
                 Ok(0) => {
                     // 연결 종료
-                    println!("Client disconnected: {}", client.addr);
-                    return Ok(true); // 연결이 끊겼음을 알림
+                    return Err(std::io::Error::new(std::io::ErrorKind::ConnectionReset, "peer closed"));
                 }
                 Ok(n) => {
-                    buffer.extend_from_slice(&chunk[..n]);
-                    _read_bytes += n;
-                    // 읽을 데이터가 더 이상 없으면 루프 종료
-                    if n < chunk.len() {
-                        break;
+                    self.read_acc.extend_from_slice(&temp[..n]);
+
+                    // 누적 버퍼에서 완성된 프레임을 최대한 뽑음
+                    let frames = drain_frames(&mut self.read_acc)?;
+                    if !frames.is_empty() {
+                        return Ok(frames);
                     }
+                    // 아직 완성된 프레임이 없으면 계속 read
+                    continue;
                 }
-                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                    // 더 이상 읽을 데이터가 없음
+                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    // 더 읽을 데이터 없음
                     break;
                 }
-                Err(e) => {
-                    eprintln!("Error reading from client {}: {}", client.addr, e);
-                    return Err(e);
-                }
+                Err(e) => return Err(e),
             }
         }
 
-        if !buffer.is_empty() {
-            println!("Received message from client {}: {:?}", client.addr, String::from_utf8_lossy(&buffer));
-            // TODO: 수신된 메시지 처리 로직 (예: 게임 로직으로 전달, 파싱 등)
-            
-            EventHeader::action(&buffer);
-        }
-        Ok(false) // 연결 유지
+        Ok(Vec::new())
     }
+
 
     // --- 메시지 송신 처리 (쓰기 이벤트) ---
     // 이 함수는 'ClientConnection'에 대한 가변 참조만 받습니다.

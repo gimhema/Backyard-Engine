@@ -12,6 +12,8 @@ use std::sync::{Mutex};
 use mio::Interest;
 use crate::Network::server::*;
 use crate::Event::event_handler::EventHeader;
+use crate::Network::protocol::drain_frames;
+
 
 // --- 전송할 메시지 유형 정의 ---
 #[derive(Debug)]
@@ -28,6 +30,7 @@ pub struct ClientConnection {
     pub write_queue: Arc<Mutex<Vec<u8>>>,
     pub is_udp_client: bool, // 클라이언트가 UDP 통신을 지원하는지 여부
     pub udp_addr: Option<SocketAddr>, // 클라이언트의 UDP 수신 주소를 저장할 필드 (새로 추가)
+    pub read_acc: Vec<u8>
 }
 
 impl Server
