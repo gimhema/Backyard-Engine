@@ -6,6 +6,7 @@ use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
+use dashmap::DashMap;
 use crate::Event::event_handler::EventHeader;
 use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::manager_messages::{parse_manager_msg, ManagerMsg};
@@ -47,8 +48,8 @@ pub struct Server {
     pub udp_message_tx_queue: SharedUdpMessageQueue,
     pub udp_targets_registry: Arc<RwLock<Vec<SocketAddr>>>,
     pub udp_token_registry: Arc<RwLock<HashMap<Token, SocketAddr>>>,
-    // 그룹 관리를 위한 HashMap (Mutex로 보호하여 안전한 동시 접근)
-    pub client_groups: Arc<Mutex<HashMap<String, Vec<Token>>>>,
+    // 그룹 관리를 위한 DashMap (Lock-Free 동시 접근)
+    pub client_groups: Arc<DashMap<String, Vec<Token>>>,
     pub last_ping_time: Instant, // 마지막 Ping 전송 시간을 기록
     pub ping_interval: Duration, // Ping 전송 주기 (예: 5초)
     pub ds_registry: DsRegistry,
@@ -87,7 +88,7 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
             udp_message_tx_queue: udp_queue_for_server, // 새 큐 할당
             udp_targets_registry: Arc::new(RwLock::new(Vec::new())),
             udp_token_registry: Arc::new(RwLock::new(HashMap::new())),
-            client_groups: Arc::new(Mutex::new(HashMap::new())),
+            client_groups: Arc::new(DashMap::new()),
             last_ping_time: Instant::now(),
             ping_interval: Duration::from_secs(5),
             ds_registry: DsRegistry::new(Duration::from_secs(5)),
@@ -333,22 +334,17 @@ pub fn start(&mut self) -> io::Result<()> {
                             }
                             println!("Client disconnected (action): {}", removed_client.addr);
                             
-                            // 클라이언트를 모든 그룹에서 제거
-                            let mut client_groups = self.client_groups.lock().unwrap();
-                            let groups_to_remove: Vec<String> = client_groups
-                                .iter_mut()
-                                .filter_map(|(group_name, tokens)| {
-                                    tokens.retain(|&t| t != token);
-                                    if tokens.is_empty() {
-                                        Some(group_name.clone())
-                                    } else {
-                                        None
-                                    }
-                                })
-                                .collect();
+                            // 클라이언트를 모든 그룹에서 제거 (DashMap으로 효율적 처리)
+                            let mut groups_to_remove = Vec::new();
+                            for mut entry in self.client_groups.iter_mut() {
+                                entry.value_mut().retain(|&t| t != token);
+                                if entry.value().is_empty() {
+                                    groups_to_remove.push(entry.key().clone());
+                                }
+                            }
                             
                             for group_name in groups_to_remove {
-                                client_groups.remove(&group_name);
+                                self.client_groups.remove(&group_name);
                                 println!("Removed empty group '{}'", group_name);
                             }
                         }
@@ -381,23 +377,22 @@ pub fn start(&mut self) -> io::Result<()> {
     }
 
 
-    // --- 클라이언트를 특정 그룹에 추가하는 함수 (Lock-Free) ---
+    // --- 클라이언트를 특정 그룹에 추가하는 함수 (Lock-Free DashMap) ---
     pub fn add_client_to_group(&self, token: Token, group_name: String) {
-        let mut client_groups = self.client_groups.lock().unwrap();
-        // `group_name`의 소유권 이동을 피하기 위해 `clone()` 사용
-        client_groups.entry(group_name.clone())
-                     .or_insert_with(Vec::new)
-                     .push(token);
+        self.client_groups
+            .entry(group_name.clone())
+            .or_insert_with(Vec::new)
+            .push(token);
         println!("Client {:?} added to group '{}'", token, group_name);
     }
 
-    // --- 클라이언트를 그룹에서 제거하는 함수 (Lock-Free) ---
+    // --- 클라이언트를 그룹에서 제거하는 함수 (Lock-Free DashMap) ---
     pub fn remove_client_from_group(&self, token: Token, group_name: &str) {
-        let mut client_groups = self.client_groups.lock().unwrap();
-        if let Some(tokens) = client_groups.get_mut(group_name) {
-            tokens.retain(|&t| t != token);
-            if tokens.is_empty() {
-                client_groups.remove(group_name);
+        if let Some(mut tokens_ref) = self.client_groups.get_mut(group_name) {
+            tokens_ref.retain(|&t| t != token);
+            if tokens_ref.is_empty() {
+                drop(tokens_ref);
+                self.client_groups.remove(group_name);
             }
             println!("Client {:?} removed from group '{}'", token, group_name);
         }

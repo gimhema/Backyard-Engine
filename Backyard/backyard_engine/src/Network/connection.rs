@@ -18,9 +18,9 @@ use crate::Network::protocol::drain_frames;
 // --- 전송할 메시지 유형 정의 ---
 #[derive(Debug)]
 pub enum MessageToSend {
-    Single(Token, Vec<u8>),      // 단일 소켓 대상
-    Group(String, Vec<u8>),       // 특정 그룹 소켓 대상 (그룹 이름으로 식별)
-    Broadcast(Vec<u8>),           // 전체 소켓 대상
+    Single(Token, Vec<u8>),              // 단일 소켓 대상
+    Group(String, Vec<u8>),              // 특정 그룹 소켓 대상
+    Broadcast(Arc<Vec<u8>>),             // 전체 소켓 대상 (Arc로 공유하여 메모리 절약)
 }
 
 // --- 클라이언트 연결 구조체 ---
@@ -61,17 +61,13 @@ impl Server
     }
 
     // --- 특정 그룹 TCP 소켓 대상 메시지 전송 ---
-    // 함수 이름 변경: send_tcp_data_to_group
     pub fn send_tcp_data_to_group(&mut self, group_name: &str, data: Vec<u8>) -> io::Result<()> {
-        let client_groups_lock = self.client_groups.lock().unwrap();
-        let tokens_to_send: Vec<Token> = client_groups_lock
+        let tokens_to_send: Vec<Token> = self.client_groups
             .get(group_name)
-            .cloned()
+            .map(|entry| entry.clone())
             .unwrap_or_else(Vec::new);
-        drop(client_groups_lock);
 
         for &token in tokens_to_send.iter() {
-            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
             if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
                 eprintln!("Failed to queue group TCP message for token {:?}.", token);
             }
@@ -83,12 +79,11 @@ impl Server
     }
 
     // --- 전체 TCP 소켓 대상 메시지 전송 (브로드캐스트) ---
-    // 함수 이름 변경: broadcast_tcp_message
     pub fn broadcast_tcp_message(&mut self, data: Vec<u8>) -> io::Result<()> {
+        let data_arc = Arc::new(data);
         let tokens_to_send: Vec<Token> = self.clients.keys().cloned().collect();
         for token in tokens_to_send {
-            // 이제 이 send_tcp_message는 TCP 큐에 메시지를 넣습니다.
-            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, data.clone())) {
+            if let Err(_) = self.send_tcp_message(MessageToSend::Single(token, (*data_arc).clone())) {
                 eprintln!("Failed to queue broadcast TCP message for token {:?}.", token);
             }
         }
@@ -104,10 +99,12 @@ impl Server
                     self.send_tcp_data_to_token(token, data)?; // 함수 이름 변경
                 }
                 MessageToSend::Group(group_name, data) => {
-                    self.send_tcp_data_to_group(&group_name, data)?; // 함수 이름 변경
+                    self.send_tcp_data_to_group(&group_name, data)?;
                 }
                 MessageToSend::Broadcast(data) => {
-                    self.broadcast_tcp_message(data)?; // 함수 이름 변경
+                    // Arc<Vec<u8>>에서 데이터 추출하여 broadcast (복제 최소화)
+                    let data_vec = (*data).clone();
+                    self.broadcast_tcp_message(data_vec)?;
                 }
             }
         }
