@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DsLifeState {
@@ -30,8 +31,13 @@ pub struct DsInstance {
     pub life: DsLifeState,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DsRegistry {
+    inner: Arc<RwLock<DsRegistryInner>>,
+}
+
+#[derive(Debug)]
+struct DsRegistryInner {
     by_id: HashMap<String, DsInstance>,
     token_to_id: HashMap<mio::Token, String>,
     timeout: Duration,
@@ -40,14 +46,16 @@ pub struct DsRegistry {
 impl DsRegistry {
     pub fn new(timeout: Duration) -> Self {
         Self {
-            by_id: HashMap::new(),
-            token_to_id: HashMap::new(),
-            timeout,
+            inner: Arc::new(RwLock::new(DsRegistryInner {
+                by_id: HashMap::new(),
+                token_to_id: HashMap::new(),
+                timeout,
+            })),
         }
     }
 
     pub fn on_register(
-        &mut self,
+        &self,
         now: Instant,
         token: mio::Token,
         tcp_peer: SocketAddr,
@@ -56,7 +64,7 @@ impl DsRegistry {
         max_players: u16,
         build: String,
     ) {
-        let public_ip = tcp_peer.ip(); // 1차: tcp peer ip를 public ip로 사용(나중에 개선 가능)
+        let public_ip = tcp_peer.ip();
 
         let inst = DsInstance {
             ds_id: ds_id.clone(),
@@ -72,8 +80,9 @@ impl DsRegistry {
             life: DsLifeState::Up,
         };
 
-        self.by_id.insert(ds_id.clone(), inst);
-        self.token_to_id.insert(token, ds_id.clone());
+        let mut inner = self.inner.write().unwrap();
+        inner.by_id.insert(ds_id.clone(), inst);
+        inner.token_to_id.insert(token, ds_id.clone());
 
         println!(
             "[Registry] DS REGISTERED id={} {}:{} max={}",
@@ -82,36 +91,38 @@ impl DsRegistry {
     }
 
     pub fn on_heartbeat(
-        &mut self,
+        &self,
         now: Instant,
         ds_id: &str,
         current_players: u16,
         state: u8,
     ) {
-        if let Some(ds) = self.by_id.get_mut(ds_id) {
+        let mut inner = self.inner.write().unwrap();
+        if let Some(ds) = inner.by_id.get_mut(ds_id) {
             ds.current_players = current_players;
             ds.state = state;
             ds.last_seen = now;
             ds.life = DsLifeState::Up;
         } else {
-            // 아직 register 안 된 ds_id로 heartbeat가 오면 로그만
             println!("[Registry] heartbeat from unknown ds_id={}", ds_id);
         }
     }
 
-    pub fn on_disconnect(&mut self, token: mio::Token) {
-        if let Some(ds_id) = self.token_to_id.remove(&token) {
-            if let Some(ds) = self.by_id.get_mut(&ds_id) {
+    pub fn on_disconnect(&self, token: mio::Token) {
+        let mut inner = self.inner.write().unwrap();
+        if let Some(ds_id) = inner.token_to_id.remove(&token) {
+            if let Some(ds) = inner.by_id.get_mut(&ds_id) {
                 ds.life = DsLifeState::Down;
                 println!("[Registry] DS DOWN (disconnect) id={}", ds_id);
             }
         }
     }
 
-    pub fn reap_timeouts(&mut self, now: Instant) {
-        let timeout = self.timeout;
+    pub fn reap_timeouts(&self, now: Instant) {
+        let mut inner = self.inner.write().unwrap();
+        let timeout = inner.timeout;
 
-        for (id, ds) in self.by_id.iter_mut() {
+        for (id, ds) in inner.by_id.iter_mut() {
             if ds.life == DsLifeState::Up {
                 let elapsed = now.duration_since(ds.last_seen);
                 if elapsed > timeout {
@@ -122,10 +133,10 @@ impl DsRegistry {
         }
     }
 
-    // 디버깅용(선택)
     pub fn dump(&self) {
+        let inner = self.inner.read().unwrap();
         println!("=== DS Registry dump ===");
-        for (id, ds) in self.by_id.iter() {
+        for (id, ds) in inner.by_id.iter() {
             println!(
                 "id={} life={:?} {}:{} players={}/{} state={} last_seen={:?} build={}",
                 id, ds.life, ds.public_ip, ds.game_port,

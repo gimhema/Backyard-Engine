@@ -136,9 +136,20 @@ pub fn start(&mut self) -> io::Result<()> {
 
         let mut events = Events::with_capacity(1024);
 
-        println!("Server started. Listening on TCP {} and UDP {}",
-                 self.tcp_listener.local_addr().unwrap(),
-                 self.udp_socket.local_addr().unwrap());
+        let tcp_addr_result = self.tcp_listener.local_addr();
+        let udp_addr_result = self.udp_socket.local_addr();
+        
+        match (tcp_addr_result, udp_addr_result) {
+            (Ok(tcp_addr), Ok(udp_addr)) => {
+                println!("Server started. Listening on TCP {} and UDP {}", tcp_addr, udp_addr);
+            }
+            (Err(e), _) => {
+                eprintln!("Failed to get TCP local address: {}", e);
+            }
+            (_, Err(e)) => {
+                eprintln!("Failed to get UDP local address: {}", e);
+            }
+        }
 
         let udp_queue = self.udp_message_tx_queue.clone();
         let udp_socket = self.udp_socket.clone();
@@ -177,7 +188,12 @@ pub fn start(&mut self) -> io::Result<()> {
         loop {
             self.poll.poll(&mut events, Some(Duration::from_millis(1)))?;
 
-            self.server_loop_action();
+            // 주기적으로 DS 타임아웃 체크
+            let now = Instant::now();
+            if now.duration_since(self.last_ping_time) >= self.ping_interval {
+                self.ds_registry.reap_timeouts(now);
+                self.last_ping_time = now;
+            }
 
             self.process_outgoing_tcp_messages();
 
@@ -310,21 +326,47 @@ pub fn start(&mut self) -> io::Result<()> {
                             if let Some(addr) = removed_client.udp_addr.take() {
                                 self.remove_udp_target(&addr);
                             }
-                            self.remove_token_addr(&token); 
+                            self.remove_token_addr(&token);
 
                             if let Err(e) = self.poll.registry().deregister(&mut removed_client.stream) {
                                 eprintln!("Error deregistering stream for client {:?}: {}", token, e);
                             }
                             println!("Client disconnected (action): {}", removed_client.addr);
-                            // TODO: 클라이언트 그룹에서 제거하는 로직 추가 필요
+                            
+                            // 클라이언트를 모든 그룹에서 제거
+                            let mut client_groups = self.client_groups.lock().unwrap();
+                            let groups_to_remove: Vec<String> = client_groups
+                                .iter_mut()
+                                .filter_map(|(group_name, tokens)| {
+                                    tokens.retain(|&t| t != token);
+                                    if tokens.is_empty() {
+                                        Some(group_name.clone())
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect();
+                            
+                            for group_name in groups_to_remove {
+                                client_groups.remove(&group_name);
+                                println!("Removed empty group '{}'", group_name);
+                            }
                         }
                     }
                     ClientAction::Reregister => {
                         if let Some(client) = self.clients.get_mut(&token) {
-                            let interest = if client.write_queue.lock().unwrap().is_empty() {
-                                Interest::READABLE
-                            } else {
-                                Interest::READABLE | Interest::WRITABLE
+                            let interest = match client.write_queue.lock() {
+                                Ok(queue) => {
+                                    if queue.is_empty() {
+                                        Interest::READABLE
+                                    } else {
+                                        Interest::READABLE | Interest::WRITABLE
+                                    }
+                                }
+                                Err(_) => {
+                                    eprintln!("Failed to acquire write queue lock for reregister token {:?}", token);
+                                    Interest::READABLE
+                                }
                             };
                             if let Err(e) = self.poll.registry().reregister(&mut client.stream, token, interest) {
                                 eprintln!("Error reregistering stream for client {:?}: {}", token, e);
@@ -457,7 +499,13 @@ impl ClientConnection {
     // --- 메시지 송신 처리 (쓰기 이벤트) ---
     // 이 함수는 'ClientConnection'에 대한 가변 참조만 받습니다.
     fn handle_write_event(client: &mut ClientConnection) -> io::Result<bool> {
-        let mut write_queue = client.write_queue.lock().unwrap(); // Lock 획득
+        let mut write_queue = match client.write_queue.lock() {
+            Ok(q) => q,
+            Err(_) => {
+                eprintln!("Failed to acquire write queue lock for client {}", client.addr);
+                return Err(io::Error::new(io::ErrorKind::Other, "write queue lock poisoned"));
+            }
+        };
 
         if write_queue.is_empty() {
             return Ok(true); // 보낼 데이터가 없음 (큐가 비어있음)

@@ -56,8 +56,9 @@ impl message_queue_handler {
         self.message_queue.push_back(message)
     }
 
-    pub fn pop(&mut self) -> game_message {
-        return self.message_queue.pop_back().unwrap()
+    /// Pop a message from the queue. Returns None if the queue is empty.
+    pub fn pop(&mut self) -> Option<game_message> {
+        self.message_queue.pop_back()
     }
 
     pub fn get_size(&self) -> usize {
