@@ -7,8 +7,6 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 use crossbeam_queue::ArrayQueue;
 use dashmap::DashMap;
-use crate::Event::event_handler::EventHeader;
-use crate::qsm::qsm::{GLOBAL_MESSAGE_TX_QUEUE, GLOBAL_MESSAGE_UDP_QUEUE};
 use crate::manager_messages::{parse_manager_msg, ManagerMsg};
 use crate::Network::protocol::drain_frames;
 use crate::ds_registry::DsRegistry;
@@ -70,10 +68,10 @@ pub fn new(tcp_addr: &str, udp_addr: &str) -> io::Result<Server> {
         let mut udp_socket = UdpSocket::bind(udp_socket_addr)?;
         poll.registry().register(&mut udp_socket, SERVER_UDP_TOKEN, Interest::READABLE)?;
 
-        // TCP 메시지 큐 초기화 (기존 GLOBAL_MESSAGE_TX_QUEUE 사용)
-        let tcp_queue_for_server = GLOBAL_MESSAGE_TX_QUEUE.clone();
-        // UDP 메시지 큐 초기화 (새로운 큐 생성)
-        let udp_queue_for_server = GLOBAL_MESSAGE_UDP_QUEUE.clone();
+        // TCP 메시지 큐 초기화
+        let tcp_queue_for_server = Arc::new(ArrayQueue::new(1024));
+        // UDP 메시지 큐 초기화
+        let udp_queue_for_server = Arc::new(ArrayQueue::new(1024));
 
 //        let raw_socket = UdpSocket::bind(udp_socket_addr)?;
 

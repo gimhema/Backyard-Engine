@@ -5,7 +5,6 @@ mod Agent;
 mod Core;
 mod Event;
 mod Network;
-mod qsm;
 mod manager_messages;
 mod ds_registry;
 
